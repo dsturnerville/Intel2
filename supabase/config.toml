@@ -1,1 +1,4 @@
 project_id = "hkpmbmsepyjtgooickfp"
+
+[functions.flood-zones]
+verify_jwt = false
