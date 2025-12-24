@@ -138,18 +138,6 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
 
         el.appendChild(inner);
 
-        el.addEventListener('mouseenter', () => {
-          inner.style.transform = 'scale(1.2)';
-          inner.style.boxShadow = '0 6px 18px hsl(0 0% 0% / 0.45)';
-        });
-        el.addEventListener('mouseleave', () => {
-          inner.style.transform = 'scale(1)';
-          inner.style.boxShadow = '0 2px 8px hsl(0 0% 0% / 0.35)';
-        });
-        el.addEventListener('click', () => {
-          onPropertyClick?.(dp.propertyId);
-        });
-
         // Create popup content
         const popupContent = `
           <div style="color: #1a1a2e; font-family: system-ui, sans-serif; min-width: 200px;">
@@ -176,7 +164,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
 
         const popup = new mapboxgl.Popup({
           offset: 25,
-          closeButton: false,
+          closeButton: true,
+          closeOnClick: false,
           maxWidth: '280px',
         }).setHTML(popupContent);
 
@@ -184,6 +173,37 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           .setLngLat([dp.property.longitude!, dp.property.latitude!])
           .setPopup(popup)
           .addTo(map.current!);
+
+        let isPinned = false;
+
+        el.addEventListener('mouseenter', () => {
+          inner.style.transform = 'scale(1.2)';
+          inner.style.boxShadow = '0 6px 18px hsl(0 0% 0% / 0.45)';
+          if (!isPinned && !popup.isOpen()) {
+            marker.togglePopup();
+          }
+        });
+
+        el.addEventListener('mouseleave', () => {
+          inner.style.transform = 'scale(1)';
+          inner.style.boxShadow = '0 2px 8px hsl(0 0% 0% / 0.35)';
+          if (!isPinned && popup.isOpen()) {
+            marker.togglePopup();
+          }
+        });
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          isPinned = true;
+          if (!popup.isOpen()) {
+            marker.togglePopup();
+          }
+          onPropertyClick?.(dp.propertyId);
+        });
+
+        popup.on('close', () => {
+          isPinned = false;
+        });
 
         markersRef.current.push(marker);
       });
