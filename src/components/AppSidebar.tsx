@@ -35,7 +35,7 @@ import {
   HardHat,
   ArrowRightLeft,
   Shield,
-  ChevronDown,
+  LayoutDashboard,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -94,6 +94,9 @@ export function AppSidebar() {
   const [selectedDepartment, setSelectedDepartment] = useState<Department>('Super Admin');
 
   const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === path;
+    }
     if (path === '/dispositions') {
       return location.pathname === path || location.pathname.startsWith('/dispositions/');
     }
@@ -128,6 +131,26 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Dashboard Link */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/dashboard')}
+                  tooltip="Dashboard"
+                >
+                  <Link to="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {/* Department Selector */}
         <SidebarGroup>
           <SidebarGroupLabel className={cn(collapsed && 'sr-only')}>
