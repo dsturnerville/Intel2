@@ -298,6 +298,22 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
+        // Glow effect layer for unclustered points (behind main marker)
+        if (!map.current.getLayer('unclustered-glow')) {
+          map.current.addLayer({
+            id: 'unclustered-glow',
+            type: 'circle',
+            source: 'properties',
+            filter: ['!', ['has', 'point_count']],
+            paint: {
+              'circle-color': primaryColor,
+              'circle-radius': 20,
+              'circle-blur': 0.8,
+              'circle-opacity': 0.4,
+            },
+          });
+        }
+
         // Unclustered point layer
         if (!map.current.getLayer('unclustered-point')) {
           map.current.addLayer({
@@ -310,6 +326,30 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
               'circle-radius': 12,
               'circle-stroke-width': 2,
               'circle-stroke-color': 'hsl(0, 0%, 100%)',
+            },
+          });
+        }
+
+        // Glow effect layer for clusters (behind main cluster)
+        if (!map.current.getLayer('clusters-glow')) {
+          map.current.addLayer({
+            id: 'clusters-glow',
+            type: 'circle',
+            source: 'properties',
+            filter: ['has', 'point_count'],
+            paint: {
+              'circle-color': primaryColor,
+              'circle-radius': [
+                'step',
+                ['get', 'point_count'],
+                28,
+                5,
+                35,
+                10,
+                42,
+              ],
+              'circle-blur': 0.7,
+              'circle-opacity': 0.35,
             },
           });
         }
