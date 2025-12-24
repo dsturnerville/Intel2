@@ -170,8 +170,8 @@ export default function Properties() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container h-full">
-          <div className="flex h-full items-center justify-between">
+        <div className="h-full px-6">
+          <div className="flex h-full items-center">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Properties</h1>
               <p className="text-sm text-muted-foreground mt-1">
@@ -182,7 +182,7 @@ export default function Properties() {
         </div>
       </header>
 
-      <main className="container py-6 space-y-6">
+      <main className="px-6 py-6 space-y-6">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
