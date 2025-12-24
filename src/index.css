@@ -51,6 +51,31 @@
     --approved: 160 84% 39%;
     --archived: 222 20% 35%;
 
+    /* Untitled UI-inspired badge colors (dark mode) */
+    --badge-gray-bg: 220 17% 17%;
+    --badge-gray-text: 220 13% 69%;
+    --badge-gray-border: 220 17% 28%;
+    
+    --badge-blue-bg: 213 75% 15%;
+    --badge-blue-text: 213 97% 76%;
+    --badge-blue-border: 213 75% 32%;
+    
+    --badge-purple-bg: 263 60% 18%;
+    --badge-purple-text: 260 82% 77%;
+    --badge-purple-border: 263 55% 35%;
+    
+    --badge-amber-bg: 32 90% 14%;
+    --badge-amber-text: 38 100% 68%;
+    --badge-amber-border: 35 90% 28%;
+    
+    --badge-success-bg: 158 64% 12%;
+    --badge-success-text: 158 64% 60%;
+    --badge-success-border: 158 55% 28%;
+    
+    --badge-rose-bg: 350 75% 14%;
+    --badge-rose-text: 350 95% 71%;
+    --badge-rose-border: 350 70% 32%;
+
     /* Table tokens */
     --table-header: 222 47% 10%;
     --table-row-hover: 222 30% 12%;
@@ -115,6 +140,31 @@
     --draft: 220 9% 46%;
     --approved: 160 84% 35%;
     --archived: 220 9% 46%;
+
+    /* Untitled UI-inspired badge colors (light mode) */
+    --badge-gray-bg: 220 14% 96%;
+    --badge-gray-text: 220 9% 43%;
+    --badge-gray-border: 220 13% 86%;
+    
+    --badge-blue-bg: 213 100% 96%;
+    --badge-blue-text: 213 94% 37%;
+    --badge-blue-border: 213 94% 85%;
+    
+    --badge-purple-bg: 263 90% 96%;
+    --badge-purple-text: 263 70% 45%;
+    --badge-purple-border: 263 80% 85%;
+    
+    --badge-amber-bg: 45 100% 94%;
+    --badge-amber-text: 32 90% 36%;
+    --badge-amber-border: 43 95% 78%;
+    
+    --badge-success-bg: 158 85% 94%;
+    --badge-success-text: 158 70% 30%;
+    --badge-success-border: 158 70% 78%;
+    
+    --badge-rose-bg: 350 100% 96%;
+    --badge-rose-text: 350 75% 42%;
+    --badge-rose-border: 350 90% 85%;
 
     /* Table tokens */
     --table-header: 220 14% 96%;

@@ -77,6 +77,38 @@ export default {
           hover: "hsl(var(--table-row-hover))",
           border: "hsl(var(--table-border))",
         },
+        badge: {
+          gray: {
+            bg: "hsl(var(--badge-gray-bg))",
+            text: "hsl(var(--badge-gray-text))",
+            border: "hsl(var(--badge-gray-border))",
+          },
+          blue: {
+            bg: "hsl(var(--badge-blue-bg))",
+            text: "hsl(var(--badge-blue-text))",
+            border: "hsl(var(--badge-blue-border))",
+          },
+          purple: {
+            bg: "hsl(var(--badge-purple-bg))",
+            text: "hsl(var(--badge-purple-text))",
+            border: "hsl(var(--badge-purple-border))",
+          },
+          amber: {
+            bg: "hsl(var(--badge-amber-bg))",
+            text: "hsl(var(--badge-amber-text))",
+            border: "hsl(var(--badge-amber-border))",
+          },
+          success: {
+            bg: "hsl(var(--badge-success-bg))",
+            text: "hsl(var(--badge-success-text))",
+            border: "hsl(var(--badge-success-border))",
+          },
+          rose: {
+            bg: "hsl(var(--badge-rose-bg))",
+            text: "hsl(var(--badge-rose-text))",
+            border: "hsl(var(--badge-rose-border))",
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

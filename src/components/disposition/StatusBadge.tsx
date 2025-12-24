@@ -6,20 +6,21 @@ interface StatusBadgeProps {
   className?: string;
 }
 
+// Untitled UI-inspired badge styles using design system tokens
 const statusStyles: Record<string, string> = {
   // Disposition statuses
-  'Draft': 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  'Under Review': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'Approved to List': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  'Archived': 'bg-slate-600/20 text-slate-500 border-slate-600/30',
+  'Draft': 'bg-badge-gray-bg text-badge-gray-text border-badge-gray-border',
+  'Under Review': 'bg-badge-amber-bg text-badge-amber-text border-badge-amber-border',
+  'Approved to List': 'bg-badge-success-bg text-badge-success-text border-badge-success-border',
+  'Archived': 'bg-badge-gray-bg text-badge-gray-text border-badge-gray-border',
   // Deal statuses
-  'Pre-Listing': 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  'Listed': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  'Under Contract': 'bg-violet-500/20 text-violet-400 border-violet-500/30',
-  'Due Diligence': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'Pending Close': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  'Closed': 'bg-emerald-600/20 text-emerald-300 border-emerald-600/30',
-  'Terminated': 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  'Pre-Listing': 'bg-badge-gray-bg text-badge-gray-text border-badge-gray-border',
+  'Listed': 'bg-badge-blue-bg text-badge-blue-text border-badge-blue-border',
+  'Under Contract': 'bg-badge-purple-bg text-badge-purple-text border-badge-purple-border',
+  'Due Diligence': 'bg-badge-amber-bg text-badge-amber-text border-badge-amber-border',
+  'Pending Close': 'bg-badge-success-bg text-badge-success-text border-badge-success-border',
+  'Closed': 'bg-badge-success-bg text-badge-success-text border-badge-success-border',
+  'Terminated': 'bg-badge-rose-bg text-badge-rose-text border-badge-rose-border',
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
@@ -27,7 +28,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     <span
       className={cn(
         'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
-        statusStyles[status] || 'bg-muted text-muted-foreground border-border',
+        statusStyles[status] || 'bg-badge-gray-bg text-badge-gray-text border-badge-gray-border',
         className
       )}
     >
