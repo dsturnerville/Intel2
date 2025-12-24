@@ -16,7 +16,6 @@ import { UnderwritingDefaults } from '@/components/disposition/UnderwritingDefau
 import { PortfolioSummary } from '@/components/disposition/PortfolioSummary';
 import { AddPropertyDialog } from '@/components/disposition/AddPropertyDialog';
 import { LinkedDeal } from '@/components/disposition/LinkedDeal';
-import { UserMenu } from '@/components/UserMenu';
 import {
   useDisposition,
   useDispositionProperties,
@@ -260,7 +259,6 @@ export default function DispositionDetail() {
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Changes
               </Button>
-              <UserMenu />
             </div>
           </div>
         </div>

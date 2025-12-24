@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { UserMenu } from '@/components/UserMenu';
 import { useDispositionMutations, useMarkets } from '@/hooks/useDispositions';
 import { DispositionDefaults, DispositionType, SalePriceMethodology } from '@/types/disposition';
 import { formatPercent } from '@/utils/calculations';
@@ -145,7 +144,6 @@ export function NewDispositionForm() {
                 )}
                 Create Disposition
               </Button>
-              <UserMenu />
             </div>
           </div>
         </div>
