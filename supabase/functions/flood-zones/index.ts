@@ -23,6 +23,10 @@ type Envelope = {
   spatialReference: { wkid: 4326 };
 };
 
+// In-memory cache (best-effort; per-worker instance)
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const cache = new Map<string, { exp: number; value: FeatureCollection }>();
+
 function parseBBox(bbox: string): [number, number, number, number] | null {
   const parts = bbox.split(",").map((v) => Number(v));
   if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return null;
@@ -36,49 +40,21 @@ function parseBBox(bbox: string): [number, number, number, number] | null {
   ];
 }
 
-function tilesForBBox(
+function constrainBBox(
   xmin: number,
   ymin: number,
   xmax: number,
   ymax: number,
-  maxTileDegrees: number,
-): Envelope[] {
+  maxDegrees: number,
+): [number, number, number, number] {
   const width = xmax - xmin;
   const height = ymax - ymin;
+  if (width <= maxDegrees && height <= maxDegrees) return [xmin, ymin, xmax, ymax];
 
-  let tilesX = Math.max(1, Math.ceil(width / maxTileDegrees));
-  let tilesY = Math.max(1, Math.ceil(height / maxTileDegrees));
-
-  // Cap total tiles to keep runtime bounded; increase tile size implicitly if needed.
-  const maxTilesTotal = 64;
-  const total = tilesX * tilesY;
-  if (total > maxTilesTotal) {
-    const factor = Math.sqrt(total / maxTilesTotal);
-    tilesX = Math.max(1, Math.ceil(tilesX / factor));
-    tilesY = Math.max(1, Math.ceil(tilesY / factor));
-  }
-
-  const dx = width / tilesX;
-  const dy = height / tilesY;
-
-  const envelopes: Envelope[] = [];
-  for (let ix = 0; ix < tilesX; ix++) {
-    for (let iy = 0; iy < tilesY; iy++) {
-      const exmin = xmin + ix * dx;
-      const exmax = ix === tilesX - 1 ? xmax : xmin + (ix + 1) * dx;
-      const eymin = ymin + iy * dy;
-      const eymax = iy === tilesY - 1 ? ymax : ymin + (iy + 1) * dy;
-      envelopes.push({
-        xmin: exmin,
-        ymin: eymin,
-        xmax: exmax,
-        ymax: eymax,
-        spatialReference: { wkid: 4326 },
-      });
-    }
-  }
-
-  return envelopes;
+  const cx = (xmin + xmax) / 2;
+  const cy = (ymin + ymax) / 2;
+  const half = maxDegrees / 2;
+  return [cx - half, cy - half, cx + half, cy + half];
 }
 
 function splitEnvelope(env: Envelope): Envelope[] {
@@ -86,34 +62,10 @@ function splitEnvelope(env: Envelope): Envelope[] {
   const midY = (env.ymin + env.ymax) / 2;
 
   return [
-    {
-      xmin: env.xmin,
-      ymin: env.ymin,
-      xmax: midX,
-      ymax: midY,
-      spatialReference: env.spatialReference,
-    },
-    {
-      xmin: midX,
-      ymin: env.ymin,
-      xmax: env.xmax,
-      ymax: midY,
-      spatialReference: env.spatialReference,
-    },
-    {
-      xmin: env.xmin,
-      ymin: midY,
-      xmax: midX,
-      ymax: env.ymax,
-      spatialReference: env.spatialReference,
-    },
-    {
-      xmin: midX,
-      ymin: midY,
-      xmax: env.xmax,
-      ymax: env.ymax,
-      spatialReference: env.spatialReference,
-    },
+    { xmin: env.xmin, ymin: env.ymin, xmax: midX, ymax: midY, spatialReference: env.spatialReference },
+    { xmin: midX, ymin: env.ymin, xmax: env.xmax, ymax: midY, spatialReference: env.spatialReference },
+    { xmin: env.xmin, ymin: midY, xmax: midX, ymax: env.ymax, spatialReference: env.spatialReference },
+    { xmin: midX, ymin: midY, xmax: env.xmax, ymax: env.ymax, spatialReference: env.spatialReference },
   ];
 }
 
@@ -130,10 +82,10 @@ async function fetchWithTimeout(url: string, ms: number): Promise<Response> {
   }
 }
 
-async function fetchFemaFloodZones(envelope: Envelope): Promise<FeatureCollection> {
-  // FEMA/ArcGIS often truncates results; page via resultOffset/resultRecordCount.
+async function fetchFema(envelope: Envelope): Promise<FeatureCollection> {
+  // Keep compute bounded: at most 2 pages per envelope.
   const pageSize = 500;
-  const maxPages = 10; // hard cap per tile
+  const maxPages = 2;
 
   const features: unknown[] = [];
 
@@ -157,41 +109,31 @@ async function fetchFemaFloodZones(envelope: Envelope): Promise<FeatureCollectio
     const femaUrl =
       `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?${params.toString()}`;
 
-    const res = await fetchWithTimeout(femaUrl, 12_000);
+    const res = await fetchWithTimeout(femaUrl, 8000);
     const text = await res.text();
 
     let parsed: any;
     try {
       parsed = JSON.parse(text);
     } catch {
-      throw new Error(
-        `FEMA non-JSON response (status ${res.status}): ${text.slice(0, 120)}`,
-      );
+      throw new Error(`FEMA non-JSON (status ${res.status}): ${text.slice(0, 120)}`);
     }
 
     if (!res.ok || parsed?.error) {
       const msg = parsed?.error ? JSON.stringify(parsed.error) : text.slice(0, 200);
-      throw new Error(`FEMA query failed (status ${res.status}): ${msg}`);
+      throw new Error(`FEMA error (status ${res.status}): ${msg}`);
     }
 
     const pageFeatures = Array.isArray(parsed?.features) ? parsed.features : [];
     if (pageFeatures.length) features.push(...pageFeatures);
 
-    // If we got less than a full page, we're done.
     if (pageFeatures.length < pageSize) break;
-
-    // Keep response bounded even if upstream keeps paging.
-    if (features.length >= 8000) break;
   }
 
-  return {
-    type: "FeatureCollection",
-    features,
-  };
+  return { type: "FeatureCollection", features };
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -199,7 +141,6 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
 
-    // Prefer JSON body (supports supabase.functions.invoke), fall back to querystring
     let bbox = url.searchParams.get("bbox") ?? undefined;
     if (!bbox && req.method !== "GET") {
       try {
@@ -224,62 +165,57 @@ serve(async (req) => {
       });
     }
 
-    const [xmin, ymin, xmax, ymax] = parsedBBox;
+    // Prevent huge extents (and repeated WORKER_LIMIT) by constraining to a small area.
+    const [xmin0, ymin0, xmax0, ymax0] = parsedBBox;
+    const [xmin, ymin, xmax, ymax] = constrainBBox(xmin0, ymin0, xmax0, ymax0, 0.25);
 
-    // Tile the bbox for reliability (FEMA intermittently 500s on larger extents)
-    const maxTileDegrees = 0.15;
-    const envelopes = tilesForBBox(xmin, ymin, xmax, ymax, maxTileDegrees);
+    const cacheKey = `${xmin.toFixed(4)},${ymin.toFixed(4)},${xmax.toFixed(4)},${ymax.toFixed(4)}`;
+    const cached = cache.get(cacheKey);
+    if (cached && cached.exp > Date.now()) {
+      return new Response(JSON.stringify(cached.value), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    console.log(
-      "Flood zones request",
-      { bbox: { xmin, ymin, xmax, ymax } },
-      "tiles:",
-      envelopes.length,
-    );
+    const env: Envelope = {
+      xmin,
+      ymin,
+      xmax,
+      ymax,
+      spatialReference: { wkid: 4326 },
+    };
 
-    const outFeatures: unknown[] = [];
-    let tilesOk = 0;
-    let tilesFailed = 0;
+    console.log("Flood zones request", { bbox: { xmin, ymin, xmax, ymax } });
 
-    // Sequential to avoid hammering the upstream; small tiles make each call fast.
-    for (const env of envelopes) {
-      try {
-        const fc = await fetchFemaFloodZones(env);
-        tilesOk += 1;
-        if (fc.features?.length) outFeatures.push(...fc.features);
-      } catch (e) {
-        tilesFailed += 1;
-        console.error("Tile fetch failed, retrying as sub-tiles:", { env }, String(e));
+    let fc: FeatureCollection;
+    try {
+      // Fast path: one constrained request
+      fc = await fetchFema(env);
+    } catch (e) {
+      // Retry path: split into 4 sub-tiles once (bounded)
+      console.error("Primary FEMA request failed, retrying sub-tiles:", String(e));
+      const subFeatures: unknown[] = [];
+      let ok = 0;
+      let fail = 0;
 
-        // Retry by splitting into 4 smaller envelopes
-        for (const sub of splitEnvelope(env)) {
-          try {
-            const fc = await fetchFemaFloodZones(sub);
-            tilesOk += 1;
-            if (fc.features?.length) outFeatures.push(...fc.features);
-          } catch (e2) {
-            tilesFailed += 1;
-            console.error("Sub-tile fetch failed:", { sub }, String(e2));
-          }
+      for (const sub of splitEnvelope(env)) {
+        try {
+          const subFc = await fetchFema(sub);
+          ok += 1;
+          if (subFc.features?.length) subFeatures.push(...subFc.features);
+        } catch (e2) {
+          fail += 1;
+          console.error("Sub-tile failed:", String(e2));
         }
       }
 
-      // Hard cap the overall response size
-      if (outFeatures.length >= 12000) break;
+      console.log("Sub-tile summary", { ok, fail, features: subFeatures.length });
+      fc = { type: "FeatureCollection", features: subFeatures };
     }
 
-    console.log("Flood zones done", {
-      tilesOk,
-      tilesFailed,
-      features: outFeatures.length,
-    });
+    cache.set(cacheKey, { exp: Date.now() + CACHE_TTL_MS, value: fc });
 
-    const out: FeatureCollection = {
-      type: "FeatureCollection",
-      features: outFeatures,
-    };
-
-    return new Response(JSON.stringify(out), {
+    return new Response(JSON.stringify(fc), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
