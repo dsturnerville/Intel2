@@ -312,23 +312,48 @@ export type Database = {
           acquisition_date: string | null
           acquisition_price: number | null
           address: string
+          asset_id: string | null
+          asset_id_counter: number | null
+          brown_water: string | null
+          category: string | null
           city: string
+          cost_basis: number | null
+          county: string | null
           created_at: string
           created_by: string | null
           current_rent: number | null
+          date_purchased: string | null
+          date_sold: string | null
+          deals_id: string[] | null
           estimated_market_value: number | null
+          funds_id: number | null
+          has_pool: boolean | null
+          hoa_id: number | null
           id: string
           images: Json | null
           last_appraisal_date: string | null
           last_appraisal_value: number | null
           latitude: number | null
           lease_end_date: string | null
+          legal_description: string | null
           longitude: number | null
           lot_size: number | null
           market: string
+          markets_id: number | null
           occupancy_status: Database["public"]["Enums"]["occupancy_status"]
+          portfolios_id: number | null
+          property_type: string | null
+          purchase_price: number | null
+          renovation_date: string | null
+          school_score: number | null
+          source: string | null
+          source_name: string | null
           state: string
+          subdivision: string | null
           updated_at: string
+          uw_arv: number | null
+          uw_capex: number | null
+          uw_rent: number | null
           year_built: number | null
           zip_code: string
         }
@@ -337,23 +362,48 @@ export type Database = {
           acquisition_date?: string | null
           acquisition_price?: number | null
           address: string
+          asset_id?: string | null
+          asset_id_counter?: number | null
+          brown_water?: string | null
+          category?: string | null
           city: string
+          cost_basis?: number | null
+          county?: string | null
           created_at?: string
           created_by?: string | null
           current_rent?: number | null
+          date_purchased?: string | null
+          date_sold?: string | null
+          deals_id?: string[] | null
           estimated_market_value?: number | null
+          funds_id?: number | null
+          has_pool?: boolean | null
+          hoa_id?: number | null
           id?: string
           images?: Json | null
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
           latitude?: number | null
           lease_end_date?: string | null
+          legal_description?: string | null
           longitude?: number | null
           lot_size?: number | null
           market: string
+          markets_id?: number | null
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          portfolios_id?: number | null
+          property_type?: string | null
+          purchase_price?: number | null
+          renovation_date?: string | null
+          school_score?: number | null
+          source?: string | null
+          source_name?: string | null
           state: string
+          subdivision?: string | null
           updated_at?: string
+          uw_arv?: number | null
+          uw_capex?: number | null
+          uw_rent?: number | null
           year_built?: number | null
           zip_code: string
         }
@@ -362,23 +412,48 @@ export type Database = {
           acquisition_date?: string | null
           acquisition_price?: number | null
           address?: string
+          asset_id?: string | null
+          asset_id_counter?: number | null
+          brown_water?: string | null
+          category?: string | null
           city?: string
+          cost_basis?: number | null
+          county?: string | null
           created_at?: string
           created_by?: string | null
           current_rent?: number | null
+          date_purchased?: string | null
+          date_sold?: string | null
+          deals_id?: string[] | null
           estimated_market_value?: number | null
+          funds_id?: number | null
+          has_pool?: boolean | null
+          hoa_id?: number | null
           id?: string
           images?: Json | null
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
           latitude?: number | null
           lease_end_date?: string | null
+          legal_description?: string | null
           longitude?: number | null
           lot_size?: number | null
           market?: string
+          markets_id?: number | null
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          portfolios_id?: number | null
+          property_type?: string | null
+          purchase_price?: number | null
+          renovation_date?: string | null
+          school_score?: number | null
+          source?: string | null
+          source_name?: string | null
           state?: string
+          subdivision?: string | null
           updated_at?: string
+          uw_arv?: number | null
+          uw_capex?: number | null
+          uw_rent?: number | null
           year_built?: number | null
           zip_code?: string
         }
