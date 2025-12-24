@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Map as MapIcon, ExternalLink, Satellite } from 'lucide-react';
+import { Map as MapIcon, ExternalLink, Satellite, Maximize, Minimize } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 
 interface PropertyMapProps {
@@ -18,6 +18,7 @@ const MAPBOX_TOKEN_KEY = 'mapbox_access_token';
 
 export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [accessToken, setAccessToken] = useState<string>(() => {
@@ -26,6 +27,36 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const [tokenInput, setTokenInput] = useState('');
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
   const [isSatellite, setIsSatellite] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Handle fullscreen toggle
+  const toggleFullscreen = async () => {
+    if (!mapWrapperRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await mapWrapperRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
+  // Listen for fullscreen changes (e.g., user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // Resize map when fullscreen changes
+      setTimeout(() => map.current?.resize(), 100);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Get the appropriate map style based on satellite toggle
   const getMapStyle = () => {
@@ -338,7 +369,12 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   }
 
   return (
-    <div className="relative w-full h-[500px] rounded-lg overflow-hidden border border-border">
+    <div 
+      ref={mapWrapperRef}
+      className={`relative w-full rounded-lg overflow-hidden border border-border bg-background ${
+        isFullscreen ? 'h-screen' : 'h-[500px]'
+      }`}
+    >
       <div ref={mapContainer} className="absolute inset-0" />
       {properties.filter((p) => p.property.latitude && p.property.longitude).length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/80">
@@ -347,7 +383,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       )}
       
       {/* Map style controls */}
-      <div className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border">
+      <div className="absolute top-2 left-2 flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border">
         <Toggle 
           pressed={isSatellite} 
           onPressedChange={setIsSatellite}
@@ -357,13 +393,22 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         >
           <Satellite className="h-4 w-4" />
         </Toggle>
+        <Toggle 
+          pressed={isFullscreen} 
+          onPressedChange={toggleFullscreen}
+          size="sm"
+          aria-label="Toggle fullscreen"
+          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+        </Toggle>
       </div>
 
       <Button 
         variant="ghost" 
         size="sm" 
         onClick={handleClearToken}
-        className="absolute bottom-2 right-2 text-xs opacity-50 hover:opacity-100"
+        className="absolute bottom-2 right-2 text-xs opacity-50 hover:opacity-100 bg-background/50"
       >
         Change token
       </Button>
