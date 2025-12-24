@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Save, User } from 'lucide-react';
+import { Loader2, Save, User, Upload, X } from 'lucide-react';
 
 interface ProfileData {
   full_name: string;
@@ -20,11 +20,13 @@ export default function Profile() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     full_name: '',
     email: '',
     avatar_url: null,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -51,7 +53,6 @@ export default function Profile() {
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
-      // Fallback to user metadata if profile doesn't exist
       setProfile({
         full_name: user.user_metadata?.full_name || '',
         email: user.email || '',
@@ -59,6 +60,95 @@ export default function Profile() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload the file
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      // Update the profile with the new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile((prev) => ({ ...prev, avatar_url: avatarUrl }));
+      toast.success('Profile picture updated');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Failed to upload profile picture');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user || !profile.avatar_url) return;
+
+    setUploading(true);
+    try {
+      // List files in user's folder
+      const { data: files } = await supabase.storage
+        .from('avatars')
+        .list(user.id);
+
+      if (files && files.length > 0) {
+        const filesToRemove = files.map((file) => `${user.id}/${file.name}`);
+        await supabase.storage.from('avatars').remove(filesToRemove);
+      }
+
+      // Update profile to remove avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile((prev) => ({ ...prev, avatar_url: null }));
+      toast.success('Profile picture removed');
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast.error('Failed to remove profile picture');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -71,7 +161,6 @@ export default function Profile() {
         .from('profiles')
         .update({
           full_name: profile.full_name,
-          avatar_url: profile.avatar_url,
         })
         .eq('id', user.id);
 
@@ -128,17 +217,53 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xl font-medium">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-1">
+                <div className="relative">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={profile.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-xl font-medium">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <p className="text-sm font-medium">Profile Picture</p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                    </Button>
+                    {profile.avatar_url && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemoveAvatar}
+                        disabled={uploading}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Remove
+                      </Button>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Avatar URL can be updated below
+                    JPG, PNG or GIF. Max 5MB.
                   </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
                 </div>
               </div>
 
@@ -168,18 +293,6 @@ export default function Profile() {
                   <p className="text-xs text-muted-foreground">
                     Email cannot be changed here
                   </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="avatar_url">Avatar URL</Label>
-                  <Input
-                    id="avatar_url"
-                    value={profile.avatar_url || ''}
-                    onChange={(e) =>
-                      setProfile({ ...profile, avatar_url: e.target.value || null })
-                    }
-                    placeholder="https://example.com/avatar.png"
-                  />
                 </div>
               </div>
 
