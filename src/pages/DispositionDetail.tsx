@@ -184,9 +184,9 @@ export default function DispositionDetail() {
       return;
     }
 
-    // Save property-level underwriting changes
+    // Save property-level underwriting changes (including calculated outputs)
     const propertyUpdatePromises = properties.map(async (dp) => {
-      return updateDispositionProperty(dp.id, dp.inputs);
+      return updateDispositionProperty(dp.id, dp.inputs, dp.outputs);
     });
 
     const propertyResults = await Promise.all(propertyUpdatePromises);

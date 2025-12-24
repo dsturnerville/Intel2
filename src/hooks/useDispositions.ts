@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Disposition, DispositionProperty, Property, DispositionDefaults, PropertyUnderwritingInputs } from '@/types/disposition';
+import { Disposition, DispositionProperty, Property, DispositionDefaults, PropertyUnderwritingInputs, PropertyUnderwritingOutputs } from '@/types/disposition';
 import { calculatePropertyUnderwriting, calculateDispositionAggregates } from '@/utils/calculations';
 import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -545,7 +545,8 @@ export function useDispositionMutations() {
 
   const updateDispositionProperty = async (
     dispositionPropertyId: string,
-    inputs: PropertyUnderwritingInputs
+    inputs: PropertyUnderwritingInputs,
+    outputs?: PropertyUnderwritingOutputs
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       setSaving(true);
@@ -563,6 +564,23 @@ export function useDispositionMutations() {
         holding_period_months: inputs.holdingPeriodMonths ?? null,
         updated_at: new Date().toISOString(),
       };
+
+      // Also save calculated outputs if provided
+      if (outputs) {
+        dbUpdates.projected_sale_price = outputs.projectedSalePrice;
+        dbUpdates.gross_sale_proceeds = outputs.grossSaleProceeds;
+        dbUpdates.broker_commission = outputs.brokerCommission;
+        dbUpdates.closing_costs = outputs.closingCosts;
+        dbUpdates.seller_concessions = outputs.sellerConcessions;
+        dbUpdates.make_ready_capex = outputs.makeReadyCapex;
+        dbUpdates.total_selling_costs = outputs.totalSellingCosts;
+        dbUpdates.net_sale_proceeds = outputs.netSaleProceeds;
+        dbUpdates.gain_loss_vs_basis = outputs.gainLossVsBasis;
+        dbUpdates.gain_loss_percent = outputs.gainLossPercent;
+        dbUpdates.simple_return = outputs.simpleReturn;
+        dbUpdates.annualized_return = outputs.annualizedReturn ?? null;
+        dbUpdates.hold_period_years = outputs.holdPeriodYears;
+      }
 
       const { error } = await supabase
         .from('disposition_properties')
