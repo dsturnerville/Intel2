@@ -7,7 +7,7 @@ const Index = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navigation */}
       <nav className="border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="container flex items-center justify-between h-16">
+        <div className="px-6 flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-primary/10 rounded-lg">
               <Building2 className="h-5 w-5 text-primary" />
@@ -95,7 +95,7 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border py-6">
-        <div className="container text-center text-sm text-muted-foreground">
+        <div className="px-6 text-center text-sm text-muted-foreground">
           <p>PropVest Disposition Underwriting Module</p>
         </div>
       </footer>

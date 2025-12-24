@@ -120,7 +120,7 @@ export function NewDispositionForm() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container py-4">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/dispositions">
@@ -149,7 +149,7 @@ export function NewDispositionForm() {
         </div>
       </header>
 
-      <main className="container py-6">
+      <main className="px-6 py-6">
         <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl">
           {/* Basic Info */}
           <Card className="border-border bg-card">
