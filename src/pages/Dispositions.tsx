@@ -213,7 +213,7 @@ export default function Dispositions() {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-input border-border"
+              className="pl-10 bg-transparent border-border"
             />
           </div>
 
@@ -318,7 +318,7 @@ export default function Dispositions() {
           {/* Desktop Multi-Select Filters */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[160px] justify-between bg-input border-border hidden md:flex">
+              <Button variant="outline" className="w-[160px] justify-between bg-transparent border-border hidden md:flex">
                 <span className="truncate">{getStatusFilterLabel()}</span>
                 <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
               </Button>
@@ -355,7 +355,7 @@ export default function Dispositions() {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[160px] justify-between bg-input border-border hidden md:flex">
+              <Button variant="outline" className="w-[160px] justify-between bg-transparent border-border hidden md:flex">
                 <span className="truncate">{getTypeFilterLabel()}</span>
                 <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
               </Button>
@@ -392,7 +392,7 @@ export default function Dispositions() {
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[180px] justify-between bg-input border-border hidden md:flex">
+              <Button variant="outline" className="w-[180px] justify-between bg-transparent border-border hidden md:flex">
                 <span className="truncate">{getMarketFilterLabel()}</span>
                 <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
               </Button>
