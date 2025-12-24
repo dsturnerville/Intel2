@@ -110,6 +110,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           justify-content: center;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           transition: transform 0.2s ease;
+          transform-origin: center center;
         `;
         el.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
