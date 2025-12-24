@@ -44,6 +44,8 @@ import {
   LayoutDashboard,
   Settings,
   Handshake,
+  List,
+  Map,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -59,6 +61,7 @@ export default function DispositionDetail() {
   const [properties, setProperties] = useState<DispositionProperty[]>([]);
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Mutations
   const { 
@@ -313,15 +316,35 @@ export default function DispositionDetail() {
                   Properties ({properties.length})
                 </h3>
                 {!isReadOnly && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsAddPropertyOpen(true)}
-                    className="gap-2"
-                  >
-                    <Plus className="h-3 w-3" />
-                    Add Properties
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsAddPropertyOpen(true)}
+                      className="gap-2"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Add Properties
+                    </Button>
+                    <div className="flex border border-border rounded-md">
+                      <Button
+                        variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('list')}
+                        className="rounded-r-none border-r border-border"
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === 'map' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('map')}
+                        className="rounded-l-none"
+                      >
+                        <Map className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
 
