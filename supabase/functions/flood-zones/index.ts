@@ -15,6 +15,108 @@ const emptyFeatureCollection: FeatureCollection = {
   features: [],
 };
 
+type Envelope = {
+  xmin: number;
+  ymin: number;
+  xmax: number;
+  ymax: number;
+  spatialReference: { wkid: 4326 };
+};
+
+function parseBBox(bbox: string): [number, number, number, number] | null {
+  const parts = bbox.split(",").map((v) => Number(v));
+  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return null;
+  const [xmin, ymin, xmax, ymax] = parts;
+  if (xmin === xmax || ymin === ymax) return null;
+  return [Math.min(xmin, xmax), Math.min(ymin, ymax), Math.max(xmin, xmax), Math.max(ymin, ymax)];
+}
+
+function tilesForBBox(
+  xmin: number,
+  ymin: number,
+  xmax: number,
+  ymax: number,
+  maxTileDegrees: number,
+): Envelope[] {
+  const width = xmax - xmin;
+  const height = ymax - ymin;
+
+  const tilesX = Math.min(Math.max(1, Math.ceil(width / maxTileDegrees)), 4);
+  const tilesY = Math.min(Math.max(1, Math.ceil(height / maxTileDegrees)), 4);
+
+  const dx = width / tilesX;
+  const dy = height / tilesY;
+
+  const envelopes: Envelope[] = [];
+  for (let ix = 0; ix < tilesX; ix++) {
+    for (let iy = 0; iy < tilesY; iy++) {
+      const exmin = xmin + ix * dx;
+      const exmax = ix === tilesX - 1 ? xmax : xmin + (ix + 1) * dx;
+      const eymin = ymin + iy * dy;
+      const eymax = iy === tilesY - 1 ? ymax : ymin + (iy + 1) * dy;
+      envelopes.push({
+        xmin: exmin,
+        ymin: eymin,
+        xmax: exmax,
+        ymax: eymax,
+        spatialReference: { wkid: 4326 },
+      });
+    }
+  }
+
+  return envelopes;
+}
+
+async function fetchFemaFloodZones(envelope: Envelope): Promise<FeatureCollection> {
+  // ArcGIS REST expects an envelope object (JSON) for geometryType=esriGeometryEnvelope
+  const params = new URLSearchParams({
+    where: "1=1",
+    outFields: "FLD_ZONE,ZONE_SUBTY",
+    geometry: JSON.stringify(envelope),
+    geometryType: "esriGeometryEnvelope",
+    inSR: "4326",
+    spatialRel: "esriSpatialRelIntersects",
+    outSR: "4326",
+    returnGeometry: "true",
+    f: "geojson",
+    resultRecordCount: "500",
+  });
+
+  const femaUrl =
+    `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?${params.toString()}`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
+  try {
+    const res = await fetch(femaUrl, {
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+
+    const text = await res.text();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      throw new Error(`FEMA non-JSON response (status ${res.status}): ${text.slice(0, 120)}`);
+    }
+
+    if (!res.ok || parsed?.error) {
+      const msg = parsed?.error ? JSON.stringify(parsed.error) : text.slice(0, 200);
+      throw new Error(`FEMA query failed (status ${res.status}): ${msg}`);
+    }
+
+    return {
+      type: "FeatureCollection",
+      features: Array.isArray(parsed?.features) ? parsed.features : [],
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -36,98 +138,59 @@ serve(async (req) => {
     }
 
     if (!bbox || typeof bbox !== "string") {
-      console.log("No bbox provided, returning empty");
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const parts = bbox.split(",").map((v) => Number(v));
-    if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) {
-      console.log("Invalid bbox format:", bbox);
+    const parsedBBox = parseBBox(bbox);
+    if (!parsedBBox) {
+      console.log("Invalid bbox:", bbox);
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    let [xmin, ymin, xmax, ymax] = parts;
+    const [xmin, ymin, xmax, ymax] = parsedBBox;
 
-    // Limit bbox size to prevent FEMA API timeouts (max ~0.5 degrees)
-    const maxDegrees = 0.5;
-    const centerX = (xmin + xmax) / 2;
-    const centerY = (ymin + ymax) / 2;
-    
-    if ((xmax - xmin) > maxDegrees || (ymax - ymin) > maxDegrees) {
-      xmin = centerX - maxDegrees / 2;
-      xmax = centerX + maxDegrees / 2;
-      ymin = centerY - maxDegrees / 2;
-      ymax = centerY + maxDegrees / 2;
-      console.log("Bbox too large, constraining to:", { xmin, ymin, xmax, ymax });
+    // FEMA can intermittently 500 on large/extents; tile the bbox to improve reliability.
+    const maxTileDegrees = 0.2;
+    const envelopes = tilesForBBox(xmin, ymin, xmax, ymax, maxTileDegrees);
+
+    console.log(
+      "Flood zones request",
+      { bbox: { xmin, ymin, xmax, ymax } },
+      "tiles:",
+      envelopes.length,
+    );
+
+    const features: unknown[] = [];
+    let successes = 0;
+    let failures = 0;
+
+    // Sequential to avoid hammering the upstream; keep it simple and predictable.
+    for (const env of envelopes) {
+      try {
+        const fc = await fetchFemaFloodZones(env);
+        successes += 1;
+        if (fc.features?.length) features.push(...fc.features);
+
+        // Hard cap to keep response bounded
+        if (features.length >= 2000) break;
+      } catch (e) {
+        failures += 1;
+        console.error("Tile fetch failed:", { env }, String(e));
+      }
     }
 
-    // ArcGIS REST expects an envelope object (JSON) for geometryType=esriGeometryEnvelope
-    const geometry = {
-      xmin,
-      ymin,
-      xmax,
-      ymax,
-      spatialReference: { wkid: 4326 },
-    };
+    console.log("Flood zones done", { successes, failures, features: features.length });
 
-    const params = new URLSearchParams({
-      where: "1=1",
-      outFields: "FLD_ZONE,ZONE_SUBTY",
-      geometry: JSON.stringify(geometry),
-      geometryType: "esriGeometryEnvelope",
-      inSR: "4326",
-      spatialRel: "esriSpatialRelIntersects",
-      outSR: "4326",
-      returnGeometry: "true",
-      f: "geojson",
-      resultRecordCount: "500", // Limit results to prevent timeout
-    });
-
-    // Use /arcgis/rest (more reliable) rather than /gis/nfhl/rest
-    const femaUrl =
-      `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?${params.toString()}`;
-
-    console.log("Fetching from FEMA:", femaUrl.slice(0, 200));
-
-    const response = await fetch(femaUrl, {
-      headers: { Accept: "application/json" },
-    });
-
-    const text = await response.text();
-
-    let parsed: any;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      console.error("FEMA response not JSON", response.status, text.slice(0, 500));
-      return new Response(JSON.stringify(emptyFeatureCollection), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (!response.ok || parsed?.error) {
-      console.error(
-        "FEMA API error",
-        response.status,
-        JSON.stringify(parsed?.error ?? text.slice(0, 500)),
-      );
-      return new Response(JSON.stringify(emptyFeatureCollection), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const geojson: FeatureCollection = {
+    const out: FeatureCollection = {
       type: "FeatureCollection",
-      features: Array.isArray(parsed?.features) ? parsed.features : [],
+      features,
     };
 
-    console.log("Returning", geojson.features.length, "flood zone features");
-
-    return new Response(JSON.stringify(geojson), {
+    return new Response(JSON.stringify(out), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
