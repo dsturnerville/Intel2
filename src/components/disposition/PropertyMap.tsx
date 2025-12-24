@@ -221,35 +221,22 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         const imageAlt = firstImage?.title || 'Property';
         
         const popupContent = `
-          <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 240px;">
-            <div style="margin: -10px -10px 12px -10px; border-radius: 8px 8px 0 0; overflow: hidden;">
+          <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
+            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden;">
               <img 
                 src="${imageUrl}" 
                 alt="${imageAlt}" 
-                style="width: 100%; height: 140px; object-fit: cover; display: block;"
+                style="width: 100%; height: 100px; object-fit: cover; display: block;"
               />
             </div>
-            <div style="font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px;">
+            <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
               ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
+              ${gainLossPercent !== null ? `<span style="font-size: 12px; font-weight: 500; color: ${gainLossColor};"> ${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>` : ''}
             </div>
-            <div style="font-size: 13px; color: #666; margin-bottom: 12px;">
-              ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Projected Sale Price'}
+            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+              ${dp.property.beds} Beds, ${dp.property.baths} Baths, ${dp.property.sqft?.toLocaleString() || '—'} sqft
             </div>
-            <div style="display: flex; gap: 16px; font-size: 12px; margin-bottom: 12px;">
-              ${gainLossPercent !== null ? `
-                <div>
-                  <span style="color: #888;">Gain/Loss</span>
-                  <span style="margin-left: 6px; font-weight: 600; color: ${gainLossColor};">${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>
-                </div>
-              ` : ''}
-              ${dp.inputs.capRate ? `
-                <div>
-                  <span style="color: #888;">Cap Rate</span>
-                  <span style="margin-left: 6px; font-weight: 600; color: #1a1a2e;">${(dp.inputs.capRate * 100).toFixed(1)}%</span>
-                </div>
-              ` : ''}
-            </div>
-            <div style="font-size: 13px; color: #7c3aed; font-weight: 500;">
+            <div style="font-size: 11px; color: #999;">
               ${dp.property.address}, ${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}
             </div>
           </div>
@@ -259,7 +246,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           offset: 25,
           closeButton: true,
           closeOnClick: false,
-          maxWidth: '300px',
+          maxWidth: '220px',
           className: 'custom-popup',
         }).setHTML(popupContent);
 
