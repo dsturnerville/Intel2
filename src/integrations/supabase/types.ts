@@ -322,7 +322,9 @@ export type Database = {
           id: string
           last_appraisal_date: string | null
           last_appraisal_value: number | null
+          latitude: number | null
           lease_end_date: string | null
+          longitude: number | null
           lot_size: number | null
           market: string
           occupancy_status: Database["public"]["Enums"]["occupancy_status"]
@@ -347,7 +349,9 @@ export type Database = {
           id?: string
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
+          latitude?: number | null
           lease_end_date?: string | null
+          longitude?: number | null
           lot_size?: number | null
           market: string
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
@@ -372,7 +376,9 @@ export type Database = {
           id?: string
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
+          latitude?: number | null
           lease_end_date?: string | null
+          longitude?: number | null
           lot_size?: number | null
           market?: string
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
