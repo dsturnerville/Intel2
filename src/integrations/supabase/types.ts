@@ -312,8 +312,6 @@ export type Database = {
           acquisition_date: string | null
           acquisition_price: number | null
           address: string
-          baths: number
-          beds: number
           city: string
           created_at: string
           created_by: string | null
@@ -329,7 +327,6 @@ export type Database = {
           lot_size: number | null
           market: string
           occupancy_status: Database["public"]["Enums"]["occupancy_status"]
-          sqft: number
           state: string
           updated_at: string
           year_built: number | null
@@ -340,8 +337,6 @@ export type Database = {
           acquisition_date?: string | null
           acquisition_price?: number | null
           address: string
-          baths?: number
-          beds?: number
           city: string
           created_at?: string
           created_by?: string | null
@@ -357,7 +352,6 @@ export type Database = {
           lot_size?: number | null
           market: string
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
-          sqft?: number
           state: string
           updated_at?: string
           year_built?: number | null
@@ -368,8 +362,6 @@ export type Database = {
           acquisition_date?: string | null
           acquisition_price?: number | null
           address?: string
-          baths?: number
-          beds?: number
           city?: string
           created_at?: string
           created_by?: string | null
@@ -385,7 +377,6 @@ export type Database = {
           lot_size?: number | null
           market?: string
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
-          sqft?: number
           state?: string
           updated_at?: string
           year_built?: number | null

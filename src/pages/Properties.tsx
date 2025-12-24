@@ -35,9 +35,6 @@ import {
   X,
   Loader2,
   MapPin,
-  Bed,
-  Bath,
-  Square,
   ChevronRight,
   SlidersHorizontal,
   ChevronDown,
@@ -58,9 +55,6 @@ interface PropertyRow {
   state: string;
   zip_code: string;
   market: string;
-  beds: number;
-  baths: number;
-  sqft: number;
   year_built: number | null;
   occupancy_status: 'Occupied' | 'Vacant' | 'Notice Given';
   current_rent: number | null;
@@ -428,12 +422,6 @@ export default function Properties() {
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">
                   Market
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center hidden md:table-cell">
-                  Beds/Baths
-                </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center hidden lg:table-cell">
-                  Sqft
-                </TableHead>
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">
                   Status
                 </TableHead>
@@ -488,24 +476,6 @@ export default function Properties() {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <span className="text-sm text-muted-foreground">{property.market}</span>
-                    </TableCell>
-                    <TableCell className="text-center hidden md:table-cell">
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Bed className="h-3 w-3" />
-                          {property.beds}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Bath className="h-3 w-3" />
-                          {property.baths}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center hidden lg:table-cell">
-                      <span className="font-mono text-sm text-muted-foreground flex items-center justify-center gap-1">
-                        <Square className="h-3 w-3" />
-                        {property.sqft.toLocaleString()}
-                      </span>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any}>

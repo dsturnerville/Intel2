@@ -10,9 +10,6 @@ import {
   ArrowLeft,
   Loader2,
   MapPin,
-  Bed,
-  Bath,
-  Square,
   Calendar,
   DollarSign,
   Home,
@@ -40,9 +37,6 @@ interface PropertyDetail {
   state: string;
   zip_code: string;
   market: string;
-  beds: number;
-  baths: number;
-  sqft: number;
   year_built: number | null;
   lot_size: number | null;
   occupancy_status: 'Occupied' | 'Vacant' | 'Notice Given';
@@ -170,33 +164,19 @@ export default function PropertyDetail() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Bed className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Bedrooms</p>
-                      <p className="font-medium">{property.beds}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Bath className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Bathrooms</p>
-                      <p className="font-medium">{property.baths}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Square className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Sqft</p>
-                      <p className="font-medium">{property.sqft.toLocaleString()}</p>
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Year Built</p>
                       <p className="font-medium">{property.year_built || '—'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Home className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Market</p>
+                      <p className="font-medium">{property.market}</p>
                     </div>
                   </div>
                 </div>
@@ -209,10 +189,6 @@ export default function PropertyDetail() {
                     <p className="font-medium">
                       {property.lot_size ? `${property.lot_size.toLocaleString()} sqft` : '—'}
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Market</p>
-                    <p className="font-medium">{property.market}</p>
                   </div>
                 </div>
 

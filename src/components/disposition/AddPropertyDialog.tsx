@@ -123,7 +123,7 @@ export function AddPropertyDialog({
                     {formatCurrency(property.estimatedMarketValue)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {property.beds}bd / {property.baths}ba • {property.sqft.toLocaleString()} sqft
+                    {property.market}
                   </p>
                 </div>
               </div>
