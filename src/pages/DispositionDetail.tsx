@@ -1,8 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -18,13 +16,13 @@ import { UnderwritingDefaults } from '@/components/disposition/UnderwritingDefau
 import { PortfolioSummary } from '@/components/disposition/PortfolioSummary';
 import { AddPropertyDialog } from '@/components/disposition/AddPropertyDialog';
 import { LinkedDeal } from '@/components/disposition/LinkedDeal';
+import { UserMenu } from '@/components/UserMenu';
 import {
-  getDispositionById,
-  getDispositionProperties,
-  getAvailableProperties,
-  getDealByDispositionId,
-  mockProperties,
-} from '@/data/mockData';
+  useDisposition,
+  useDispositionProperties,
+  useAvailableProperties,
+  useDispositionMutations,
+} from '@/hooks/useDispositions';
 import {
   calculateDispositionAggregates,
   calculatePropertyUnderwriting,
@@ -43,32 +41,52 @@ import {
   User,
   FileText,
   Building2,
+  Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DispositionDetail() {
   const { id } = useParams<{ id: string }>();
 
-  // Get initial data
-  const initialDisposition = id ? getDispositionById(id) : undefined;
-  const initialProperties = id ? getDispositionProperties(id) : [];
-  const linkedDeal = id ? getDealByDispositionId(id) : undefined;
-
+  // Fetch data from database
+  const { disposition: dbDisposition, loading: dispositionLoading, refetch: refetchDisposition } = useDisposition(id);
+  const { properties: dbProperties, loading: propertiesLoading, refetch: refetchProperties } = useDispositionProperties(id);
+  
   // Local state for editing
-  const [disposition, setDisposition] = useState<Disposition | undefined>(initialDisposition);
-  const [properties, setProperties] = useState<DispositionProperty[]>(initialProperties);
+  const [disposition, setDisposition] = useState<Disposition | null>(null);
+  const [properties, setProperties] = useState<DispositionProperty[]>([]);
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Mutations
+  const { 
+    saving, 
+    updateDisposition, 
+    addPropertiesToDisposition, 
+    removePropertyFromDisposition,
+    applyDefaultsToAllProperties 
+  } = useDispositionMutations();
+
+  // Available properties for add dialog
+  const existingPropertyIds = useMemo(() => properties.map(p => p.propertyId), [properties]);
+  const { properties: availableProperties } = useAvailableProperties(existingPropertyIds);
+
+  // Sync database data to local state
+  useEffect(() => {
+    if (dbDisposition) {
+      setDisposition(dbDisposition);
+    }
+  }, [dbDisposition]);
+
+  useEffect(() => {
+    if (dbProperties) {
+      setProperties(dbProperties);
+    }
+  }, [dbProperties]);
 
   // Calculate aggregates whenever properties change
   const aggregates = useMemo(() => {
     return calculateDispositionAggregates(properties);
-  }, [properties]);
-
-  // Available properties (not already in this disposition)
-  const availableProperties = useMemo(() => {
-    const existingIds = properties.map((p) => p.propertyId);
-    return getAvailableProperties(existingIds);
   }, [properties]);
 
   // Handlers
@@ -84,25 +102,36 @@ export default function DispositionDetail() {
     setHasChanges(true);
   };
 
-  const handleApplyDefaultsToAll = useCallback(() => {
-    if (!disposition) return;
+  const handleApplyDefaultsToAll = useCallback(async () => {
+    if (!disposition || !id) return;
 
-    const updatedProperties = properties.map((dp) => {
-      const newInputs = { ...dp.inputs, useDispositionDefaults: true };
-      const newOutputs = calculatePropertyUnderwriting(dp.property, newInputs, disposition.defaults);
-      return { ...dp, inputs: newInputs, outputs: newOutputs };
-    });
+    const result = await applyDefaultsToAllProperties(id);
+    if (result.success) {
+      // Recalculate all properties with defaults
+      const updatedProperties = properties.map((dp) => {
+        const newInputs = { ...dp.inputs, useDispositionDefaults: true };
+        const newOutputs = calculatePropertyUnderwriting(dp.property, newInputs, disposition.defaults);
+        return { ...dp, inputs: newInputs, outputs: newOutputs };
+      });
+      setProperties(updatedProperties);
+      toast.success('Applied defaults to all properties');
+    } else {
+      toast.error(result.error || 'Failed to apply defaults');
+    }
+  }, [disposition, properties, id, applyDefaultsToAllProperties]);
 
-    setProperties(updatedProperties);
-    setHasChanges(true);
-    toast.success('Applied defaults to all properties');
-  }, [disposition, properties]);
+  const handleRemoveProperty = useCallback(async (propertyId: string) => {
+    const dp = properties.find(p => p.propertyId === propertyId);
+    if (!dp) return;
 
-  const handleRemoveProperty = useCallback((propertyId: string) => {
-    setProperties((prev) => prev.filter((p) => p.propertyId !== propertyId));
-    setHasChanges(true);
-    toast.success('Property removed from disposition');
-  }, []);
+    const result = await removePropertyFromDisposition(dp.id);
+    if (result.success) {
+      setProperties((prev) => prev.filter((p) => p.propertyId !== propertyId));
+      toast.success('Property removed from disposition');
+    } else {
+      toast.error(result.error || 'Failed to remove property');
+    }
+  }, [properties, removePropertyFromDisposition]);
 
   const handleUpdateProperty = useCallback(
     (propertyId: string, updates: Partial<DispositionProperty>) => {
@@ -115,44 +144,56 @@ export default function DispositionDetail() {
   );
 
   const handleAddProperties = useCallback(
-    (propertyIds: string[]) => {
-      if (!disposition) return;
+    async (propertyIds: string[]) => {
+      if (!disposition || !id) return;
 
-      const newProperties: DispositionProperty[] = propertyIds
-        .map((propId) => {
-          const property = mockProperties.find((p) => p.id === propId);
-          if (!property) return null;
-
-          const inputs = { useDispositionDefaults: true };
-          const outputs = calculatePropertyUnderwriting(property, inputs, disposition.defaults);
-
-          return {
-            id: `dp-${Date.now()}-${propId}`,
-            dispositionId: disposition.id,
-            propertyId: propId,
-            property,
-            inputs,
-            outputs,
-          };
-        })
-        .filter((p): p is DispositionProperty => p !== null);
-
-      setProperties((prev) => [...prev, ...newProperties]);
-      setHasChanges(true);
-      toast.success(`Added ${newProperties.length} properties`);
+      const result = await addPropertiesToDisposition(id, propertyIds);
+      if (result.success) {
+        await refetchProperties();
+        toast.success(`Added ${propertyIds.length} properties`);
+      } else {
+        toast.error(result.error || 'Failed to add properties');
+      }
     },
-    [disposition]
+    [disposition, id, addPropertiesToDisposition, refetchProperties]
   );
 
-  const handleSave = () => {
-    // In a real app, this would save to the backend
-    setHasChanges(false);
-    toast.success('Disposition saved successfully');
+  const handleSave = async () => {
+    if (!disposition || !id) return;
+
+    const result = await updateDisposition(id, {
+      status: disposition.status,
+      defaults: disposition.defaults,
+      name: disposition.name,
+      investmentThesis: disposition.investmentThesis,
+      exitStrategyNotes: disposition.exitStrategyNotes,
+      targetListDate: disposition.targetListDate,
+      targetCloseDate: disposition.targetCloseDate,
+    });
+
+    if (result.success) {
+      setHasChanges(false);
+      toast.success('Disposition saved successfully');
+    } else {
+      toast.error(result.error || 'Failed to save disposition');
+    }
   };
 
   const handleCreateDeal = () => {
     toast.info('Create Deal functionality would be implemented here');
   };
+
+  // Loading state
+  if (dispositionLoading || propertiesLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Loading disposition...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!disposition) {
     return (
@@ -190,7 +231,7 @@ export default function DispositionDetail() {
                   <StatusBadge status={disposition.status} />
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {disposition.type} • {disposition.markets.join(', ')}
+                  {disposition.type} • {disposition.markets.join(', ') || 'No markets'}
                 </p>
               </div>
             </div>
@@ -213,12 +254,13 @@ export default function DispositionDetail() {
               )}
               <Button
                 onClick={handleSave}
-                disabled={!hasChanges || isReadOnly}
+                disabled={!hasChanges || isReadOnly || saving}
                 className="gap-2"
               >
-                <Save className="h-4 w-4" />
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Save Changes
               </Button>
+              <UserMenu />
             </div>
           </div>
         </div>
@@ -257,9 +299,8 @@ export default function DispositionDetail() {
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <User className="h-3 w-3" />
-                <span className="text-xs">Created By</span>
+                <span className="text-xs">Created</span>
               </div>
-              <p className="text-sm">{disposition.createdBy}</p>
               <p className="text-xs text-muted-foreground">
                 {new Date(disposition.createdAt).toLocaleDateString()}
               </p>
@@ -269,9 +310,8 @@ export default function DispositionDetail() {
             <CardContent className="pt-4">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <User className="h-3 w-3" />
-                <span className="text-xs">Last Updated By</span>
+                <span className="text-xs">Last Updated</span>
               </div>
-              <p className="text-sm">{disposition.updatedBy}</p>
               <p className="text-xs text-muted-foreground">
                 {new Date(disposition.updatedAt).toLocaleDateString()}
               </p>
@@ -336,7 +376,7 @@ export default function DispositionDetail() {
             </h3>
             {!isReadOnly && (
               <Button
-                variant="subtle"
+                variant="outline"
                 size="sm"
                 onClick={() => setIsAddPropertyOpen(true)}
                 className="gap-2"
@@ -380,7 +420,7 @@ export default function DispositionDetail() {
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Deal Linkage
           </h3>
-          <LinkedDeal deal={linkedDeal} onCreateDeal={handleCreateDeal} />
+          <LinkedDeal deal={undefined} onCreateDeal={handleCreateDeal} />
         </div>
       </main>
 
