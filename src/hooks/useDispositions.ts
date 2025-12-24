@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Disposition, DispositionProperty, Property, DispositionDefaults } from '@/types/disposition';
+import { Disposition, DispositionProperty, Property, DispositionDefaults, PropertyUnderwritingInputs } from '@/types/disposition';
 import { calculatePropertyUnderwriting, calculateDispositionAggregates } from '@/utils/calculations';
-import { Tables } from '@/integrations/supabase/types';
+import { Tables, TablesUpdate } from '@/integrations/supabase/types';
 
 // Transform database row to Disposition type
 function transformDisposition(row: Tables<'dispositions'>): Disposition {
@@ -102,18 +102,63 @@ export function useDispositions() {
   return { dispositions, loading, error, refetch: fetchDispositions };
 }
 
-export function useDispositionProperties(dispositionId: string) {
+// Hook to fetch a single disposition by ID
+export function useDisposition(dispositionId: string | undefined) {
+  const [disposition, setDisposition] = useState<Disposition | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDisposition = useCallback(async () => {
+    if (!dispositionId || dispositionId === 'new') {
+      setDisposition(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from('dispositions')
+        .select('*')
+        .eq('id', dispositionId)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      if (data) {
+        setDisposition(transformDisposition(data));
+      } else {
+        setDisposition(null);
+      }
+    } catch (err) {
+      console.error('Error fetching disposition:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch disposition');
+    } finally {
+      setLoading(false);
+    }
+  }, [dispositionId]);
+
+  useEffect(() => {
+    fetchDisposition();
+  }, [fetchDisposition]);
+
+  return { disposition, loading, error, refetch: fetchDisposition };
+}
+
+export function useDispositionProperties(dispositionId: string | undefined) {
   const [properties, setProperties] = useState<DispositionProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (dispositionId) {
-      fetchDispositionProperties();
+  const fetchDispositionProperties = useCallback(async () => {
+    if (!dispositionId || dispositionId === 'new') {
+      setProperties([]);
+      setLoading(false);
+      return;
     }
-  }, [dispositionId]);
 
-  async function fetchDispositionProperties() {
     try {
       setLoading(true);
       setError(null);
@@ -148,7 +193,7 @@ export function useDispositionProperties(dispositionId: string) {
         const propertyRow = dp.properties as Tables<'properties'>;
         const property = transformProperty(propertyRow);
         
-        const inputs = {
+        const inputs: PropertyUnderwritingInputs = {
           useDispositionDefaults: dp.use_disposition_defaults,
           salePriceMethodology: dp.sale_price_methodology || undefined,
           capRate: dp.cap_rate ? Number(dp.cap_rate) : undefined,
@@ -180,9 +225,48 @@ export function useDispositionProperties(dispositionId: string) {
     } finally {
       setLoading(false);
     }
+  }, [dispositionId]);
+
+  useEffect(() => {
+    fetchDispositionProperties();
+  }, [fetchDispositionProperties]);
+
+  return { properties, loading, error, refetch: fetchDispositionProperties, setProperties };
+}
+
+// Hook to fetch available properties (not already in the disposition)
+export function useAvailableProperties(existingPropertyIds: string[]) {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAvailableProperties();
+  }, [existingPropertyIds.join(',')]);
+
+  async function fetchAvailableProperties() {
+    try {
+      setLoading(true);
+
+      let query = supabase.from('properties').select('*');
+      
+      if (existingPropertyIds.length > 0) {
+        query = query.not('id', 'in', `(${existingPropertyIds.join(',')})`);
+      }
+
+      const { data, error } = await query.order('address');
+
+      if (error) throw error;
+
+      const transformed = (data || []).map(transformProperty);
+      setProperties(transformed);
+    } catch (err) {
+      console.error('Error fetching available properties:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return { properties, loading, error, refetch: fetchDispositionProperties };
+  return { properties, loading, refetch: fetchAvailableProperties };
 }
 
 export function useMarkets() {
@@ -252,7 +336,7 @@ export function useDispositionsWithAggregates() {
           const propertyRow = dp.properties as Tables<'properties'>;
           const property = transformProperty(propertyRow);
           
-          const inputs = {
+          const inputs: PropertyUnderwritingInputs = {
             useDispositionDefaults: dp.use_disposition_defaults,
             flatSalePrice: dp.flat_sale_price ? Number(dp.flat_sale_price) : undefined,
           };
@@ -291,5 +375,183 @@ export function useDispositionsWithAggregates() {
     loading: dispositionsLoading || loading, 
     error,
     refetch 
+  };
+}
+
+// Mutation hooks for saving disposition data
+export function useDispositionMutations() {
+  const [saving, setSaving] = useState(false);
+
+  const updateDisposition = async (
+    dispositionId: string, 
+    updates: Partial<Disposition>
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const dbUpdates: TablesUpdate<'dispositions'> = {};
+      
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.defaults !== undefined) dbUpdates.defaults = JSON.parse(JSON.stringify(updates.defaults));
+      if (updates.targetListDate !== undefined) dbUpdates.target_list_date = updates.targetListDate || null;
+      if (updates.targetCloseDate !== undefined) dbUpdates.target_close_date = updates.targetCloseDate || null;
+      if (updates.investmentThesis !== undefined) dbUpdates.investment_thesis = updates.investmentThesis || null;
+      if (updates.exitStrategyNotes !== undefined) dbUpdates.exit_strategy_notes = updates.exitStrategyNotes || null;
+      if (updates.markets !== undefined) dbUpdates.markets = updates.markets;
+      if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
+      
+      dbUpdates.updated_at = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('dispositions')
+        .update(dbUpdates)
+        .eq('id', dispositionId);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating disposition:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to update disposition' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addPropertiesToDisposition = async (
+    dispositionId: string,
+    propertyIds: string[]
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const inserts = propertyIds.map(propertyId => ({
+        disposition_id: dispositionId,
+        property_id: propertyId,
+        use_disposition_defaults: true,
+      }));
+
+      const { error } = await supabase
+        .from('disposition_properties')
+        .insert(inserts);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error adding properties:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to add properties' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removePropertyFromDisposition = async (
+    dispositionPropertyId: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const { error } = await supabase
+        .from('disposition_properties')
+        .delete()
+        .eq('id', dispositionPropertyId);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error removing property:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to remove property' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateDispositionProperty = async (
+    dispositionPropertyId: string,
+    inputs: PropertyUnderwritingInputs
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const dbUpdates: TablesUpdate<'disposition_properties'> = {
+        use_disposition_defaults: inputs.useDispositionDefaults,
+        sale_price_methodology: inputs.salePriceMethodology || null,
+        cap_rate: inputs.capRate ?? null,
+        discount_to_market_value: inputs.discountToMarketValue ?? null,
+        flat_sale_price: inputs.flatSalePrice ?? null,
+        broker_fee_percent: inputs.brokerFeePercent ?? null,
+        closing_cost_percent: inputs.closingCostPercent ?? null,
+        seller_concessions_percent: inputs.sellerConcessionsPercent ?? null,
+        make_ready_capex_percent: inputs.makeReadyCapexPercent ?? null,
+        holding_period_months: inputs.holdingPeriodMonths ?? null,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('disposition_properties')
+        .update(dbUpdates)
+        .eq('id', dispositionPropertyId);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error updating property:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to update property' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const applyDefaultsToAllProperties = async (
+    dispositionId: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const { error } = await supabase
+        .from('disposition_properties')
+        .update({ 
+          use_disposition_defaults: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('disposition_id', dispositionId);
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error applying defaults:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to apply defaults' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return {
+    saving,
+    updateDisposition,
+    addPropertiesToDisposition,
+    removePropertyFromDisposition,
+    updateDispositionProperty,
+    applyDefaultsToAllProperties,
   };
 }
