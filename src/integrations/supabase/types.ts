@@ -401,6 +401,156 @@ export type Database = {
           },
         ]
       }
+      units: {
+        Row: {
+          access_code: string | null
+          asset_id: string | null
+          asset_id_counter: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          brown_water: string | null
+          building: string | null
+          category: string | null
+          city: string | null
+          cost_basis: number | null
+          county: string | null
+          created_at: string
+          created_by: string | null
+          date_purchased: string | null
+          date_sold: string | null
+          deals_id: string[] | null
+          funds_id: number | null
+          garage_spaces: number | null
+          has_pool: boolean | null
+          hoa_id: number | null
+          id: string
+          latitude: number | null
+          legal_description: string | null
+          longitude: number | null
+          lot_size: number | null
+          markets_id: number | null
+          portfolios_id: number | null
+          property_type: string | null
+          purchase_price: number | null
+          renovation_date: string | null
+          school_score: number | null
+          source: string | null
+          source_name: string | null
+          square_feet: number | null
+          state: string | null
+          stories: number | null
+          street_address: string | null
+          subdivision: string | null
+          unit: string | null
+          updated_at: string
+          updated_by_type: string | null
+          updated_by_user_id: string | null
+          uw_arv: number | null
+          uw_capex: number | null
+          uw_rent: number | null
+          year_built: number | null
+          zipcode: string | null
+        }
+        Insert: {
+          access_code?: string | null
+          asset_id?: string | null
+          asset_id_counter?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          brown_water?: string | null
+          building?: string | null
+          category?: string | null
+          city?: string | null
+          cost_basis?: number | null
+          county?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_purchased?: string | null
+          date_sold?: string | null
+          deals_id?: string[] | null
+          funds_id?: number | null
+          garage_spaces?: number | null
+          has_pool?: boolean | null
+          hoa_id?: number | null
+          id?: string
+          latitude?: number | null
+          legal_description?: string | null
+          longitude?: number | null
+          lot_size?: number | null
+          markets_id?: number | null
+          portfolios_id?: number | null
+          property_type?: string | null
+          purchase_price?: number | null
+          renovation_date?: string | null
+          school_score?: number | null
+          source?: string | null
+          source_name?: string | null
+          square_feet?: number | null
+          state?: string | null
+          stories?: number | null
+          street_address?: string | null
+          subdivision?: string | null
+          unit?: string | null
+          updated_at?: string
+          updated_by_type?: string | null
+          updated_by_user_id?: string | null
+          uw_arv?: number | null
+          uw_capex?: number | null
+          uw_rent?: number | null
+          year_built?: number | null
+          zipcode?: string | null
+        }
+        Update: {
+          access_code?: string | null
+          asset_id?: string | null
+          asset_id_counter?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          brown_water?: string | null
+          building?: string | null
+          category?: string | null
+          city?: string | null
+          cost_basis?: number | null
+          county?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_purchased?: string | null
+          date_sold?: string | null
+          deals_id?: string[] | null
+          funds_id?: number | null
+          garage_spaces?: number | null
+          has_pool?: boolean | null
+          hoa_id?: number | null
+          id?: string
+          latitude?: number | null
+          legal_description?: string | null
+          longitude?: number | null
+          lot_size?: number | null
+          markets_id?: number | null
+          portfolios_id?: number | null
+          property_type?: string | null
+          purchase_price?: number | null
+          renovation_date?: string | null
+          school_score?: number | null
+          source?: string | null
+          source_name?: string | null
+          square_feet?: number | null
+          state?: string | null
+          stories?: number | null
+          street_address?: string | null
+          subdivision?: string | null
+          unit?: string | null
+          updated_at?: string
+          updated_by_type?: string | null
+          updated_by_user_id?: string | null
+          uw_arv?: number | null
+          uw_capex?: number | null
+          uw_rent?: number | null
+          year_built?: number | null
+          zipcode?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
