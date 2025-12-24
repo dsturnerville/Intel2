@@ -72,6 +72,16 @@ export default {
         gain: "hsl(var(--gain))",
         loss: "hsl(var(--loss))",
         pending: "hsl(var(--pending))",
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+          red: "hsl(var(--chart-red))",
+          "red-light": "hsl(var(--chart-red-light))",
+          gray: "hsl(var(--chart-gray))",
+        },
         table: {
           header: "hsl(var(--table-header))",
           hover: "hsl(var(--table-row-hover))",

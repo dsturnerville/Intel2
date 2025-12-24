@@ -248,25 +248,27 @@ export default function Dashboard() {
                   <AreaChart data={revenueData}>
                     <defs>
                       <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4} />
                         <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                        <stop offset="5%" stopColor="hsl(var(--chart-red))" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="hsl(var(--chart-red))" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" className="text-xs" />
+                    <XAxis dataKey="month" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <YAxis 
                       className="text-xs" 
                       tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                       formatter={(value: number) => [formatCurrency(value), '']}
                     />
@@ -283,7 +285,7 @@ export default function Dashboard() {
                       type="monotone"
                       dataKey="expenses"
                       name="Expenses"
-                      stroke="hsl(var(--chart-2))"
+                      stroke="hsl(var(--chart-red))"
                       fill="url(#expenseGradient)"
                       strokeWidth={2}
                     />
@@ -321,6 +323,7 @@ export default function Dashboard() {
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                       formatter={(value: number) => [`${value} properties`, '']}
                     />
@@ -345,20 +348,21 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pipelineData} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" className="text-xs" />
-                    <YAxis dataKey="status" type="category" className="text-xs" width={100} />
+                    <XAxis type="number" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis dataKey="status" type="category" className="text-xs" width={100} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                       formatter={(value: number, name: string) => {
                         if (name === 'value') return [formatCurrency(value), 'Value'];
                         return [value, 'Count'];
                       }}
                     />
-                    <Bar dataKey="count" name="Properties" fill="hsl(var(--chart-1))" radius={4} />
+                    <Bar dataKey="count" name="Properties" fill="hsl(var(--chart-2))" radius={4} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -376,13 +380,14 @@ export default function Dashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={performanceTrend}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" className="text-xs" />
-                    <YAxis className="text-xs" tickFormatter={(value) => `${value}%`} />
+                    <XAxis dataKey="month" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis className="text-xs" tickFormatter={(value) => `${value}%`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
+                        color: 'hsl(var(--foreground))',
                       }}
                       formatter={(value: number) => [`${value}%`, '']}
                     />
@@ -399,7 +404,7 @@ export default function Dashboard() {
                       type="monotone"
                       dataKey="target"
                       name="Target"
-                      stroke="hsl(var(--muted-foreground))"
+                      stroke="hsl(var(--chart-gray))"
                       strokeWidth={2}
                       strokeDasharray="5 5"
                       dot={false}
