@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useTheme } from 'next-themes';
 import { DispositionProperty } from '@/types/disposition';
 import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const { resolvedTheme } = useTheme();
   const [accessToken, setAccessToken] = useState<string>(() => {
     return localStorage.getItem(MAPBOX_TOKEN_KEY) || '';
   });
@@ -65,11 +67,16 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       zoom = propertiesWithCoords.length === 1 ? 12 : 5;
     }
 
+    // Determine map style based on theme
+    const mapStyle = resolvedTheme === 'dark' 
+      ? 'mapbox://styles/mapbox/dark-v11' 
+      : 'mapbox://styles/mapbox/light-v11';
+
     try {
       // Initialize map
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
+        style: mapStyle,
         center,
         zoom,
         pitch: 0,
@@ -199,7 +206,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       markersRef.current = [];
       map.current?.remove();
     };
-  }, [properties, onPropertyClick, accessToken]);
+  }, [properties, onPropertyClick, accessToken, resolvedTheme]);
 
   // Show token input if no token is set or token is invalid
   if (!accessToken || isTokenValid === false) {
