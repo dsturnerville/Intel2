@@ -208,8 +208,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       map.current.on('style.load', () => {
         if (!map.current) return;
         
-        // Let Mapbox Standard style handle lighting automatically
-        // No custom terrain or sky layers needed for flat map with auto lighting
+        // Enable automatic lighting for Mapbox Standard style
+        map.current.setConfigProperty('basemap', 'lightPreset', 'day');
 
         // Create GeoJSON data for clustering
         const geojsonData: GeoJSON.FeatureCollection = {
