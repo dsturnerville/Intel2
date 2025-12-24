@@ -241,7 +241,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
                 alt="${imageAlt}" 
                 style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
               />
-              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 3px 6px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.25px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
+              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 1.5px 6px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.25px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
                 ${occupancyStatus}
               </div>
             </div>
