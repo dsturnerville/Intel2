@@ -208,29 +208,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       map.current.on('style.load', () => {
         if (!map.current) return;
         
-        // Add terrain source
-        if (!map.current.getSource('mapbox-dem')) {
-          map.current.addSource('mapbox-dem', {
-            type: 'raster-dem',
-            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-            tileSize: 512,
-            maxzoom: 14,
-          });
-        }
-
-        map.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-
-        if (!map.current.getLayer('sky')) {
-          map.current.addLayer({
-            id: 'sky',
-            type: 'sky',
-            paint: {
-              'sky-type': 'atmosphere',
-              'sky-atmosphere-sun': [0.0, 90.0],
-              'sky-atmosphere-sun-intensity': 15,
-            },
-          });
-        }
+        // Let Mapbox Standard style handle lighting automatically
+        // No custom terrain or sky layers needed for flat map with auto lighting
 
         // Create GeoJSON data for clustering
         const geojsonData: GeoJSON.FeatureCollection = {
