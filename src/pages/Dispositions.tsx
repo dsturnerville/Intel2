@@ -119,9 +119,9 @@ export default function Dispositions() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container py-4">
-          <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container h-full">
+          <div className="flex h-full items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Dispositions</h1>
               <p className="text-sm text-muted-foreground mt-1">
