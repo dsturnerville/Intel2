@@ -320,6 +320,7 @@ export type Database = {
           current_rent: number | null
           estimated_market_value: number | null
           id: string
+          images: Json | null
           last_appraisal_date: string | null
           last_appraisal_value: number | null
           latitude: number | null
@@ -347,6 +348,7 @@ export type Database = {
           current_rent?: number | null
           estimated_market_value?: number | null
           id?: string
+          images?: Json | null
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
           latitude?: number | null
@@ -374,6 +376,7 @@ export type Database = {
           current_rent?: number | null
           estimated_market_value?: number | null
           id?: string
+          images?: Json | null
           last_appraisal_date?: string | null
           last_appraisal_value?: number | null
           latitude?: number | null
