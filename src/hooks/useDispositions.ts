@@ -37,7 +37,13 @@ function transformDisposition(row: Tables<'dispositions'>): Disposition {
 }
 
 // Transform database row to Property type
-function transformProperty(row: Tables<'properties'>): Property {
+function transformProperty(row: Tables<'properties'> & { images?: unknown }): Property {
+  // Parse images from JSONB
+  let images: { title: string; url: string }[] | undefined;
+  if (row.images && Array.isArray(row.images)) {
+    images = row.images as { title: string; url: string }[];
+  }
+
   return {
     id: row.id,
     address: row.address,
@@ -61,6 +67,7 @@ function transformProperty(row: Tables<'properties'>): Property {
     estimatedMarketValue: Number(row.estimated_market_value) || 0,
     lastAppraisalDate: row.last_appraisal_date || undefined,
     lastAppraisalValue: row.last_appraisal_value ? Number(row.last_appraisal_value) : undefined,
+    images,
   };
 }
 
