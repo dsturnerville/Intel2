@@ -227,11 +227,11 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         
         const popupContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
-            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden;">
+            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: ${hasImage ? 'transparent' : '#f0f4f8'};">
               <img 
                 src="${imageUrl}" 
                 alt="${imageAlt}" 
-                style="width: 100%; height: 100px; object-fit: cover; display: block;"
+                style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block; padding: ${hasImage ? '0' : '12px'};"
               />
             </div>
             <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
