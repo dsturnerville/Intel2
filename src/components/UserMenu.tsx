@@ -63,7 +63,10 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2 cursor-pointer">
+        <DropdownMenuItem 
+          className="gap-2 cursor-pointer"
+          onClick={() => navigate('/profile')}
+        >
           <User className="h-4 w-4" />
           Profile
         </DropdownMenuItem>
