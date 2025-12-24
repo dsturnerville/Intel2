@@ -17,31 +17,64 @@ serve(async (req) => {
     
     if (!bbox) {
       return new Response(
-        JSON.stringify({ error: 'Missing bbox parameter' }),
+        JSON.stringify({ error: 'Missing bbox parameter', features: [] }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // FEMA National Flood Hazard Layer - Flood Hazard Zones (Layer 28)
-    const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?where=1%3D1&outFields=FLD_ZONE,ZONE_SUBTY&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+    console.log('Fetching flood zones for bbox:', bbox);
 
-    const response = await fetch(femaUrl);
+    // FEMA National Flood Hazard Layer - Flood Hazard Zones (Layer 28)
+    // Using proper geometry format for ArcGIS REST API
+    const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?` +
+      `where=1%3D1` +
+      `&outFields=FLD_ZONE,ZONE_SUBTY` +
+      `&geometry=${bbox}` +
+      `&geometryType=esriGeometryEnvelope` +
+      `&inSR=4326` +
+      `&spatialRel=esriSpatialRelIntersects` +
+      `&outSR=4326` +
+      `&f=geojson`;
+
+    console.log('FEMA URL:', femaUrl);
+
+    const response = await fetch(femaUrl, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
     
+    console.log('FEMA response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`FEMA API returned ${response.status}`);
+      const errorText = await response.text();
+      console.error('FEMA API error:', errorText);
+      // Return empty features instead of error to prevent map issues
+      return new Response(
+        JSON.stringify({ type: 'FeatureCollection', features: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const data = await response.json();
+    console.log('FEMA data features count:', data.features?.length || 0);
+
+    // Ensure proper GeoJSON structure
+    const geojson = {
+      type: 'FeatureCollection',
+      features: data.features || []
+    };
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(geojson),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error fetching flood zones:', error);
+    // Return empty features to prevent map errors
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch flood zone data', features: [] }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ type: 'FeatureCollection', features: [] }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
