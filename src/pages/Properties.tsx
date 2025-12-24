@@ -416,12 +416,11 @@ export default function Properties() {
                             <MapPin className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{property.city}, {property.state} {property.zip_code}</span>
                           </p>
-                          {/* Mobile-only badges */}
-                          <div className="flex items-center gap-2 mt-1 md:hidden">
+                          {/* Mobile-only status badge */}
+                          <div className="mt-1 md:hidden">
                             <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any} className="text-xs">
                               {property.occupancy_status}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">{property.market}</span>
                           </div>
                         </div>
                       </Link>
