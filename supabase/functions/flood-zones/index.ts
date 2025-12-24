@@ -1,80 +1,119 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+type FeatureCollection = {
+  type: "FeatureCollection";
+  features: unknown[];
+};
+
+const emptyFeatureCollection: FeatureCollection = {
+  type: "FeatureCollection",
+  features: [],
 };
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const url = new URL(req.url);
-    const bbox = url.searchParams.get('bbox');
-    
-    if (!bbox) {
-      return new Response(
-        JSON.stringify({ error: 'Missing bbox parameter', features: [] }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
-    console.log('Fetching flood zones for bbox:', bbox);
-
-    // FEMA National Flood Hazard Layer - Flood Hazard Zones (Layer 28)
-    // Using proper geometry format for ArcGIS REST API
-    const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?` +
-      `where=1%3D1` +
-      `&outFields=FLD_ZONE,ZONE_SUBTY` +
-      `&geometry=${bbox}` +
-      `&geometryType=esriGeometryEnvelope` +
-      `&inSR=4326` +
-      `&spatialRel=esriSpatialRelIntersects` +
-      `&outSR=4326` +
-      `&f=geojson`;
-
-    console.log('FEMA URL:', femaUrl);
-
-    const response = await fetch(femaUrl, {
-      headers: {
-        'Accept': 'application/json',
+    // Prefer JSON body (supports supabase.functions.invoke), fall back to querystring
+    let bbox = url.searchParams.get("bbox") ?? undefined;
+    if (!bbox && req.method !== "GET") {
+      try {
+        const body = await req.json();
+        bbox = body?.bbox;
+      } catch {
+        // ignore
       }
-    });
-    
-    console.log('FEMA response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('FEMA API error:', errorText);
-      // Return empty features instead of error to prevent map issues
-      return new Response(
-        JSON.stringify({ type: 'FeatureCollection', features: [] }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    const data = await response.json();
-    console.log('FEMA data features count:', data.features?.length || 0);
+    if (!bbox || typeof bbox !== "string") {
+      return new Response(JSON.stringify(emptyFeatureCollection), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Ensure proper GeoJSON structure
-    const geojson = {
-      type: 'FeatureCollection',
-      features: data.features || []
+    const parts = bbox.split(",").map((v) => Number(v));
+    if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) {
+      return new Response(JSON.stringify(emptyFeatureCollection), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const [xmin, ymin, xmax, ymax] = parts;
+
+    // ArcGIS REST expects an envelope object (JSON) for geometryType=esriGeometryEnvelope
+    const geometry = {
+      xmin,
+      ymin,
+      xmax,
+      ymax,
+      spatialReference: { wkid: 4326 },
     };
 
-    return new Response(
-      JSON.stringify(geojson),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const params = new URLSearchParams({
+      where: "1=1",
+      outFields: "FLD_ZONE,ZONE_SUBTY",
+      geometry: JSON.stringify(geometry),
+      geometryType: "esriGeometryEnvelope",
+      inSR: "4326",
+      spatialRel: "esriSpatialRelIntersects",
+      outSR: "4326",
+      returnGeometry: "true",
+      f: "geojson",
+    });
+
+    // Use /arcgis/rest (more reliable) rather than /gis/nfhl/rest
+    const femaUrl =
+      `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?${params.toString()}`;
+
+    const response = await fetch(femaUrl, {
+      headers: { Accept: "application/json" },
+    });
+
+    const text = await response.text();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      console.error("FEMA response not JSON", response.status, text.slice(0, 200));
+      return new Response(JSON.stringify(emptyFeatureCollection), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!response.ok || parsed?.error) {
+      console.error(
+        "FEMA API error",
+        response.status,
+        parsed?.error ?? text.slice(0, 200),
+      );
+      return new Response(JSON.stringify(emptyFeatureCollection), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const geojson: FeatureCollection = {
+      type: "FeatureCollection",
+      features: Array.isArray(parsed?.features) ? parsed.features : [],
+    };
+
+    return new Response(JSON.stringify(geojson), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error('Error fetching flood zones:', error);
-    // Return empty features to prevent map errors
-    return new Response(
-      JSON.stringify({ type: 'FeatureCollection', features: [] }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error("Error fetching flood zones:", error);
+    return new Response(JSON.stringify(emptyFeatureCollection), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { supabase } from '@/integrations/supabase/client';
 import { DispositionProperty } from '@/types/disposition';
 import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
@@ -134,22 +135,19 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     if (showFloodZones && map.current.getSource('flood-zones')) {
       const bounds = map.current.getBounds();
       const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
-      
-      // Use edge function to proxy FEMA requests (avoids CORS issues)
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const url = `${supabaseUrl}/functions/v1/flood-zones?bbox=${encodeURIComponent(bbox)}`;
-      
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          if (data.features && map.current) {
-            const source = map.current.getSource('flood-zones') as mapboxgl.GeoJSONSource;
-            if (source) {
-              source.setData(data);
-            }
+
+      supabase.functions
+        .invoke('flood-zones', { body: { bbox } })
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching flood zones:', error);
+            return;
           }
-        })
-        .catch(error => console.error('Error fetching flood zones:', error));
+          if (map.current) {
+            const source = map.current.getSource('flood-zones') as mapboxgl.GeoJSONSource;
+            source?.setData(data ?? { type: 'FeatureCollection', features: [] });
+          }
+        });
     }
   }, [showFloodZones, isTokenValid]);
 
@@ -287,8 +285,15 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       map.current.on('style.load', () => {
         if (!map.current) return;
         
-        // Enable automatic lighting for Mapbox Standard style
-        map.current.setConfigProperty('basemap', 'lightPreset', 'day');
+        // Enable automatic lighting for Mapbox Standard style (only supported on Standard)
+        try {
+          const styleUrl = getMapStyle();
+          if (styleUrl.includes('mapbox/standard')) {
+            map.current.setConfigProperty('basemap', 'lightPreset', 'day');
+          }
+        } catch {
+          // Ignore unsupported style configuration (e.g. satellite style)
+        }
 
         // Function to fetch school district boundaries from Census TIGERweb
         const fetchSchoolDistricts = async () => {
@@ -384,28 +389,23 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
-        // Function to fetch flood zones via edge function (avoids CORS)
+        // Function to fetch flood zones via backend function (avoids CORS)
         const fetchFloodZones = async () => {
           if (!map.current) return;
           
           const bounds = map.current.getBounds();
           const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
           
-          // Use edge function to proxy FEMA requests
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          const url = `${supabaseUrl}/functions/v1/flood-zones?bbox=${encodeURIComponent(bbox)}`;
-          
           try {
-            const response = await fetch(url);
-            if (!response.ok) return;
-            
-            const data = await response.json();
-            
-            if (data.features && map.current) {
+            const { data, error } = await supabase.functions.invoke('flood-zones', { body: { bbox } });
+            if (error) {
+              console.error('Error fetching flood zones:', error);
+              return;
+            }
+
+            if (map.current) {
               const source = map.current.getSource('flood-zones') as mapboxgl.GeoJSONSource;
-              if (source) {
-                source.setData(data);
-              }
+              source?.setData(data ?? { type: 'FeatureCollection', features: [] });
             }
           } catch (error) {
             console.error('Error fetching flood zones:', error);
