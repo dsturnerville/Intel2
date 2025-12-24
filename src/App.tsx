@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dispositions from "./pages/Dispositions";
 import DispositionDetail from "./pages/DispositionDetail";
+import NewDisposition from "./pages/NewDisposition";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Dispositions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dispositions/new"
+            element={
+              <ProtectedRoute>
+                <NewDisposition />
               </ProtectedRoute>
             }
           />

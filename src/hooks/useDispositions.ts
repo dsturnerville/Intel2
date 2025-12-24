@@ -382,6 +382,62 @@ export function useDispositionsWithAggregates() {
 export function useDispositionMutations() {
   const [saving, setSaving] = useState(false);
 
+  const createDisposition = async (
+    data: {
+      name: string;
+      type: 'Single Property' | 'Portfolio';
+      markets?: string[];
+      targetListDate?: string;
+      targetCloseDate?: string;
+      investmentThesis?: string;
+      exitStrategyNotes?: string;
+      defaults?: DispositionDefaults;
+    }
+  ): Promise<{ success: boolean; id?: string; error?: string }> => {
+    try {
+      setSaving(true);
+
+      const defaultDefaults: DispositionDefaults = {
+        salePriceMethodology: 'Comp Based',
+        capRate: 0.055,
+        discountToMarketValue: 0.03,
+        brokerFeePercent: 0.05,
+        closingCostPercent: 0.02,
+        sellerConcessionsPercent: 0.01,
+        makeReadyCapexPercent: 0.015,
+        holdingPeriodMonths: 3,
+      };
+
+      const { data: result, error } = await supabase
+        .from('dispositions')
+        .insert({
+          name: data.name,
+          type: data.type,
+          status: 'Draft',
+          markets: data.markets || [],
+          target_list_date: data.targetListDate || null,
+          target_close_date: data.targetCloseDate || null,
+          investment_thesis: data.investmentThesis || null,
+          exit_strategy_notes: data.exitStrategyNotes || null,
+          defaults: JSON.parse(JSON.stringify(data.defaults || defaultDefaults)),
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      return { success: true, id: result.id };
+    } catch (err) {
+      console.error('Error creating disposition:', err);
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to create disposition' 
+      };
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const updateDisposition = async (
     dispositionId: string, 
     updates: Partial<Disposition>
@@ -548,6 +604,7 @@ export function useDispositionMutations() {
 
   return {
     saving,
+    createDisposition,
     updateDisposition,
     addPropertiesToDisposition,
     removePropertyFromDisposition,
