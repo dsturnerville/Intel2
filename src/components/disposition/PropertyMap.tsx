@@ -443,12 +443,41 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           map.current!.getCanvas().style.cursor = '';
         });
 
-        map.current.on('mouseenter', 'unclustered-point', () => {
+        map.current.on('mouseenter', 'unclustered-point', (e) => {
           map.current!.getCanvas().style.cursor = 'pointer';
+          
+          if (!e.features?.length) return;
+          
+          const feature = e.features[0];
+          const geometry = feature.geometry as GeoJSON.Point;
+          const propertyId = feature.properties?.propertyId;
+          const dp = propertyMap.get(propertyId);
+          
+          if (!dp) return;
+
+          // Remove existing popup
+          if (popupRef.current) {
+            popupRef.current.remove();
+          }
+
+          popupRef.current = new mapboxgl.Popup({
+            offset: 15,
+            closeButton: false,
+            closeOnClick: false,
+            maxWidth: '220px',
+            className: 'custom-popup',
+          })
+            .setLngLat(geometry.coordinates as [number, number])
+            .setHTML(createPopupContent(dp))
+            .addTo(map.current!);
         });
         
         map.current.on('mouseleave', 'unclustered-point', () => {
           map.current!.getCanvas().style.cursor = '';
+          if (popupRef.current) {
+            popupRef.current.remove();
+            popupRef.current = null;
+          }
         });
       });
 
