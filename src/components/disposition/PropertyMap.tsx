@@ -237,6 +237,17 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
+        // Get CSS variable values for theming
+        const computedStyle = getComputedStyle(document.documentElement);
+        const primaryHsl = computedStyle.getPropertyValue('--primary').trim();
+        const [h, s, l] = primaryHsl.split(' ').map(v => parseFloat(v));
+        
+        const primaryColor = `hsl(${h}, ${s}%, ${l}%)`;
+        const primaryMedium = `hsl(${h}, ${s}%, ${Math.max(l - 10, 20)}%)`;
+        const primaryDark = `hsl(${h}, ${s}%, ${Math.max(l - 20, 15)}%)`;
+        const strokeColor = `hsl(${computedStyle.getPropertyValue('--foreground').trim().replace(/ /g, ', ')})`
+          .replace(/, /g, ', ').replace(/,\s*(\d)/g, '% $1');
+
         // Cluster circles layer
         if (!map.current.getLayer('clusters')) {
           map.current.addLayer({
@@ -248,11 +259,11 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
               'circle-color': [
                 'step',
                 ['get', 'point_count'],
-                'hsl(217, 91%, 60%)', // primary blue for small clusters
+                primaryColor, // primary for small clusters
                 5,
-                'hsl(217, 91%, 50%)', // darker for medium
+                primaryMedium, // darker for medium
                 10,
-                'hsl(217, 91%, 40%)', // darkest for large
+                primaryDark, // darkest for large
               ],
               'circle-radius': [
                 'step',
@@ -264,7 +275,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
                 30,
               ],
               'circle-stroke-width': 3,
-              'circle-stroke-color': '#ffffff',
+              'circle-stroke-color': 'hsl(0, 0%, 100%)',
             },
           });
         }
@@ -295,10 +306,10 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             source: 'properties',
             filter: ['!', ['has', 'point_count']],
             paint: {
-              'circle-color': 'hsl(217, 91%, 60%)',
+              'circle-color': primaryColor,
               'circle-radius': 12,
               'circle-stroke-width': 2,
-              'circle-stroke-color': '#ffffff',
+              'circle-stroke-color': 'hsl(0, 0%, 100%)',
             },
           });
         }
