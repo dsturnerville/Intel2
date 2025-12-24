@@ -63,6 +63,7 @@ export default function DispositionDetail() {
     updateDisposition, 
     addPropertiesToDisposition, 
     removePropertyFromDisposition,
+    updateDispositionProperty,
     applyDefaultsToAllProperties 
   } = useDispositionMutations();
 
@@ -160,6 +161,7 @@ export default function DispositionDetail() {
   const handleSave = async () => {
     if (!disposition || !id) return;
 
+    // Save disposition level changes
     const result = await updateDisposition(id, {
       status: disposition.status,
       defaults: disposition.defaults,
@@ -170,11 +172,24 @@ export default function DispositionDetail() {
       targetCloseDate: disposition.targetCloseDate,
     });
 
-    if (result.success) {
+    if (!result.success) {
+      toast.error(result.error || 'Failed to save disposition');
+      return;
+    }
+
+    // Save property-level underwriting changes
+    const propertyUpdatePromises = properties.map(async (dp) => {
+      return updateDispositionProperty(dp.id, dp.inputs);
+    });
+
+    const propertyResults = await Promise.all(propertyUpdatePromises);
+    const failedUpdates = propertyResults.filter(r => !r.success);
+
+    if (failedUpdates.length > 0) {
+      toast.warning(`Saved disposition but ${failedUpdates.length} property update(s) failed`);
+    } else {
       setHasChanges(false);
       toast.success('Disposition saved successfully');
-    } else {
-      toast.error(result.error || 'Failed to save disposition');
     }
   };
 
