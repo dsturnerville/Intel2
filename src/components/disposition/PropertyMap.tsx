@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useTheme } from 'next-themes';
 import { DispositionProperty } from '@/types/disposition';
 import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Map as MapIcon, ExternalLink, Satellite, Sun, Moon } from 'lucide-react';
+import { Map as MapIcon, ExternalLink, Satellite } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 
 interface PropertyMapProps {
@@ -21,31 +20,28 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const { resolvedTheme } = useTheme();
   const [accessToken, setAccessToken] = useState<string>(() => {
     return localStorage.getItem(MAPBOX_TOKEN_KEY) || '';
   });
   const [tokenInput, setTokenInput] = useState('');
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
   const [isSatellite, setIsSatellite] = useState(false);
-  const [isNightMode, setIsNightMode] = useState(resolvedTheme === 'dark');
 
-  // Get the appropriate map style based on toggles
+  // Get the appropriate map style based on satellite toggle
   const getMapStyle = () => {
     if (isSatellite) {
       return 'mapbox://styles/mapbox/satellite-streets-v12';
     }
-    return isNightMode 
-      ? 'mapbox://styles/mapbox/dark-v11' 
-      : 'mapbox://styles/mapbox/light-v11';
+    // Use Mapbox Standard style with 3D and automatic day/night
+    return 'mapbox://styles/mapbox/standard';
   };
 
-  // Update map style when toggles change
+  // Update map style when satellite toggle changes
   useEffect(() => {
     if (map.current && isTokenValid) {
       map.current.setStyle(getMapStyle());
     }
-  }, [isSatellite, isNightMode]);
+  }, [isSatellite]);
 
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
@@ -319,7 +315,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       )}
       
       {/* Map style controls */}
-      <div className="absolute top-2 left-2 flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border">
+      <div className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border">
         <Toggle 
           pressed={isSatellite} 
           onPressedChange={setIsSatellite}
@@ -328,16 +324,6 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >
           <Satellite className="h-4 w-4" />
-        </Toggle>
-        <Toggle 
-          pressed={isNightMode} 
-          onPressedChange={setIsNightMode}
-          size="sm"
-          aria-label="Toggle night mode"
-          disabled={isSatellite}
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >
-          {isNightMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Toggle>
       </div>
 
