@@ -135,8 +135,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       const bounds = map.current.getBounds();
       const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
       
-      // FEMA National Flood Hazard Layer - Flood Hazard Zones
-      const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?where=1%3D1&outFields=FLD_ZONE,ZONE_SUBTY&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+      // Use edge function to proxy FEMA requests (avoids CORS issues)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const url = `${supabaseUrl}/functions/v1/flood-zones?bbox=${encodeURIComponent(bbox)}`;
       
       fetch(url)
         .then(response => response.json())
@@ -383,15 +384,16 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
-        // Function to fetch flood zones from FEMA NFHL
+        // Function to fetch flood zones via edge function (avoids CORS)
         const fetchFloodZones = async () => {
           if (!map.current) return;
           
           const bounds = map.current.getBounds();
           const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
           
-          // FEMA National Flood Hazard Layer - Flood Hazard Zones (Layer 28)
-          const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?where=1%3D1&outFields=FLD_ZONE,ZONE_SUBTY&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+          // Use edge function to proxy FEMA requests
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const url = `${supabaseUrl}/functions/v1/flood-zones?bbox=${encodeURIComponent(bbox)}`;
           
           try {
             const response = await fetch(url);
