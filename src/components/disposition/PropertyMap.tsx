@@ -20,7 +20,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapWrapperRef = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
   const [accessToken, setAccessToken] = useState<string>(() => {
     return localStorage.getItem(MAPBOX_TOKEN_KEY) || '';
   });
@@ -63,7 +63,6 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     if (isSatellite) {
       return 'mapbox://styles/mapbox/satellite-streets-v12';
     }
-    // Use Mapbox Standard style with 3D and automatic day/night
     return 'mapbox://styles/mapbox/standard';
   };
 
@@ -78,7 +77,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     if (tokenInput.trim()) {
       localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
       setAccessToken(tokenInput.trim());
-      setIsTokenValid(null); // Reset validation state
+      setIsTokenValid(null);
     }
   };
 
@@ -89,10 +88,57 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     setIsTokenValid(null);
   };
 
+  // Create popup content for a property
+  const createPopupContent = (dp: DispositionProperty) => {
+    const gainLossAmount = dp.outputs.gainLossVsBasis;
+    const isGain = gainLossAmount && gainLossAmount >= 0;
+    const gainLossColor = isGain ? '#16a34a' : '#dc2626';
+    const trendingIcon = isGain 
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`;
+    const firstImage = dp.property.images?.[0];
+    const hasImage = !!firstImage?.url;
+    const imageUrl = hasImage ? firstImage.url : '/images/default-home.png';
+    const imageAlt = firstImage?.title || 'Property';
+    
+    const occupancyStatus = dp.property.occupancyStatus || 'Vacant';
+    const occupancyColors: Record<string, { bg: string; border: string; text: string }> = {
+      'Occupied': { bg: 'rgba(22, 163, 74, 0.25)', border: 'rgba(22, 163, 74, 0.6)', text: '#1a1a2e' },
+      'Vacant': { bg: 'rgba(220, 38, 38, 0.25)', border: 'rgba(220, 38, 38, 0.6)', text: '#1a1a2e' },
+      'Notice Given': { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.6)', text: '#1a1a2e' }
+    };
+    const occupancyStyle = occupancyColors[occupancyStatus] || occupancyColors['Vacant'];
+    
+    return `
+      <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
+        <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: #ffffff; position: relative;">
+          <img 
+            src="${imageUrl}" 
+            alt="${imageAlt}" 
+            style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
+          />
+          <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 1.5px 6px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.25px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
+            ${occupancyStatus}
+          </div>
+        </div>
+        <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
+          ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
+        </div>
+        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+          ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Net: TBD'}
+          ${gainLossAmount !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${trendingIcon}${formatCurrency(Math.abs(gainLossAmount))}</span>` : ''}
+        </div>
+        <div style="font-size: 11px; color: #999; line-height: 1.4;">
+          <div>${dp.property.address}</div>
+          <div>${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}</div>
+        </div>
+      </div>
+    `;
+  };
+
   useEffect(() => {
     if (!mapContainer.current || !accessToken) return;
 
-    // Set the access token
     mapboxgl.accessToken = accessToken;
 
     // Filter properties with valid coordinates
@@ -100,8 +146,14 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       (p) => p.property.latitude && p.property.longitude
     );
 
+    // Create a map from propertyId to DispositionProperty for quick lookup
+    const propertyMap = new Map<string, DispositionProperty>();
+    propertiesWithCoords.forEach(dp => {
+      propertyMap.set(dp.propertyId, dp);
+    });
+
     // Calculate center from properties or default to US center
-    let center: [number, number] = [-98.5795, 39.8283]; // US center
+    let center: [number, number] = [-98.5795, 39.8283];
     let zoom = 3;
 
     if (propertiesWithCoords.length > 0) {
@@ -115,7 +167,6 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     }
 
     try {
-      // Initialize map
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: getMapStyle(),
@@ -123,14 +174,14 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         zoom,
         pitch: 45,
         bearing: -10,
-        preserveDrawingBuffer: true, // Required for PDF capture
+        preserveDrawingBuffer: true,
       });
 
       map.current.on('load', () => {
         setIsTokenValid(true);
       });
 
-      // Add 3D terrain after style loads
+      // Add clustering and layers after style loads
       map.current.on('style.load', () => {
         if (!map.current) return;
         
@@ -144,10 +195,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
-        // Enable 3D terrain
         map.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
-        // Add sky atmosphere for realism
         if (!map.current.getLayer('sky')) {
           map.current.addLayer({
             id: 'sky',
@@ -159,6 +208,185 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             },
           });
         }
+
+        // Create GeoJSON data for clustering
+        const geojsonData: GeoJSON.FeatureCollection = {
+          type: 'FeatureCollection',
+          features: propertiesWithCoords.map(dp => ({
+            type: 'Feature',
+            properties: {
+              propertyId: dp.propertyId,
+              address: dp.property.address,
+              price: dp.outputs.projectedSalePrice || 0,
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: [dp.property.longitude!, dp.property.latitude!],
+            },
+          })),
+        };
+
+        // Add clustered source
+        if (!map.current.getSource('properties')) {
+          map.current.addSource('properties', {
+            type: 'geojson',
+            data: geojsonData,
+            cluster: true,
+            clusterMaxZoom: 14,
+            clusterRadius: 50,
+          });
+        }
+
+        // Cluster circles layer
+        if (!map.current.getLayer('clusters')) {
+          map.current.addLayer({
+            id: 'clusters',
+            type: 'circle',
+            source: 'properties',
+            filter: ['has', 'point_count'],
+            paint: {
+              'circle-color': [
+                'step',
+                ['get', 'point_count'],
+                'hsl(217, 91%, 60%)', // primary blue for small clusters
+                5,
+                'hsl(217, 91%, 50%)', // darker for medium
+                10,
+                'hsl(217, 91%, 40%)', // darkest for large
+              ],
+              'circle-radius': [
+                'step',
+                ['get', 'point_count'],
+                20,
+                5,
+                25,
+                10,
+                30,
+              ],
+              'circle-stroke-width': 3,
+              'circle-stroke-color': '#ffffff',
+            },
+          });
+        }
+
+        // Cluster count labels
+        if (!map.current.getLayer('cluster-count')) {
+          map.current.addLayer({
+            id: 'cluster-count',
+            type: 'symbol',
+            source: 'properties',
+            filter: ['has', 'point_count'],
+            layout: {
+              'text-field': '{point_count_abbreviated}',
+              'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+              'text-size': 14,
+            },
+            paint: {
+              'text-color': '#ffffff',
+            },
+          });
+        }
+
+        // Unclustered point layer
+        if (!map.current.getLayer('unclustered-point')) {
+          map.current.addLayer({
+            id: 'unclustered-point',
+            type: 'circle',
+            source: 'properties',
+            filter: ['!', ['has', 'point_count']],
+            paint: {
+              'circle-color': 'hsl(217, 91%, 60%)',
+              'circle-radius': 12,
+              'circle-stroke-width': 2,
+              'circle-stroke-color': '#ffffff',
+            },
+          });
+        }
+
+        // House icon for unclustered points
+        if (!map.current.getLayer('unclustered-icon')) {
+          map.current.addLayer({
+            id: 'unclustered-icon',
+            type: 'symbol',
+            source: 'properties',
+            filter: ['!', ['has', 'point_count']],
+            layout: {
+              'text-field': '⌂',
+              'text-size': 14,
+            },
+            paint: {
+              'text-color': '#ffffff',
+            },
+          });
+        }
+
+        // Click on cluster to zoom in
+        map.current.on('click', 'clusters', (e) => {
+          const features = map.current!.queryRenderedFeatures(e.point, {
+            layers: ['clusters'],
+          });
+          if (!features.length) return;
+          
+          const clusterId = features[0].properties?.cluster_id;
+          const source = map.current!.getSource('properties') as mapboxgl.GeoJSONSource;
+          
+          source.getClusterExpansionZoom(clusterId, (err, expansionZoom) => {
+            if (err) return;
+            
+            const geometry = features[0].geometry as GeoJSON.Point;
+            map.current!.easeTo({
+              center: geometry.coordinates as [number, number],
+              zoom: expansionZoom,
+            });
+          });
+        });
+
+        // Click on unclustered point to show popup
+        map.current.on('click', 'unclustered-point', (e) => {
+          if (!e.features?.length) return;
+          
+          const feature = e.features[0];
+          const geometry = feature.geometry as GeoJSON.Point;
+          const propertyId = feature.properties?.propertyId;
+          const dp = propertyMap.get(propertyId);
+          
+          if (!dp) return;
+
+          // Remove existing popup
+          if (popupRef.current) {
+            popupRef.current.remove();
+          }
+
+          popupRef.current = new mapboxgl.Popup({
+            offset: 15,
+            closeButton: true,
+            closeOnClick: false,
+            maxWidth: '220px',
+            className: 'custom-popup',
+          })
+            .setLngLat(geometry.coordinates as [number, number])
+            .setHTML(createPopupContent(dp))
+            .addTo(map.current!);
+
+          onPropertyClick?.(propertyId);
+        });
+
+        // Hover effects
+        map.current.on('mouseenter', 'clusters', () => {
+          map.current!.getCanvas().style.cursor = 'pointer';
+        });
+        
+        map.current.on('mouseleave', 'clusters', () => {
+          map.current!.getCanvas().style.cursor = '';
+        });
+
+        map.current.on('mouseenter', 'unclustered-point', () => {
+          map.current!.getCanvas().style.cursor = 'pointer';
+        });
+        
+        map.current.on('mouseleave', 'unclustered-point', () => {
+          map.current!.getCanvas().style.cursor = '';
+        });
       });
 
       map.current.on('error', (e) => {
@@ -168,143 +396,12 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         }
       });
 
-      // Add navigation controls
       map.current.addControl(
         new mapboxgl.NavigationControl({
           visualizePitch: true,
         }),
         'top-right'
       );
-
-      // Add markers for each property
-      propertiesWithCoords.forEach((dp) => {
-        const el = document.createElement('div');
-        el.className = 'property-marker';
-        el.style.cssText = `
-          width: 32px;
-          height: 32px;
-          cursor: pointer;
-        `;
-
-        // IMPORTANT: Mapbox positions markers using CSS transforms.
-        // If we set `transform` on the marker element itself, it overrides Mapbox's transform and the marker jumps.
-        // So we animate an inner element instead.
-        const inner = document.createElement('div');
-        inner.style.cssText = `
-          width: 32px;
-          height: 32px;
-          background: hsl(var(--primary));
-          border: 2px solid hsl(var(--primary-foreground));
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 8px hsl(0 0% 0% / 0.35);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          transform-origin: center center;
-        `;
-
-        inner.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        `;
-
-        el.appendChild(inner);
-
-        // Create popup content with disposition details
-        const gainLossAmount = dp.outputs.gainLossVsBasis;
-        const isGain = gainLossAmount && gainLossAmount >= 0;
-        const gainLossColor = isGain ? '#16a34a' : '#dc2626';
-        const trendingIcon = isGain 
-          ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`
-          : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`;
-        const firstImage = dp.property.images?.[0];
-        const hasImage = !!firstImage?.url;
-        const imageUrl = hasImage ? firstImage.url : '/images/default-home.png';
-        const imageAlt = firstImage?.title || 'Property';
-        
-        const occupancyStatus = dp.property.occupancyStatus || 'Vacant';
-        const occupancyColors: Record<string, { bg: string; border: string; text: string }> = {
-          'Occupied': { bg: 'rgba(22, 163, 74, 0.25)', border: 'rgba(22, 163, 74, 0.6)', text: '#1a1a2e' },
-          'Vacant': { bg: 'rgba(220, 38, 38, 0.25)', border: 'rgba(220, 38, 38, 0.6)', text: '#1a1a2e' },
-          'Notice Given': { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.6)', text: '#1a1a2e' }
-        };
-        const occupancyStyle = occupancyColors[occupancyStatus] || occupancyColors['Vacant'];
-        
-        const popupContent = `
-          <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
-            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: #ffffff; position: relative;">
-              <img 
-                src="${imageUrl}" 
-                alt="${imageAlt}" 
-                style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
-              />
-              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 1.5px 6px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.25px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
-                ${occupancyStatus}
-              </div>
-            </div>
-            <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
-              ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
-            </div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-              ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Net: TBD'}
-              ${gainLossAmount !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${trendingIcon}${formatCurrency(Math.abs(gainLossAmount))}</span>` : ''}
-            </div>
-            <div style="font-size: 11px; color: #999; line-height: 1.4;">
-              <div>${dp.property.address}</div>
-              <div>${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}</div>
-            </div>
-          </div>
-        `;
-
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: true,
-          closeOnClick: false,
-          maxWidth: '220px',
-          className: 'custom-popup',
-        }).setHTML(popupContent);
-
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([dp.property.longitude!, dp.property.latitude!])
-          .setPopup(popup)
-          .addTo(map.current!);
-
-        let isPinned = false;
-
-        el.addEventListener('mouseenter', () => {
-          inner.style.transform = 'scale(1.2)';
-          inner.style.boxShadow = '0 6px 18px hsl(0 0% 0% / 0.45)';
-          if (!isPinned && !popup.isOpen()) {
-            marker.togglePopup();
-          }
-        });
-
-        el.addEventListener('mouseleave', () => {
-          inner.style.transform = 'scale(1)';
-          inner.style.boxShadow = '0 2px 8px hsl(0 0% 0% / 0.35)';
-          if (!isPinned && popup.isOpen()) {
-            marker.togglePopup();
-          }
-        });
-
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          isPinned = true;
-          if (!popup.isOpen()) {
-            marker.togglePopup();
-          }
-          onPropertyClick?.(dp.propertyId);
-        });
-
-        popup.on('close', () => {
-          isPinned = false;
-        });
-
-        markersRef.current.push(marker);
-      });
 
       // Fit bounds if multiple properties
       if (propertiesWithCoords.length > 1) {
@@ -320,8 +417,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     }
 
     return () => {
-      markersRef.current.forEach((marker) => marker.remove());
-      markersRef.current = [];
+      if (popupRef.current) {
+        popupRef.current.remove();
+      }
       map.current?.remove();
     };
   }, [properties, onPropertyClick, accessToken]);
