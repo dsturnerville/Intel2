@@ -121,9 +121,11 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
 
         el.addEventListener('mouseenter', () => {
           el.style.transform = 'scale(1.2)';
+          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)';
         });
         el.addEventListener('mouseleave', () => {
           el.style.transform = 'scale(1)';
+          el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         });
         el.addEventListener('click', () => {
           onPropertyClick?.(dp.propertyId);
