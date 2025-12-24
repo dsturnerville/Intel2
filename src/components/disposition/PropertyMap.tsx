@@ -226,10 +226,10 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         const imageAlt = firstImage?.title || 'Property';
         
         const occupancyStatus = dp.property.occupancyStatus || 'Vacant';
-        const occupancyColors: Record<string, { bg: string; text: string }> = {
-          'Occupied': { bg: 'rgba(22, 163, 74, 0.5)', text: '#ffffff' },
-          'Vacant': { bg: 'rgba(220, 38, 38, 0.5)', text: '#ffffff' },
-          'Notice Given': { bg: 'rgba(245, 158, 11, 0.5)', text: '#ffffff' }
+        const occupancyColors: Record<string, { bg: string; border: string; text: string }> = {
+          'Occupied': { bg: 'rgba(22, 163, 74, 0.25)', border: 'rgba(22, 163, 74, 0.6)', text: '#ffffff' },
+          'Vacant': { bg: 'rgba(220, 38, 38, 0.25)', border: 'rgba(220, 38, 38, 0.6)', text: '#ffffff' },
+          'Notice Given': { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.6)', text: '#ffffff' }
         };
         const occupancyStyle = occupancyColors[occupancyStatus] || occupancyColors['Vacant'];
         
@@ -241,7 +241,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
                 alt="${imageAlt}" 
                 style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
               />
-              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 1px 3px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.25px;">
+              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 7px; font-weight: 600; padding: 1px 3px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.25px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
                 ${occupancyStatus}
               </div>
             </div>
