@@ -47,6 +47,7 @@ import {
   Handshake,
   List,
   Map,
+  FolderOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -305,7 +306,7 @@ export default function DispositionDetail() {
 
       <main className="container py-6">
         <Tabs defaultValue="portfolio" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="portfolio" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
               Summary
@@ -317,6 +318,10 @@ export default function DispositionDetail() {
             <TabsTrigger value="details" className="gap-2">
               <FileText className="h-4 w-4" />
               Details
+            </TabsTrigger>
+            <TabsTrigger value="files" className="gap-2">
+              <FolderOpen className="h-4 w-4" />
+              Files
             </TabsTrigger>
             <TabsTrigger value="deals" className="gap-2">
               <Handshake className="h-4 w-4" />
@@ -495,7 +500,30 @@ export default function DispositionDetail() {
             </div>
           </TabsContent>
 
-          {/* Tab 4: Deals */}
+          {/* Tab 4: Files */}
+          <TabsContent value="files" className="space-y-6">
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                  Disposition Files
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <FolderOpen className="h-10 w-10 text-muted-foreground/50 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    No files uploaded yet
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Upload documents, reports, and other files related to this disposition
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 5: Deals */}
           <TabsContent value="deals" className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
