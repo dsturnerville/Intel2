@@ -73,8 +73,73 @@
     --sidebar-ring: 160 84% 39%;
   }
 
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 160 84% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 35%;
+
+    /* Custom tokens for disposition module */
+    --gain: 160 84% 35%;
+    --loss: 0 72% 51%;
+    --pending: 38 92% 50%;
+    --draft: 220 9% 46%;
+    --approved: 160 84% 35%;
+    --archived: 220 9% 46%;
+
+    /* Table tokens */
+    --table-header: 220 14% 96%;
+    --table-row-hover: 220 14% 96%;
+    --table-border: 220 13% 91%;
+
+    /* Input vs Output distinction */
+    --input-bg: 0 0% 100%;
+    --output-bg: 220 14% 96%;
+    --input-border: 160 60% 40%;
+    --output-border: 220 13% 85%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 160 84% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 160 84% 35%;
+  }
+
   .dark {
-    /* Already dark by default */
+    /* Already dark by default - same as :root */
   }
 }
 

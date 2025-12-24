@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -10,11 +11,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, ChevronDown } from 'lucide-react';
+import { LogOut, User, ChevronDown, Sun, Moon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -64,6 +66,13 @@ export function UserMenu() {
         <DropdownMenuItem className="gap-2 cursor-pointer">
           <User className="h-4 w-4" />
           Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          className="gap-2 cursor-pointer"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
