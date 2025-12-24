@@ -280,7 +280,7 @@ export default function DispositionDetail() {
                   value={disposition.status}
                   onValueChange={(value) => handleStatusChange(value as DispositionStatus)}
                 >
-                  <SelectTrigger className="w-[160px] bg-input border-border">
+                  <SelectTrigger className="w-[160px] bg-background border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
