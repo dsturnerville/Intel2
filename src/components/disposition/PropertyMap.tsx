@@ -225,14 +225,25 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         const imageUrl = hasImage ? firstImage.url : '/images/default-home.png';
         const imageAlt = firstImage?.title || 'Property';
         
+        const occupancyStatus = dp.property.occupancyStatus || 'Vacant';
+        const occupancyColors: Record<string, { bg: string; text: string }> = {
+          'Occupied': { bg: '#16a34a', text: '#ffffff' },
+          'Vacant': { bg: '#dc2626', text: '#ffffff' },
+          'Notice Given': { bg: '#f59e0b', text: '#ffffff' }
+        };
+        const occupancyStyle = occupancyColors[occupancyStatus] || occupancyColors['Vacant'];
+        
         const popupContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
-            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: #ffffff;">
+            <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: #ffffff; position: relative;">
               <img 
                 src="${imageUrl}" 
                 alt="${imageAlt}" 
                 style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
               />
+              <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+                ${occupancyStatus}
+              </div>
             </div>
             <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
               ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
