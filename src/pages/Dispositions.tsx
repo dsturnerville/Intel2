@@ -25,7 +25,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/disposition/StatusBadge';
-import { UserMenu } from '@/components/UserMenu';
 import { useDispositionsWithAggregates, useMarkets } from '@/hooks/useDispositions';
 import { formatCurrency } from '@/utils/calculations';
 import { DispositionStatus, DispositionType, DispositionFilters } from '@/types/disposition';
@@ -129,15 +128,12 @@ export default function Dispositions() {
                 Underwrite and manage property sales
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Link to="/dispositions/new">
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  New Disposition
-                </Button>
-              </Link>
-              <UserMenu />
-            </div>
+            <Link to="/dispositions/new">
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Disposition
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
