@@ -10,14 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +19,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -41,6 +40,8 @@ import {
   Square,
   ChevronRight,
   SlidersHorizontal,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 
 import { Json } from '@/integrations/supabase/types';
@@ -77,13 +78,17 @@ const parseImages = (images: Json): PropertyImage[] => {
   );
 };
 
+type OccupancyStatus = 'Occupied' | 'Vacant' | 'Notice Given';
+
 interface PropertyFilters {
-  market?: string;
-  occupancyStatus?: 'Occupied' | 'Vacant' | 'Notice Given';
+  markets: string[];
+  occupancyStatuses: OccupancyStatus[];
 }
 
+const OCCUPANCY_STATUSES: OccupancyStatus[] = ['Occupied', 'Vacant', 'Notice Given'];
+
 export default function Properties() {
-  const [filters, setFilters] = useState<PropertyFilters>({});
+  const [filters, setFilters] = useState<PropertyFilters>({ markets: [], occupancyStatuses: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
@@ -122,13 +127,13 @@ export default function Properties() {
         }
       }
 
-      // Market filter
-      if (filters.market && property.market !== filters.market) {
+      // Market filter (multi-select)
+      if (filters.markets.length > 0 && !filters.markets.includes(property.market)) {
         return false;
       }
 
-      // Occupancy filter
-      if (filters.occupancyStatus && property.occupancy_status !== filters.occupancyStatus) {
+      // Occupancy filter (multi-select)
+      if (filters.occupancyStatuses.length > 0 && !filters.occupancyStatuses.includes(property.occupancy_status)) {
         return false;
       }
 
@@ -137,12 +142,30 @@ export default function Properties() {
   }, [searchQuery, filters, properties]);
 
   const clearFilters = () => {
-    setFilters({});
+    setFilters({ markets: [], occupancyStatuses: [] });
     setSearchQuery('');
   };
 
-  const hasActiveFilters = searchQuery || filters.market || filters.occupancyStatus;
-  const activeFilterCount = (filters.market ? 1 : 0) + (filters.occupancyStatus ? 1 : 0);
+  const hasActiveFilters = searchQuery || filters.markets.length > 0 || filters.occupancyStatuses.length > 0;
+  const activeFilterCount = filters.markets.length + filters.occupancyStatuses.length;
+
+  const toggleMarket = (market: string) => {
+    setFilters((f) => ({
+      ...f,
+      markets: f.markets.includes(market)
+        ? f.markets.filter((m) => m !== market)
+        : [...f.markets, market],
+    }));
+  };
+
+  const toggleOccupancyStatus = (status: OccupancyStatus) => {
+    setFilters((f) => ({
+      ...f,
+      occupancyStatuses: f.occupancyStatuses.includes(status)
+        ? f.occupancyStatuses.filter((s) => s !== status)
+        : [...f.occupancyStatuses, status],
+    }));
+  };
 
   const getOccupancyBadgeVariant = (status: string) => {
     switch (status) {
@@ -153,6 +176,18 @@ export default function Properties() {
       default:
         return 'gray';
     }
+  };
+
+  const getMarketFilterLabel = () => {
+    if (filters.markets.length === 0) return 'All Markets';
+    if (filters.markets.length === 1) return filters.markets[0];
+    return `${filters.markets.length} markets`;
+  };
+
+  const getStatusFilterLabel = () => {
+    if (filters.occupancyStatuses.length === 0) return 'All Statuses';
+    if (filters.occupancyStatuses.length === 1) return filters.occupancyStatuses[0];
+    return `${filters.occupancyStatuses.length} statuses`;
   };
 
   if (isLoading) {
@@ -223,59 +258,53 @@ export default function Properties() {
               <DialogHeader>
                 <DialogTitle>Filter Properties</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Market</Label>
-                  <Select
-                    value={filters.market || 'all'}
-                    onValueChange={(value) =>
-                      setFilters((f) => ({
-                        ...f,
-                        market: value === 'all' ? undefined : value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full bg-input border-border">
-                      <SelectValue placeholder="All Markets" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Markets</SelectItem>
-                      {markets.map((market) => (
-                        <SelectItem key={market} value={market}>
+              <div className="space-y-6 py-4">
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Markets</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {markets.map((market) => (
+                      <div key={market} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`mobile-market-${market}`}
+                          checked={filters.markets.includes(market)}
+                          onCheckedChange={() => toggleMarket(market)}
+                        />
+                        <label
+                          htmlFor={`mobile-market-${market}`}
+                          className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
                           {market}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Occupancy Status</Label>
-                  <Select
-                    value={filters.occupancyStatus || 'all'}
-                    onValueChange={(value) =>
-                      setFilters((f) => ({
-                        ...f,
-                        occupancyStatus: value === 'all' ? undefined : value as 'Occupied' | 'Vacant' | 'Notice Given',
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full bg-input border-border">
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="Occupied">Occupied</SelectItem>
-                      <SelectItem value="Vacant">Vacant</SelectItem>
-                      <SelectItem value="Notice Given">Notice Given</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Occupancy Status</Label>
+                  <div className="space-y-2">
+                    {OCCUPANCY_STATUSES.map((status) => (
+                      <div key={status} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`mobile-status-${status}`}
+                          checked={filters.occupancyStatuses.includes(status)}
+                          onCheckedChange={() => toggleOccupancyStatus(status)}
+                        />
+                        <label
+                          htmlFor={`mobile-status-${status}`}
+                          className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {status}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="outline"
                     className="flex-1"
                     onClick={() => {
-                      setFilters({});
+                      setFilters({ markets: [], occupancyStatuses: [] });
                     }}
                   >
                     Clear
@@ -291,48 +320,80 @@ export default function Properties() {
             </DialogContent>
           </Dialog>
 
-          {/* Desktop Filters */}
-          <Select
-            value={filters.market || 'all'}
-            onValueChange={(value) =>
-              setFilters((f) => ({
-                ...f,
-                market: value === 'all' ? undefined : value,
-              }))
-            }
-          >
-            <SelectTrigger className="w-[180px] bg-input border-border hidden md:flex">
-              <SelectValue placeholder="Market" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Markets</SelectItem>
-              {markets.map((market) => (
-                <SelectItem key={market} value={market}>
-                  {market}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Desktop Multi-Select Filters */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[180px] justify-between bg-input border-border hidden md:flex">
+                <span className="truncate">{getMarketFilterLabel()}</span>
+                <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0" align="start">
+              <div className="p-2 border-b border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-xs"
+                  onClick={() => setFilters((f) => ({ ...f, markets: [] }))}
+                >
+                  Clear selection
+                </Button>
+              </div>
+              <div className="max-h-64 overflow-y-auto p-2 space-y-1">
+                {markets.map((market) => (
+                  <div
+                    key={market}
+                    className="flex items-center space-x-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+                    onClick={() => toggleMarket(market)}
+                  >
+                    <div className="h-4 w-4 border border-primary rounded-sm flex items-center justify-center">
+                      {filters.markets.includes(market) && (
+                        <Check className="h-3 w-3 text-primary" />
+                      )}
+                    </div>
+                    <span className="text-sm">{market}</span>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
 
-          <Select
-            value={filters.occupancyStatus || 'all'}
-            onValueChange={(value) =>
-              setFilters((f) => ({
-                ...f,
-                occupancyStatus: value === 'all' ? undefined : value as 'Occupied' | 'Vacant' | 'Notice Given',
-              }))
-            }
-          >
-            <SelectTrigger className="w-[160px] bg-input border-border hidden md:flex">
-              <SelectValue placeholder="Occupancy" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="Occupied">Occupied</SelectItem>
-              <SelectItem value="Vacant">Vacant</SelectItem>
-              <SelectItem value="Notice Given">Notice Given</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[160px] justify-between bg-input border-border hidden md:flex">
+                <span className="truncate">{getStatusFilterLabel()}</span>
+                <ChevronDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[180px] p-0" align="start">
+              <div className="p-2 border-b border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-xs"
+                  onClick={() => setFilters((f) => ({ ...f, occupancyStatuses: [] }))}
+                >
+                  Clear selection
+                </Button>
+              </div>
+              <div className="p-2 space-y-1">
+                {OCCUPANCY_STATUSES.map((status) => (
+                  <div
+                    key={status}
+                    className="flex items-center space-x-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+                    onClick={() => toggleOccupancyStatus(status)}
+                  >
+                    <div className="h-4 w-4 border border-primary rounded-sm flex items-center justify-center">
+                      {filters.occupancyStatuses.includes(status) && (
+                        <Check className="h-3 w-3 text-primary" />
+                      )}
+                    </div>
+                    <span className="text-sm">{status}</span>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* Clear Filters */}
           {hasActiveFilters && (
