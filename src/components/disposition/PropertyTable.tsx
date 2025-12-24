@@ -173,12 +173,12 @@ export function PropertyTable({
                   <TableCell className="text-right">
                     <span
                       className={cn(
-                        'text-xs px-2 py-0.5 rounded-full',
+                        'text-xs px-2 py-0.5 rounded-full border',
                         dp.property.occupancyStatus === 'Occupied'
-                          ? 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-badge-success-bg text-badge-success-text border-badge-success-border'
                           : dp.property.occupancyStatus === 'Vacant'
-                          ? 'bg-slate-500/20 text-slate-400'
-                          : 'bg-amber-500/20 text-amber-400'
+                          ? 'bg-badge-gray-bg text-badge-gray-text border-badge-gray-border'
+                          : 'bg-badge-amber-bg text-badge-amber-text border-badge-amber-border'
                       )}
                     >
                       {dp.property.occupancyStatus}
