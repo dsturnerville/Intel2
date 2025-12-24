@@ -287,11 +287,11 @@ export default function DispositionDetail() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="portfolio" className="gap-2">
               <LayoutDashboard className="h-4 w-4" />
-              Portfolio
+              Summary
             </TabsTrigger>
             <TabsTrigger value="underwriting" className="gap-2">
               <Settings className="h-4 w-4" />
-              Underwriting
+              Assumptions
             </TabsTrigger>
             <TabsTrigger value="details" className="gap-2">
               <FileText className="h-4 w-4" />
