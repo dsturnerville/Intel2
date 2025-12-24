@@ -25,13 +25,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/disposition/StatusBadge';
-import {
-  mockDispositions,
-  getDispositionProperties,
-  getAllMarkets,
-} from '@/data/mockData';
-import { calculateDispositionAggregates, formatCurrency } from '@/utils/calculations';
-import { Disposition, DispositionStatus, DispositionType, DispositionFilters } from '@/types/disposition';
+import { useDispositionsWithAggregates, useMarkets } from '@/hooks/useDispositions';
+import { formatCurrency } from '@/utils/calculations';
+import { DispositionStatus, DispositionType, DispositionFilters } from '@/types/disposition';
 import {
   Search,
   Plus,
@@ -44,23 +40,25 @@ import {
   ChevronRight,
   Filter,
   X,
+  Loader2,
 } from 'lucide-react';
 
 export default function Dispositions() {
   const [filters, setFilters] = useState<DispositionFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
 
-  const markets = getAllMarkets();
+  const { dispositionsWithAggregates, loading, error } = useDispositionsWithAggregates();
+  const { markets } = useMarkets();
 
   // Apply filters and search
   const filteredDispositions = useMemo(() => {
-    return mockDispositions.filter((disp) => {
+    return dispositionsWithAggregates.filter(({ disposition }) => {
       // Search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         if (
-          !disp.name.toLowerCase().includes(query) &&
-          !disp.markets.some((m) => m.toLowerCase().includes(query))
+          !disposition.name.toLowerCase().includes(query) &&
+          !disposition.markets.some((m) => m.toLowerCase().includes(query))
         ) {
           return false;
         }
@@ -68,31 +66,22 @@ export default function Dispositions() {
 
       // Status filter
       if (filters.status && filters.status.length > 0) {
-        if (!filters.status.includes(disp.status)) return false;
+        if (!filters.status.includes(disposition.status)) return false;
       }
 
       // Type filter
       if (filters.type && filters.type.length > 0) {
-        if (!filters.type.includes(disp.type)) return false;
+        if (!filters.type.includes(disposition.type)) return false;
       }
 
       // Market filter
       if (filters.markets && filters.markets.length > 0) {
-        if (!disp.markets.some((m) => filters.markets!.includes(m))) return false;
+        if (!disposition.markets.some((m) => filters.markets!.includes(m))) return false;
       }
 
       return true;
     });
-  }, [searchQuery, filters]);
-
-  // Calculate aggregates for each disposition
-  const dispositionsWithAggregates = useMemo(() => {
-    return filteredDispositions.map((disp) => {
-      const properties = getDispositionProperties(disp.id);
-      const aggregates = calculateDispositionAggregates(properties);
-      return { disposition: disp, aggregates, propertyCount: properties.length };
-    });
-  }, [filteredDispositions]);
+  }, [searchQuery, filters, dispositionsWithAggregates]);
 
   const clearFilters = () => {
     setFilters({});
@@ -104,6 +93,28 @@ export default function Dispositions() {
     (filters.status && filters.status.length > 0) ||
     (filters.type && filters.type.length > 0) ||
     (filters.markets && filters.markets.length > 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Loading dispositions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-2">Error loading dispositions</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,7 +235,7 @@ export default function Dispositions() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Filter className="h-4 w-4" />
           <span>
-            {filteredDispositions.length} of {mockDispositions.length} dispositions
+            {filteredDispositions.length} of {dispositionsWithAggregates.length} dispositions
           </span>
         </div>
 
@@ -261,7 +272,7 @@ export default function Dispositions() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {dispositionsWithAggregates.map(({ disposition, aggregates, propertyCount }) => {
+              {filteredDispositions.map(({ disposition, aggregates, propertyCount }) => {
                 const isGain = aggregates.totalGainLossVsBasis >= 0;
 
                 return (
@@ -282,7 +293,7 @@ export default function Dispositions() {
                             {disposition.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {disposition.markets.join(', ')}
+                            {disposition.markets.join(', ') || 'No markets'}
                           </p>
                         </div>
                       </Link>
@@ -370,10 +381,14 @@ export default function Dispositions() {
           </Table>
         </div>
 
-        {filteredDispositions.length === 0 && (
+        {filteredDispositions.length === 0 && !loading && (
           <div className="text-center py-12">
             <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-muted-foreground">No dispositions found</p>
+            <p className="text-muted-foreground">
+              {dispositionsWithAggregates.length === 0 
+                ? 'No dispositions yet. Create your first disposition to get started.'
+                : 'No dispositions found'}
+            </p>
             {hasActiveFilters && (
               <Button variant="link" onClick={clearFilters} className="mt-2">
                 Clear filters
