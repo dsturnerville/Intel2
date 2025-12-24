@@ -21,7 +21,7 @@ export function LinkedDeal({ deal, onCreateDeal }: LinkedDealProps) {
           </p>
           <Button onClick={onCreateDeal} className="gap-2">
             <Plus className="h-4 w-4" />
-            Create Deal from Disposition
+            Add New Deal
           </Button>
         </CardContent>
       </Card>
