@@ -90,11 +90,43 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         style: getMapStyle(),
         center,
         zoom,
-        pitch: 0,
+        pitch: 45,
+        bearing: -10,
       });
 
       map.current.on('load', () => {
         setIsTokenValid(true);
+      });
+
+      // Add 3D terrain after style loads
+      map.current.on('style.load', () => {
+        if (!map.current) return;
+        
+        // Add terrain source
+        if (!map.current.getSource('mapbox-dem')) {
+          map.current.addSource('mapbox-dem', {
+            type: 'raster-dem',
+            url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+            tileSize: 512,
+            maxzoom: 14,
+          });
+        }
+
+        // Enable 3D terrain
+        map.current.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+
+        // Add sky atmosphere for realism
+        if (!map.current.getLayer('sky')) {
+          map.current.addLayer({
+            id: 'sky',
+            type: 'sky',
+            paint: {
+              'sky-type': 'atmosphere',
+              'sky-atmosphere-sun': [0.0, 90.0],
+              'sky-atmosphere-sun-intensity': 15,
+            },
+          });
+        }
       });
 
       map.current.on('error', (e) => {
@@ -107,7 +139,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       // Add navigation controls
       map.current.addControl(
         new mapboxgl.NavigationControl({
-          visualizePitch: false,
+          visualizePitch: true,
         }),
         'top-right'
       );
