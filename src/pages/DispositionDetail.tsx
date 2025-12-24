@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import { PortfolioSummary } from '@/components/disposition/PortfolioSummary';
 import { AddPropertyDialog } from '@/components/disposition/AddPropertyDialog';
 import { LinkedDeal } from '@/components/disposition/LinkedDeal';
 import { PropertyMap } from '@/components/disposition/PropertyMap';
+import { SummaryPdfContent } from '@/components/disposition/SummaryPdfContent';
 import {
   useDisposition,
   useDispositionProperties,
@@ -47,8 +48,10 @@ import {
   Handshake,
   List,
   Map,
+  FileDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePdfExport } from '@/hooks/usePdfExport';
 
 export default function DispositionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -63,6 +66,10 @@ export default function DispositionDetail() {
   const [isAddPropertyOpen, setIsAddPropertyOpen] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  
+  // PDF export
+  const pdfContentRef = useRef<HTMLDivElement>(null);
+  const { generatePdf, isGenerating } = usePdfExport();
 
   // Mutations
   const { 
@@ -204,6 +211,22 @@ export default function DispositionDetail() {
     toast.info('Create Deal functionality would be implemented here');
   };
 
+  const handleDownloadPdf = async () => {
+    if (!pdfContentRef.current || !disposition) return;
+    
+    const success = await generatePdf(pdfContentRef.current, {
+      filename: `${disposition.name.replace(/[^a-zA-Z0-9]/g, '_')}_summary.pdf`,
+      title: disposition.name,
+      subtitle: `${disposition.type} • ${disposition.status}`,
+    });
+    
+    if (success) {
+      toast.success('PDF downloaded successfully');
+    } else {
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   // Loading state
   if (dispositionLoading || propertiesLoading) {
     return (
@@ -309,6 +332,24 @@ export default function DispositionDetail() {
 
           {/* Tab 1: Portfolio Summary & Properties */}
           <TabsContent value="portfolio" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div /> {/* Spacer */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadPdf}
+                disabled={isGenerating}
+                className="gap-2"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <FileDown className="h-3 w-3" />
+                )}
+                Download PDF
+              </Button>
+            </div>
+            
             <PortfolioSummary aggregates={aggregates} />
 
             <div className="space-y-4">
@@ -497,6 +538,18 @@ export default function DispositionDetail() {
         availableProperties={availableProperties}
         onAddProperties={handleAddProperties}
       />
+
+      {/* Hidden PDF Content for capture */}
+      <div className="fixed left-[-9999px] top-0 overflow-hidden">
+        <SummaryPdfContent
+          ref={pdfContentRef}
+          dispositionName={disposition.name}
+          status={disposition.status}
+          properties={properties}
+          aggregates={aggregates}
+          defaults={disposition.defaults}
+        />
+      </div>
     </div>
   );
 }
