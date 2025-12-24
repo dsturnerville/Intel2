@@ -240,8 +240,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
               ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Net: TBD'}
               ${gainLossAmount !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${trendingIcon}${formatCurrency(Math.abs(gainLossAmount))}</span>` : ''}
             </div>
-            <div style="font-size: 11px; color: #999;">
-              ${dp.property.address}, ${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}
+            <div style="font-size: 11px; color: #999; line-height: 1.4;">
+              <div>${dp.property.address}</div>
+              <div>${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}</div>
             </div>
           </div>
         `;
