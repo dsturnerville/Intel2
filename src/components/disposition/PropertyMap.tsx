@@ -133,11 +133,11 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     
     return `
       <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
-        <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: #ffffff; position: relative;">
+        <div style="margin: -10px -10px 8px -10px; border-radius: 8px 8px 0 0; overflow: hidden; background: ${hasImage ? '#ffffff' : '#f5f5f5'}; position: relative;">
           <img 
             src="${imageUrl}" 
             alt="${imageAlt}" 
-            style="width: 100%; height: 100px; object-fit: ${hasImage ? 'cover' : 'contain'}; display: block;"
+            style="width: 100%; height: 100px; object-fit: cover; display: block; background: ${hasImage ? 'transparent' : '#f5f5f5'};"
           />
           <div style="position: absolute; bottom: 6px; left: 6px; background: ${occupancyStyle.bg}; color: ${occupancyStyle.text}; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 9999px; border: 1px solid ${occupancyStyle.border}; backdrop-filter: blur(4px);">
             ${occupancyStatus}
