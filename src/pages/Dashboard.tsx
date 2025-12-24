@@ -180,8 +180,8 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container h-full">
-          <div className="flex h-full items-center justify-between">
+        <div className="h-full px-6">
+          <div className="flex h-full items-center">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
               <p className="text-sm text-muted-foreground mt-1">
@@ -192,7 +192,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="container py-6 space-y-6">
+      <main className="px-6 py-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpiData.map((kpi) => {

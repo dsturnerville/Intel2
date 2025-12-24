@@ -125,7 +125,7 @@ export default function PropertyDetail() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container h-full">
+        <div className="h-full px-6">
           <div className="flex h-full items-center gap-4">
             <Link to="/properties">
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -146,7 +146,7 @@ export default function PropertyDetail() {
         </div>
       </header>
 
-      <main className="container py-6">
+      <main className="px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">

@@ -256,7 +256,7 @@ export default function DispositionDetail() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container h-full">
+        <div className="h-full px-6">
           <div className="flex h-full items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/dispositions">
@@ -304,7 +304,7 @@ export default function DispositionDetail() {
         </div>
       </header>
 
-      <main className="container py-6">
+      <main className="px-6 py-6">
         <Tabs defaultValue="portfolio" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="portfolio" className="gap-2">
