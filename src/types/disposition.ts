@@ -14,6 +14,11 @@
  * Property - Represents a single-family home in the portfolio
  * This is an existing object in the system with core attributes
  */
+export interface PropertyImage {
+  title: string;
+  url: string;
+}
+
 export interface Property {
   id: string;
   address: string;
@@ -45,6 +50,9 @@ export interface Property {
   estimatedMarketValue: number;
   lastAppraisalDate?: string;
   lastAppraisalValue?: number;
+  
+  // Images
+  images?: PropertyImage[];
 }
 
 // ============================================================================
