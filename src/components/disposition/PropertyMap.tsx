@@ -138,26 +138,35 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
 
         el.appendChild(inner);
 
-        // Create popup content
+        // Create popup content with disposition details
+        const gainLossPercent = dp.outputs.gainLossPercent;
+        const gainLossColor = gainLossPercent && gainLossPercent >= 0 ? '#16a34a' : '#dc2626';
+        const gainLossSign = gainLossPercent && gainLossPercent >= 0 ? '+' : '';
+        
         const popupContent = `
-          <div style="color: #1a1a2e; font-family: system-ui, sans-serif; min-width: 200px;">
-            <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">${dp.property.address}</div>
-            <div style="font-size: 12px; color: #666; margin-bottom: 8px;">${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-              <div>
-                <div style="color: #888;">Beds/Baths</div>
-                <div style="font-weight: 500;">${dp.property.beds}bd / ${dp.property.baths}ba</div>
-              </div>
-              <div>
-                <div style="color: #888;">Sq Ft</div>
-                <div style="font-weight: 500;">${dp.property.sqft.toLocaleString()}</div>
-              </div>
-              ${dp.outputs.projectedSalePrice ? `
-                <div style="grid-column: span 2;">
-                  <div style="color: #888;">Projected Sale</div>
-                  <div style="font-weight: 600; color: #00478A;">${formatCurrency(dp.outputs.projectedSalePrice)}</div>
+          <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 220px;">
+            <div style="font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px;">
+              ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
+            </div>
+            <div style="font-size: 13px; color: #666; margin-bottom: 12px;">
+              ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Projected Sale Price'}
+            </div>
+            <div style="display: flex; gap: 16px; font-size: 12px; margin-bottom: 12px;">
+              ${gainLossPercent !== null ? `
+                <div>
+                  <span style="color: #888;">Gain/Loss</span>
+                  <span style="margin-left: 6px; font-weight: 600; color: ${gainLossColor};">${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>
                 </div>
               ` : ''}
+              ${dp.inputs.capRate ? `
+                <div>
+                  <span style="color: #888;">Cap Rate</span>
+                  <span style="margin-left: 6px; font-weight: 600; color: #1a1a2e;">${(dp.inputs.capRate * 100).toFixed(1)}%</span>
+                </div>
+              ` : ''}
+            </div>
+            <div style="font-size: 13px; color: #7c3aed; font-weight: 500;">
+              ${dp.property.address}, ${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}
             </div>
           </div>
         `;
