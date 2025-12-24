@@ -260,6 +260,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           closeButton: true,
           closeOnClick: false,
           maxWidth: '300px',
+          className: 'custom-popup',
         }).setHTML(popupContent);
 
         const marker = new mapboxgl.Marker(el)
