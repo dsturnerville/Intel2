@@ -16,8 +16,8 @@
     --popover: 222 47% 10%;
     --popover-foreground: 210 40% 96%;
 
-    --primary: 160 84% 39%;
-    --primary-foreground: 222 47% 6%;
+    --primary: 209 100% 27%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 222 30% 14%;
     --secondary-foreground: 210 40% 90%;
@@ -39,7 +39,7 @@
 
     --border: 222 30% 18%;
     --input: 222 30% 14%;
-    --ring: 160 84% 39%;
+    --ring: 209 100% 27%;
 
     --radius: 0.5rem;
 
@@ -65,12 +65,12 @@
     /* Sidebar */
     --sidebar-background: 222 47% 7%;
     --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 160 84% 39%;
-    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-primary: 209 100% 27%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 30% 14%;
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 222 30% 15%;
-    --sidebar-ring: 160 84% 39%;
+    --sidebar-ring: 209 100% 27%;
   }
 
   .light {
@@ -83,7 +83,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 160 84% 35%;
+    --primary: 209 100% 27%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
@@ -106,7 +106,7 @@
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 160 84% 35%;
+    --ring: 209 100% 27%;
 
     /* Custom tokens for disposition module */
     --gain: 160 84% 35%;
@@ -130,12 +130,12 @@
     /* Sidebar */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 160 84% 35%;
+    --sidebar-primary: 209 100% 27%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 96%;
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 160 84% 35%;
+    --sidebar-ring: 209 100% 27%;
   }
 
   .dark {
