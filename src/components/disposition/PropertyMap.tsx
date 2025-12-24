@@ -101,31 +101,43 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         el.style.cssText = `
           width: 32px;
           height: 32px;
-          background: hsl(209, 100%, 27%);
-          border: 2px solid white;
-          border-radius: 50%;
           cursor: pointer;
+        `;
+
+        // IMPORTANT: Mapbox positions markers using CSS transforms.
+        // If we set `transform` on the marker element itself, it overrides Mapbox's transform and the marker jumps.
+        // So we animate an inner element instead.
+        const inner = document.createElement('div');
+        inner.style.cssText = `
+          width: 32px;
+          height: 32px;
+          background: hsl(var(--primary));
+          border: 2px solid hsl(var(--primary-foreground));
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          transition: transform 0.2s ease;
+          box-shadow: 0 2px 8px hsl(0 0% 0% / 0.35);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
           transform-origin: center center;
         `;
-        el.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+        inner.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary-foreground))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
         `;
 
+        el.appendChild(inner);
+
         el.addEventListener('mouseenter', () => {
-          el.style.transform = 'scale(1.2)';
-          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.4)';
+          inner.style.transform = 'scale(1.2)';
+          inner.style.boxShadow = '0 6px 18px hsl(0 0% 0% / 0.45)';
         });
         el.addEventListener('mouseleave', () => {
-          el.style.transform = 'scale(1)';
-          el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+          inner.style.transform = 'scale(1)';
+          inner.style.boxShadow = '0 2px 8px hsl(0 0% 0% / 0.35)';
         });
         el.addEventListener('click', () => {
           onPropertyClick?.(dp.propertyId);
