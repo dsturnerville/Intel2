@@ -314,6 +314,20 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
+        // Load custom home icon for property markers
+        const homeIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
+        const homeIconBlob = new Blob([homeIconSvg], { type: 'image/svg+xml' });
+        const homeIconUrl = URL.createObjectURL(homeIconBlob);
+        
+        const homeImage = new Image(24, 24);
+        homeImage.onload = () => {
+          if (map.current && !map.current.hasImage('home-icon')) {
+            map.current.addImage('home-icon', homeImage);
+          }
+          URL.revokeObjectURL(homeIconUrl);
+        };
+        homeImage.src = homeIconUrl;
+
         // House icon for unclustered points
         if (!map.current.getLayer('unclustered-icon')) {
           map.current.addLayer({
@@ -322,11 +336,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             source: 'properties',
             filter: ['!', ['has', 'point_count']],
             layout: {
-              'text-field': '⌂',
-              'text-size': 14,
-            },
-            paint: {
-              'text-color': '#ffffff',
+              'icon-image': 'home-icon',
+              'icon-size': 0.6,
+              'icon-allow-overlap': true,
             },
           });
         }
