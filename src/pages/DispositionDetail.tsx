@@ -16,6 +16,7 @@ import { UnderwritingDefaults } from '@/components/disposition/UnderwritingDefau
 import { PortfolioSummary } from '@/components/disposition/PortfolioSummary';
 import { AddPropertyDialog } from '@/components/disposition/AddPropertyDialog';
 import { LinkedDeal } from '@/components/disposition/LinkedDeal';
+import { PropertyMap } from '@/components/disposition/PropertyMap';
 import {
   useDisposition,
   useDispositionProperties,
@@ -349,13 +350,17 @@ export default function DispositionDetail() {
               </div>
 
               {properties.length > 0 ? (
-                <PropertyTable
-                  properties={properties}
-                  defaults={disposition.defaults}
-                  onRemoveProperty={handleRemoveProperty}
-                  onUpdateProperty={handleUpdateProperty}
-                  readOnly={isReadOnly}
-                />
+                viewMode === 'list' ? (
+                  <PropertyTable
+                    properties={properties}
+                    defaults={disposition.defaults}
+                    onRemoveProperty={handleRemoveProperty}
+                    onUpdateProperty={handleUpdateProperty}
+                    readOnly={isReadOnly}
+                  />
+                ) : (
+                  <PropertyMap properties={properties} />
+                )
               ) : (
                 <Card className="border-border border-dashed bg-muted/20">
                   <CardContent className="flex flex-col items-center justify-center py-12">

@@ -50,6 +50,8 @@ function transformProperty(row: Tables<'properties'>): Property {
     sqft: row.sqft,
     yearBuilt: row.year_built || 2000,
     lotSize: row.lot_size || 0,
+    latitude: row.latitude ? Number(row.latitude) : undefined,
+    longitude: row.longitude ? Number(row.longitude) : undefined,
     acquisitionDate: row.acquisition_date || '',
     acquisitionPrice: Number(row.acquisition_price) || 0,
     acquisitionBasis: Number(row.acquisition_basis) || 0,

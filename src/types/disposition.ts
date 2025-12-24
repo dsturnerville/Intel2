@@ -28,6 +28,8 @@ export interface Property {
   sqft: number;
   yearBuilt: number;
   lotSize: number; // in sq ft
+  latitude?: number;
+  longitude?: number;
   
   // Financial attributes
   acquisitionDate: string; // ISO date
