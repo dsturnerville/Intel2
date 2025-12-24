@@ -566,7 +566,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         });
 
-        // Click on unclustered point to show popup
+        // Click on unclustered point to show popup and zoom in
         map.current.on('click', 'unclustered-point', (e) => {
           if (!e.features?.length) return;
           
@@ -576,6 +576,13 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           const dp = propertyMap.get(propertyId);
           
           if (!dp) return;
+
+          // Center and zoom to ~2 miles (zoom level 14)
+          map.current!.easeTo({
+            center: geometry.coordinates as [number, number],
+            zoom: 14,
+            duration: 500,
+          });
 
           // Remove existing popup
           if (popupRef.current) {
