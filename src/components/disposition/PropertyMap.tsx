@@ -102,12 +102,33 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     const imageAlt = firstImage?.title || 'Property';
     
     const occupancyStatus = dp.property.occupancyStatus || 'Vacant';
-    const occupancyColors: Record<string, { bg: string; border: string; text: string }> = {
-      'Occupied': { bg: 'rgba(22, 163, 74, 0.25)', border: 'rgba(22, 163, 74, 0.6)', text: '#1a1a2e' },
-      'Vacant': { bg: 'rgba(220, 38, 38, 0.25)', border: 'rgba(220, 38, 38, 0.6)', text: '#1a1a2e' },
-      'Notice Given': { bg: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.6)', text: '#1a1a2e' }
+    
+    // Get computed styles for Untitled UI badge colors
+    const computedStyle = getComputedStyle(document.documentElement);
+    
+    const getBadgeColors = (status: string) => {
+      if (status === 'Occupied') {
+        return {
+          bg: `hsl(${computedStyle.getPropertyValue('--badge-success-bg').trim()})`,
+          border: `hsl(${computedStyle.getPropertyValue('--badge-success-border').trim()})`,
+          text: `hsl(${computedStyle.getPropertyValue('--badge-success-text').trim()})`
+        };
+      } else if (status === 'Notice Given') {
+        return {
+          bg: `hsl(${computedStyle.getPropertyValue('--badge-amber-bg').trim()})`,
+          border: `hsl(${computedStyle.getPropertyValue('--badge-amber-border').trim()})`,
+          text: `hsl(${computedStyle.getPropertyValue('--badge-amber-text').trim()})`
+        };
+      } else {
+        return {
+          bg: `hsl(${computedStyle.getPropertyValue('--badge-gray-bg').trim()})`,
+          border: `hsl(${computedStyle.getPropertyValue('--badge-gray-border').trim()})`,
+          text: `hsl(${computedStyle.getPropertyValue('--badge-gray-text').trim()})`
+        };
+      }
     };
-    const occupancyStyle = occupancyColors[occupancyStatus] || occupancyColors['Vacant'];
+    
+    const occupancyStyle = getBadgeColors(occupancyStatus);
     
     return `
       <div style="font-family: system-ui, -apple-system, sans-serif; width: 200px;">
