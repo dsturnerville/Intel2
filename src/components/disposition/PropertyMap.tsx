@@ -213,9 +213,12 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         el.appendChild(inner);
 
         // Create popup content with disposition details
-        const gainLossPercent = dp.outputs.gainLossPercent;
-        const gainLossColor = gainLossPercent && gainLossPercent >= 0 ? '#16a34a' : '#dc2626';
-        const gainLossSign = gainLossPercent && gainLossPercent >= 0 ? '+' : '';
+        const gainLossAmount = dp.outputs.gainLossVsBasis;
+        const isGain = gainLossAmount && gainLossAmount >= 0;
+        const gainLossColor = isGain ? '#16a34a' : '#dc2626';
+        const trendingIcon = isGain 
+          ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`
+          : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`;
         const firstImage = dp.property.images?.[0];
         const imageUrl = firstImage?.url || '/images/property-placeholder.png';
         const imageAlt = firstImage?.title || 'Property';
@@ -234,7 +237,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
               ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Net: TBD'}
-              ${gainLossPercent !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>` : ''}
+              ${gainLossAmount !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${trendingIcon}${formatCurrency(Math.abs(gainLossAmount))}</span>` : ''}
             </div>
             <div style="font-size: 11px; color: #999;">
               ${dp.property.address}, ${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}
