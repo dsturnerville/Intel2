@@ -231,10 +231,10 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             </div>
             <div style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 2px;">
               ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
-              ${gainLossPercent !== null ? `<span style="font-size: 12px; font-weight: 500; color: ${gainLossColor};"> ${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>` : ''}
             </div>
             <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
-              ${dp.property.beds} Beds, ${dp.property.baths} Baths, ${dp.property.sqft?.toLocaleString() || '—'} sqft
+              ${dp.outputs.netSaleProceeds ? `Net: ${formatCurrency(dp.outputs.netSaleProceeds)}` : 'Net: TBD'}
+              ${gainLossPercent !== null ? `<span style="margin-left: 8px; font-weight: 500; color: ${gainLossColor};">${gainLossSign}${gainLossPercent?.toFixed(1)}%</span>` : ''}
             </div>
             <div style="font-size: 11px; color: #999;">
               ${dp.property.address}, ${dp.property.city}, ${dp.property.state} ${dp.property.zipCode}
