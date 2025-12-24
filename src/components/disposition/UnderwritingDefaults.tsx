@@ -49,7 +49,7 @@ export function UnderwritingDefaults({
           <div className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-base font-semibold">
-              Portfolio Underwriting Defaults
+              Underwriting Assumptions
             </CardTitle>
           </div>
           {!readOnly && (
