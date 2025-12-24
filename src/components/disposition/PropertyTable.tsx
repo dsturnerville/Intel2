@@ -9,9 +9,11 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { DispositionProperty, DispositionDefaults } from '@/types/disposition';
 import { formatCurrency, formatPercent, calculatePropertyUnderwriting } from '@/utils/calculations';
+import { PropertyUnderwritingEditor } from './PropertyUnderwritingEditor';
 import { 
   Trash2, 
   ChevronDown, 
@@ -278,7 +280,17 @@ export function PropertyTable({
                 {/* Expanded row with details */}
                 {isExpanded && (
                   <TableRow className="bg-muted/30">
-                    <TableCell colSpan={readOnly ? 10 : 11} className="p-4">
+                    <TableCell colSpan={readOnly ? 10 : 11} className="p-4 space-y-4">
+                      {/* Underwriting Editor */}
+                      <PropertyUnderwritingEditor
+                        property={dp}
+                        defaults={defaults}
+                        onUpdate={(updates) => onUpdateProperty(dp.propertyId, updates)}
+                        readOnly={readOnly}
+                      />
+                      
+                      <Separator />
+                      
                       <div className="grid grid-cols-4 gap-6">
                         {/* Property Details */}
                         <div className="space-y-2">
@@ -385,10 +397,10 @@ export function PropertyTable({
                           </div>
                         </div>
 
-                        {/* Assumptions */}
+                        {/* Status Indicator */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Assumptions
+                            Override Status
                           </h4>
                           <div className="space-y-1 text-sm">
                             <p>
