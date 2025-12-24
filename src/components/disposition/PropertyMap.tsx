@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Map as MapIcon, ExternalLink, Satellite, Maximize, Minimize, GraduationCap } from 'lucide-react';
+import { Map as MapIcon, ExternalLink, Satellite, Maximize, Minimize, GraduationCap, Waves } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 
 interface PropertyMapProps {
@@ -31,6 +31,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const [isSatellite, setIsSatellite] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSchoolDistricts, setShowSchoolDistricts] = useState(false);
+  const [showFloodZones, setShowFloodZones] = useState(false);
 
   // Handle fullscreen toggle
   const toggleFullscreen = async () => {
@@ -112,6 +113,44 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         .catch(error => console.error('Error fetching school districts:', error));
     }
   }, [showSchoolDistricts, isTokenValid]);
+
+  // Toggle flood zone layer visibility and fetch data
+  useEffect(() => {
+    if (!map.current || !isTokenValid) return;
+    
+    const visibility = showFloodZones ? 'visible' : 'none';
+    
+    if (map.current.getLayer('flood-zone-fill')) {
+      map.current.setLayoutProperty('flood-zone-fill', 'visibility', visibility);
+    }
+    if (map.current.getLayer('flood-zone-outline')) {
+      map.current.setLayoutProperty('flood-zone-outline', 'visibility', visibility);
+    }
+    if (map.current.getLayer('flood-zone-labels')) {
+      map.current.setLayoutProperty('flood-zone-labels', 'visibility', visibility);
+    }
+    
+    // Fetch flood zones when toggled on
+    if (showFloodZones && map.current.getSource('flood-zones')) {
+      const bounds = map.current.getBounds();
+      const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+      
+      // FEMA National Flood Hazard Layer - Flood Hazard Zones
+      const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?where=1%3D1&outFields=FLD_ZONE,ZONE_SUBTY&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.features && map.current) {
+            const source = map.current.getSource('flood-zones') as mapboxgl.GeoJSONSource;
+            if (source) {
+              source.setData(data);
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching flood zones:', error));
+    }
+  }, [showFloodZones, isTokenValid]);
 
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
@@ -344,7 +383,123 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           });
         }
 
-        // Fetch school districts on map move/zoom (debounced)
+        // Function to fetch flood zones from FEMA NFHL
+        const fetchFloodZones = async () => {
+          if (!map.current) return;
+          
+          const bounds = map.current.getBounds();
+          const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+          
+          // FEMA National Flood Hazard Layer - Flood Hazard Zones (Layer 28)
+          const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?where=1%3D1&outFields=FLD_ZONE,ZONE_SUBTY&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+          
+          try {
+            const response = await fetch(url);
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data.features && map.current) {
+              const source = map.current.getSource('flood-zones') as mapboxgl.GeoJSONSource;
+              if (source) {
+                source.setData(data);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching flood zones:', error);
+          }
+        };
+
+        // Add empty flood zone source
+        if (!map.current.getSource('flood-zones')) {
+          map.current.addSource('flood-zones', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: []
+            }
+          });
+        }
+
+        // Flood zone fill layer with color-coded risk levels
+        if (!map.current.getLayer('flood-zone-fill')) {
+          map.current.addLayer({
+            id: 'flood-zone-fill',
+            type: 'fill',
+            source: 'flood-zones',
+            layout: {
+              'visibility': showFloodZones ? 'visible' : 'none'
+            },
+            paint: {
+              'fill-color': [
+                'match',
+                ['get', 'FLD_ZONE'],
+                'A', '#dc2626',      // High risk - red
+                'AE', '#dc2626',
+                'AH', '#dc2626',
+                'AO', '#dc2626',
+                'V', '#991b1b',      // Coastal high risk - darker red
+                'VE', '#991b1b',
+                'X', '#fbbf24',      // Moderate to low risk - amber
+                '#60a5fa'            // Default - blue
+              ],
+              'fill-opacity': 0.25
+            }
+          });
+        }
+
+        // Flood zone outline layer
+        if (!map.current.getLayer('flood-zone-outline')) {
+          map.current.addLayer({
+            id: 'flood-zone-outline',
+            type: 'line',
+            source: 'flood-zones',
+            layout: {
+              'visibility': showFloodZones ? 'visible' : 'none'
+            },
+            paint: {
+              'line-color': [
+                'match',
+                ['get', 'FLD_ZONE'],
+                'A', '#b91c1c',
+                'AE', '#b91c1c',
+                'AH', '#b91c1c',
+                'AO', '#b91c1c',
+                'V', '#7f1d1d',
+                'VE', '#7f1d1d',
+                'X', '#d97706',
+                '#3b82f6'
+              ],
+              'line-width': 1.5,
+              'line-opacity': 0.8
+            }
+          });
+        }
+
+        // Flood zone labels
+        if (!map.current.getLayer('flood-zone-labels')) {
+          map.current.addLayer({
+            id: 'flood-zone-labels',
+            type: 'symbol',
+            source: 'flood-zones',
+            layout: {
+              'visibility': showFloodZones ? 'visible' : 'none',
+              'text-field': ['concat', 'Zone ', ['get', 'FLD_ZONE']],
+              'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+              'text-size': 11,
+              'text-max-width': 8
+            },
+            paint: {
+              'text-color': '#7f1d1d',
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 2,
+              'text-opacity': 0.9
+            },
+            minzoom: 12
+          });
+        }
+
+        // Fetch overlays on map move/zoom (debounced)
         let fetchTimeout: NodeJS.Timeout;
         const debouncedFetch = () => {
           clearTimeout(fetchTimeout);
@@ -352,14 +507,20 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             if (showSchoolDistricts) {
               fetchSchoolDistricts();
             }
+            if (showFloodZones) {
+              fetchFloodZones();
+            }
           }, 300);
         };
 
         map.current.on('moveend', debouncedFetch);
         
-        // Initial fetch if school districts are visible
+        // Initial fetch if overlays are visible
         if (showSchoolDistricts) {
           fetchSchoolDistricts();
+        }
+        if (showFloodZones) {
+          fetchFloodZones();
         }
 
         // Create GeoJSON data for clustering
@@ -760,6 +921,15 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >
           <GraduationCap className="h-4 w-4" />
+        </Toggle>
+        <Toggle 
+          pressed={showFloodZones} 
+          onPressedChange={setShowFloodZones}
+          size="sm"
+          aria-label="Toggle flood zones"
+          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          <Waves className="h-4 w-4" />
         </Toggle>
         <Toggle 
           pressed={isFullscreen} 
