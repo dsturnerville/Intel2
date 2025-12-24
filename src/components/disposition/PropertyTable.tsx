@@ -102,9 +102,6 @@ export function PropertyTable({
               Property
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-              Beds/Baths
-            </TableHead>
-            <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
               Occupancy
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
@@ -166,9 +163,6 @@ export function PropertyTable({
                         </p>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {dp.property.beds}/{dp.property.baths}
                   </TableCell>
                   <TableCell className="text-right">
                     <span
@@ -280,7 +274,7 @@ export function PropertyTable({
                 {/* Expanded row with details */}
                 {isExpanded && (
                   <TableRow className="bg-muted/30">
-                    <TableCell colSpan={readOnly ? 10 : 11} className="p-4 space-y-4">
+                    <TableCell colSpan={readOnly ? 9 : 10} className="p-4 space-y-4">
                       {/* Underwriting Editor */}
                       <PropertyUnderwritingEditor
                         property={dp}
@@ -295,17 +289,13 @@ export function PropertyTable({
                         {/* Property Details */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Property Details
-                          </h4>
-                          <div className="space-y-1 text-sm">
-                            <p>
-                              <span className="text-muted-foreground">Sq Ft:</span>{' '}
-                              <span className="font-mono">{dp.property.sqft.toLocaleString()}</span>
-                            </p>
-                            <p>
-                              <span className="text-muted-foreground">Year Built:</span>{' '}
-                              <span className="font-mono">{dp.property.yearBuilt}</span>
-                            </p>
+                          Property Details
+                        </h4>
+                        <div className="space-y-1 text-sm">
+                          <p>
+                            <span className="text-muted-foreground">Year Built:</span>{' '}
+                            <span className="font-mono">{dp.property.yearBuilt}</span>
+                          </p>
                             <p>
                               <span className="text-muted-foreground">Acquired:</span>{' '}
                               <span className="font-mono">

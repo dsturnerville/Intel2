@@ -28,9 +28,6 @@ export interface Property {
   market: string; // Metro area or market name (e.g., "Dallas-Fort Worth")
   
   // Physical attributes
-  beds: number;
-  baths: number;
-  sqft: number;
   yearBuilt: number;
   lotSize: number; // in sq ft
   latitude?: number;
