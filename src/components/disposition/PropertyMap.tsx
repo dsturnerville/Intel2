@@ -15,6 +15,7 @@ interface PropertyMapProps {
 }
 
 const MAPBOX_TOKEN_KEY = 'mapbox_access_token';
+const DEFAULT_MAPBOX_TOKEN = 'pk.eyJ1IjoiZHR1cm5lci1pbGVob21lcyIsImEiOiJjbG9odHNpNzAwMnV1MmxvN3hnNzhibW9zIn0.nRT3aVvfGU5kJlsSzHXivg';
 
 export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -22,7 +23,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const [accessToken, setAccessToken] = useState<string>(() => {
-    return localStorage.getItem(MAPBOX_TOKEN_KEY) || '';
+    return localStorage.getItem(MAPBOX_TOKEN_KEY) || DEFAULT_MAPBOX_TOKEN;
   });
   const [tokenInput, setTokenInput] = useState('');
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
