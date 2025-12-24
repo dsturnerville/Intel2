@@ -22,6 +22,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const mapWrapperRef = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const isPersistentPopup = useRef<boolean>(false);
   const [accessToken, setAccessToken] = useState<string>(() => {
     return localStorage.getItem(MAPBOX_TOKEN_KEY) || DEFAULT_MAPBOX_TOKEN;
   });
@@ -422,6 +423,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             popupRef.current.remove();
           }
 
+          isPersistentPopup.current = true;
           popupRef.current = new mapboxgl.Popup({
             offset: 15,
             closeButton: true,
@@ -432,6 +434,12 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             .setLngLat(geometry.coordinates as [number, number])
             .setHTML(createPopupContent(dp))
             .addTo(map.current!);
+
+          // Reset persistent flag when popup is closed
+          popupRef.current.on('close', () => {
+            isPersistentPopup.current = false;
+            popupRef.current = null;
+          });
 
           onPropertyClick?.(propertyId);
         });
@@ -447,6 +455,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
 
         map.current.on('mouseenter', 'unclustered-point', (e) => {
           map.current!.getCanvas().style.cursor = 'pointer';
+          
+          // Don't show hover popup if a persistent popup is open
+          if (isPersistentPopup.current) return;
           
           if (!e.features?.length) return;
           
@@ -476,7 +487,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         
         map.current.on('mouseleave', 'unclustered-point', () => {
           map.current!.getCanvas().style.cursor = '';
-          if (popupRef.current) {
+          // Only remove popup on mouseleave if it's not a persistent (clicked) popup
+          if (popupRef.current && !isPersistentPopup.current) {
             popupRef.current.remove();
             popupRef.current = null;
           }
