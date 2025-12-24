@@ -123,6 +123,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         zoom,
         pitch: 45,
         bearing: -10,
+        preserveDrawingBuffer: true, // Required for PDF capture
       });
 
       map.current.on('load', () => {
