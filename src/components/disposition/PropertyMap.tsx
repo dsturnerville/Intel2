@@ -76,7 +76,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     }
   }, [isSatellite]);
 
-  // Toggle school district layer visibility
+  // Toggle school district layer visibility and fetch data
   useEffect(() => {
     if (!map.current || !isTokenValid) return;
     
@@ -90,6 +90,26 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
     }
     if (map.current.getLayer('school-district-labels')) {
       map.current.setLayoutProperty('school-district-labels', 'visibility', visibility);
+    }
+    
+    // Fetch school districts when toggled on
+    if (showSchoolDistricts && map.current.getSource('school-districts')) {
+      const bounds = map.current.getBounds();
+      const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+      
+      const url = `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/14/query?where=1%3D1&outFields=NAME,GEOID&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.features && data.features.length > 0 && map.current) {
+            const source = map.current.getSource('school-districts') as mapboxgl.GeoJSONSource;
+            if (source) {
+              source.setData(data);
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching school districts:', error));
     }
   }, [showSchoolDistricts, isTokenValid]);
 
@@ -228,12 +248,43 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         if (!map.current) return;
         
         // Enable automatic lighting for Mapbox Standard style
-        
-        // Add school district source and layers (from US Census TIGER)
+        map.current.setConfigProperty('basemap', 'lightPreset', 'day');
+
+        // Function to fetch school district boundaries from Census TIGERweb
+        const fetchSchoolDistricts = async () => {
+          if (!map.current) return;
+          
+          const bounds = map.current.getBounds();
+          const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
+          
+          // Census TIGERweb API - Unified School Districts
+          const url = `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/14/query?where=1%3D1&outFields=NAME,GEOID&geometry=${encodeURIComponent(bbox)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+          
+          try {
+            const response = await fetch(url);
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data.features && data.features.length > 0) {
+              const source = map.current.getSource('school-districts') as mapboxgl.GeoJSONSource;
+              if (source) {
+                source.setData(data);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching school districts:', error);
+          }
+        };
+
+        // Add empty school district source
         if (!map.current.getSource('school-districts')) {
           map.current.addSource('school-districts', {
-            type: 'vector',
-            url: 'mapbox://mapbox.boundaries-sch-v3'
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: []
+            }
           });
         }
 
@@ -243,13 +294,12 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             id: 'school-district-fill',
             type: 'fill',
             source: 'school-districts',
-            'source-layer': 'boundaries_school_2',
             layout: {
               'visibility': showSchoolDistricts ? 'visible' : 'none'
             },
             paint: {
               'fill-color': '#3b82f6',
-              'fill-opacity': 0.1
+              'fill-opacity': 0.15
             }
           });
         }
@@ -260,14 +310,13 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             id: 'school-district-outline',
             type: 'line',
             source: 'school-districts',
-            'source-layer': 'boundaries_school_2',
             layout: {
               'visibility': showSchoolDistricts ? 'visible' : 'none'
             },
             paint: {
-              'line-color': '#3b82f6',
-              'line-width': 1.5,
-              'line-opacity': 0.7
+              'line-color': '#2563eb',
+              'line-width': 2,
+              'line-opacity': 0.8
             }
           });
         }
@@ -278,24 +327,40 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
             id: 'school-district-labels',
             type: 'symbol',
             source: 'school-districts',
-            'source-layer': 'boundaries_school_2',
             layout: {
               'visibility': showSchoolDistricts ? 'visible' : 'none',
-              'text-field': ['get', 'name'],
+              'text-field': ['get', 'NAME'],
               'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-              'text-size': 11,
-              'text-max-width': 8
+              'text-size': 12,
+              'text-max-width': 10
             },
             paint: {
               'text-color': '#1e40af',
               'text-halo-color': '#ffffff',
-              'text-halo-width': 1.5,
+              'text-halo-width': 2,
               'text-opacity': 0.9
             },
-            minzoom: 9
+            minzoom: 7
           });
         }
-        map.current.setConfigProperty('basemap', 'lightPreset', 'day');
+
+        // Fetch school districts on map move/zoom (debounced)
+        let fetchTimeout: NodeJS.Timeout;
+        const debouncedFetch = () => {
+          clearTimeout(fetchTimeout);
+          fetchTimeout = setTimeout(() => {
+            if (showSchoolDistricts) {
+              fetchSchoolDistricts();
+            }
+          }, 300);
+        };
+
+        map.current.on('moveend', debouncedFetch);
+        
+        // Initial fetch if school districts are visible
+        if (showSchoolDistricts) {
+          fetchSchoolDistricts();
+        }
 
         // Create GeoJSON data for clustering
         const geojsonData: GeoJSON.FeatureCollection = {
