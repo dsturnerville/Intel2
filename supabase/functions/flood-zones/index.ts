@@ -36,6 +36,7 @@ serve(async (req) => {
     }
 
     if (!bbox || typeof bbox !== "string") {
+      console.log("No bbox provided, returning empty");
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -43,12 +44,26 @@ serve(async (req) => {
 
     const parts = bbox.split(",").map((v) => Number(v));
     if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) {
+      console.log("Invalid bbox format:", bbox);
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const [xmin, ymin, xmax, ymax] = parts;
+    let [xmin, ymin, xmax, ymax] = parts;
+
+    // Limit bbox size to prevent FEMA API timeouts (max ~0.5 degrees)
+    const maxDegrees = 0.5;
+    const centerX = (xmin + xmax) / 2;
+    const centerY = (ymin + ymax) / 2;
+    
+    if ((xmax - xmin) > maxDegrees || (ymax - ymin) > maxDegrees) {
+      xmin = centerX - maxDegrees / 2;
+      xmax = centerX + maxDegrees / 2;
+      ymin = centerY - maxDegrees / 2;
+      ymax = centerY + maxDegrees / 2;
+      console.log("Bbox too large, constraining to:", { xmin, ymin, xmax, ymax });
+    }
 
     // ArcGIS REST expects an envelope object (JSON) for geometryType=esriGeometryEnvelope
     const geometry = {
@@ -69,11 +84,14 @@ serve(async (req) => {
       outSR: "4326",
       returnGeometry: "true",
       f: "geojson",
+      resultRecordCount: "500", // Limit results to prevent timeout
     });
 
     // Use /arcgis/rest (more reliable) rather than /gis/nfhl/rest
     const femaUrl =
       `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?${params.toString()}`;
+
+    console.log("Fetching from FEMA:", femaUrl.slice(0, 200));
 
     const response = await fetch(femaUrl, {
       headers: { Accept: "application/json" },
@@ -85,7 +103,7 @@ serve(async (req) => {
     try {
       parsed = JSON.parse(text);
     } catch {
-      console.error("FEMA response not JSON", response.status, text.slice(0, 200));
+      console.error("FEMA response not JSON", response.status, text.slice(0, 500));
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -95,7 +113,7 @@ serve(async (req) => {
       console.error(
         "FEMA API error",
         response.status,
-        parsed?.error ?? text.slice(0, 200),
+        JSON.stringify(parsed?.error ?? text.slice(0, 500)),
       );
       return new Response(JSON.stringify(emptyFeatureCollection), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -106,6 +124,8 @@ serve(async (req) => {
       type: "FeatureCollection",
       features: Array.isArray(parsed?.features) ? parsed.features : [],
     };
+
+    console.log("Returning", geojson.features.length, "flood zone features");
 
     return new Response(JSON.stringify(geojson), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
