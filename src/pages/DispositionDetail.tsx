@@ -185,8 +185,25 @@ export default function DispositionDetail() {
     }
 
     // Save property-level underwriting changes (including calculated outputs)
+    // Always save effective values - either from defaults or custom inputs
     const propertyUpdatePromises = properties.map(async (dp) => {
-      return updateDispositionProperty(dp.id, dp.inputs, dp.outputs);
+      // Build effective inputs that include default values when useDispositionDefaults is true
+      const effectiveInputs: typeof dp.inputs = dp.inputs.useDispositionDefaults
+        ? {
+            useDispositionDefaults: true,
+            salePriceMethodology: disposition.defaults.salePriceMethodology,
+            capRate: disposition.defaults.capRate,
+            discountToMarketValue: disposition.defaults.discountToMarketValue,
+            brokerFeePercent: disposition.defaults.brokerFeePercent,
+            closingCostPercent: disposition.defaults.closingCostPercent,
+            sellerConcessionsPercent: disposition.defaults.sellerConcessionsPercent,
+            makeReadyCapexPercent: disposition.defaults.makeReadyCapexPercent,
+            holdingPeriodMonths: disposition.defaults.holdingPeriodMonths,
+            flatSalePrice: dp.inputs.flatSalePrice,
+          }
+        : dp.inputs;
+      
+      return updateDispositionProperty(dp.id, effectiveInputs, dp.outputs);
     });
 
     const propertyResults = await Promise.all(propertyUpdatePromises);
