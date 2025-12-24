@@ -194,8 +194,9 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         style: getMapStyle(),
         center,
         zoom,
-        pitch: 45,
-        bearing: -10,
+        pitch: 0,
+        bearing: 0,
+        projection: 'mercator',
         preserveDrawingBuffer: true,
       });
 
