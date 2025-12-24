@@ -280,6 +280,11 @@ export default function DispositionDetail() {
       </header>
 
       <main className="container py-6 space-y-8">
+        {/* Portfolio Summary */}
+        <PortfolioSummary aggregates={aggregates} />
+
+        <Separator />
+
         {/* Metadata */}
         <div className="grid grid-cols-4 gap-4">
           <Card className="border-border bg-card">
@@ -363,11 +368,6 @@ export default function DispositionDetail() {
             )}
           </div>
         )}
-
-        <Separator />
-
-        {/* Portfolio Summary */}
-        <PortfolioSummary aggregates={aggregates} />
 
         <Separator />
 
