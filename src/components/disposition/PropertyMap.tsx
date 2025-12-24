@@ -6,7 +6,7 @@ import { formatCurrency } from '@/utils/calculations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Map as MapIcon, ExternalLink, Satellite, Maximize, Minimize } from 'lucide-react';
+import { Map as MapIcon, ExternalLink, Satellite, Maximize, Minimize, GraduationCap } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 
 interface PropertyMapProps {
@@ -30,6 +30,7 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
   const [isSatellite, setIsSatellite] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSchoolDistricts, setShowSchoolDistricts] = useState(false);
 
   // Handle fullscreen toggle
   const toggleFullscreen = async () => {
@@ -74,6 +75,23 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
       map.current.setStyle(getMapStyle());
     }
   }, [isSatellite]);
+
+  // Toggle school district layer visibility
+  useEffect(() => {
+    if (!map.current || !isTokenValid) return;
+    
+    const visibility = showSchoolDistricts ? 'visible' : 'none';
+    
+    if (map.current.getLayer('school-district-fill')) {
+      map.current.setLayoutProperty('school-district-fill', 'visibility', visibility);
+    }
+    if (map.current.getLayer('school-district-outline')) {
+      map.current.setLayoutProperty('school-district-outline', 'visibility', visibility);
+    }
+    if (map.current.getLayer('school-district-labels')) {
+      map.current.setLayoutProperty('school-district-labels', 'visibility', visibility);
+    }
+  }, [showSchoolDistricts, isTokenValid]);
 
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
@@ -210,6 +228,73 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         if (!map.current) return;
         
         // Enable automatic lighting for Mapbox Standard style
+        
+        // Add school district source and layers (from US Census TIGER)
+        if (!map.current.getSource('school-districts')) {
+          map.current.addSource('school-districts', {
+            type: 'vector',
+            url: 'mapbox://mapbox.boundaries-sch-v3'
+          });
+        }
+
+        // School district fill layer
+        if (!map.current.getLayer('school-district-fill')) {
+          map.current.addLayer({
+            id: 'school-district-fill',
+            type: 'fill',
+            source: 'school-districts',
+            'source-layer': 'boundaries_school_2',
+            layout: {
+              'visibility': showSchoolDistricts ? 'visible' : 'none'
+            },
+            paint: {
+              'fill-color': '#3b82f6',
+              'fill-opacity': 0.1
+            }
+          });
+        }
+
+        // School district outline layer
+        if (!map.current.getLayer('school-district-outline')) {
+          map.current.addLayer({
+            id: 'school-district-outline',
+            type: 'line',
+            source: 'school-districts',
+            'source-layer': 'boundaries_school_2',
+            layout: {
+              'visibility': showSchoolDistricts ? 'visible' : 'none'
+            },
+            paint: {
+              'line-color': '#3b82f6',
+              'line-width': 1.5,
+              'line-opacity': 0.7
+            }
+          });
+        }
+
+        // School district labels
+        if (!map.current.getLayer('school-district-labels')) {
+          map.current.addLayer({
+            id: 'school-district-labels',
+            type: 'symbol',
+            source: 'school-districts',
+            'source-layer': 'boundaries_school_2',
+            layout: {
+              'visibility': showSchoolDistricts ? 'visible' : 'none',
+              'text-field': ['get', 'name'],
+              'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+              'text-size': 11,
+              'text-max-width': 8
+            },
+            paint: {
+              'text-color': '#1e40af',
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 1.5,
+              'text-opacity': 0.9
+            },
+            minzoom: 9
+          });
+        }
         map.current.setConfigProperty('basemap', 'lightPreset', 'day');
 
         // Create GeoJSON data for clustering
@@ -601,6 +686,15 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
         >
           <Satellite className="h-4 w-4" />
+        </Toggle>
+        <Toggle 
+          pressed={showSchoolDistricts} 
+          onPressedChange={setShowSchoolDistricts}
+          size="sm"
+          aria-label="Toggle school districts"
+          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+        >
+          <GraduationCap className="h-4 w-4" />
         </Toggle>
         <Toggle 
           pressed={isFullscreen} 
