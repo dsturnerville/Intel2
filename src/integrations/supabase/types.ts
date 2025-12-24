@@ -14,7 +14,384 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      deals: {
+        Row: {
+          actual_close_date: string | null
+          actual_close_price: number | null
+          close_probability: number | null
+          created_at: string
+          created_by: string | null
+          disposition_id: string | null
+          expected_close_date: string | null
+          id: string
+          list_date: string | null
+          list_price: number | null
+          name: string
+          offer_date: string | null
+          offer_price: number | null
+          property_ids: string[] | null
+          status: Database["public"]["Enums"]["deal_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          actual_close_date?: string | null
+          actual_close_price?: number | null
+          close_probability?: number | null
+          created_at?: string
+          created_by?: string | null
+          disposition_id?: string | null
+          expected_close_date?: string | null
+          id?: string
+          list_date?: string | null
+          list_price?: number | null
+          name: string
+          offer_date?: string | null
+          offer_price?: number | null
+          property_ids?: string[] | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          actual_close_date?: string | null
+          actual_close_price?: number | null
+          close_probability?: number | null
+          created_at?: string
+          created_by?: string | null
+          disposition_id?: string | null
+          expected_close_date?: string | null
+          id?: string
+          list_date?: string | null
+          list_price?: number | null
+          name?: string
+          offer_date?: string | null
+          offer_price?: number | null
+          property_ids?: string[] | null
+          status?: Database["public"]["Enums"]["deal_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_disposition_id_fkey"
+            columns: ["disposition_id"]
+            isOneToOne: false
+            referencedRelation: "dispositions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disposition_properties: {
+        Row: {
+          annualized_return: number | null
+          broker_commission: number | null
+          broker_fee_percent: number | null
+          cap_rate: number | null
+          closing_cost_percent: number | null
+          closing_costs: number | null
+          created_at: string
+          discount_to_market_value: number | null
+          disposition_id: string
+          flat_sale_price: number | null
+          gain_loss_percent: number | null
+          gain_loss_vs_basis: number | null
+          gross_sale_proceeds: number | null
+          hold_period_years: number | null
+          holding_period_months: number | null
+          id: string
+          make_ready_capex: number | null
+          make_ready_capex_percent: number | null
+          net_sale_proceeds: number | null
+          projected_sale_price: number | null
+          property_id: string
+          sale_price_methodology:
+            | Database["public"]["Enums"]["sale_price_methodology"]
+            | null
+          seller_concessions: number | null
+          seller_concessions_percent: number | null
+          simple_return: number | null
+          total_selling_costs: number | null
+          updated_at: string
+          use_disposition_defaults: boolean
+        }
+        Insert: {
+          annualized_return?: number | null
+          broker_commission?: number | null
+          broker_fee_percent?: number | null
+          cap_rate?: number | null
+          closing_cost_percent?: number | null
+          closing_costs?: number | null
+          created_at?: string
+          discount_to_market_value?: number | null
+          disposition_id: string
+          flat_sale_price?: number | null
+          gain_loss_percent?: number | null
+          gain_loss_vs_basis?: number | null
+          gross_sale_proceeds?: number | null
+          hold_period_years?: number | null
+          holding_period_months?: number | null
+          id?: string
+          make_ready_capex?: number | null
+          make_ready_capex_percent?: number | null
+          net_sale_proceeds?: number | null
+          projected_sale_price?: number | null
+          property_id: string
+          sale_price_methodology?:
+            | Database["public"]["Enums"]["sale_price_methodology"]
+            | null
+          seller_concessions?: number | null
+          seller_concessions_percent?: number | null
+          simple_return?: number | null
+          total_selling_costs?: number | null
+          updated_at?: string
+          use_disposition_defaults?: boolean
+        }
+        Update: {
+          annualized_return?: number | null
+          broker_commission?: number | null
+          broker_fee_percent?: number | null
+          cap_rate?: number | null
+          closing_cost_percent?: number | null
+          closing_costs?: number | null
+          created_at?: string
+          discount_to_market_value?: number | null
+          disposition_id?: string
+          flat_sale_price?: number | null
+          gain_loss_percent?: number | null
+          gain_loss_vs_basis?: number | null
+          gross_sale_proceeds?: number | null
+          hold_period_years?: number | null
+          holding_period_months?: number | null
+          id?: string
+          make_ready_capex?: number | null
+          make_ready_capex_percent?: number | null
+          net_sale_proceeds?: number | null
+          projected_sale_price?: number | null
+          property_id?: string
+          sale_price_methodology?:
+            | Database["public"]["Enums"]["sale_price_methodology"]
+            | null
+          seller_concessions?: number | null
+          seller_concessions_percent?: number | null
+          simple_return?: number | null
+          total_selling_costs?: number | null
+          updated_at?: string
+          use_disposition_defaults?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disposition_properties_disposition_id_fkey"
+            columns: ["disposition_id"]
+            isOneToOne: false
+            referencedRelation: "dispositions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disposition_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispositions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          defaults: Json
+          exit_strategy_notes: string | null
+          id: string
+          investment_thesis: string | null
+          markets: string[] | null
+          name: string
+          status: Database["public"]["Enums"]["disposition_status"]
+          tags: string[] | null
+          target_close_date: string | null
+          target_list_date: string | null
+          type: Database["public"]["Enums"]["disposition_type"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          defaults?: Json
+          exit_strategy_notes?: string | null
+          id?: string
+          investment_thesis?: string | null
+          markets?: string[] | null
+          name: string
+          status?: Database["public"]["Enums"]["disposition_status"]
+          tags?: string[] | null
+          target_close_date?: string | null
+          target_list_date?: string | null
+          type?: Database["public"]["Enums"]["disposition_type"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          defaults?: Json
+          exit_strategy_notes?: string | null
+          id?: string
+          investment_thesis?: string | null
+          markets?: string[] | null
+          name?: string
+          status?: Database["public"]["Enums"]["disposition_status"]
+          tags?: string[] | null
+          target_close_date?: string | null
+          target_list_date?: string | null
+          type?: Database["public"]["Enums"]["disposition_type"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispositions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispositions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          acquisition_basis: number | null
+          acquisition_date: string | null
+          acquisition_price: number | null
+          address: string
+          baths: number
+          beds: number
+          city: string
+          created_at: string
+          created_by: string | null
+          current_rent: number | null
+          estimated_market_value: number | null
+          id: string
+          last_appraisal_date: string | null
+          last_appraisal_value: number | null
+          lease_end_date: string | null
+          lot_size: number | null
+          market: string
+          occupancy_status: Database["public"]["Enums"]["occupancy_status"]
+          sqft: number
+          state: string
+          updated_at: string
+          year_built: number | null
+          zip_code: string
+        }
+        Insert: {
+          acquisition_basis?: number | null
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          address: string
+          baths?: number
+          beds?: number
+          city: string
+          created_at?: string
+          created_by?: string | null
+          current_rent?: number | null
+          estimated_market_value?: number | null
+          id?: string
+          last_appraisal_date?: string | null
+          last_appraisal_value?: number | null
+          lease_end_date?: string | null
+          lot_size?: number | null
+          market: string
+          occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          sqft?: number
+          state: string
+          updated_at?: string
+          year_built?: number | null
+          zip_code: string
+        }
+        Update: {
+          acquisition_basis?: number | null
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          address?: string
+          baths?: number
+          beds?: number
+          city?: string
+          created_at?: string
+          created_by?: string | null
+          current_rent?: number | null
+          estimated_market_value?: number | null
+          id?: string
+          last_appraisal_date?: string | null
+          last_appraisal_value?: number | null
+          lease_end_date?: string | null
+          lot_size?: number | null
+          market?: string
+          occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          sqft?: number
+          state?: string
+          updated_at?: string
+          year_built?: number | null
+          zip_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +400,25 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      deal_status:
+        | "Pre-Listing"
+        | "Listed"
+        | "Under Contract"
+        | "Due Diligence"
+        | "Pending Close"
+        | "Closed"
+        | "Terminated"
+      disposition_status:
+        | "Draft"
+        | "Under Review"
+        | "Approved to List"
+        | "Archived"
+      disposition_type: "Single Property" | "Portfolio"
+      occupancy_status: "Occupied" | "Vacant" | "Notice Given"
+      sale_price_methodology:
+        | "Cap Rate Based"
+        | "Comp Based"
+        | "Flat Price Input"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +545,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      deal_status: [
+        "Pre-Listing",
+        "Listed",
+        "Under Contract",
+        "Due Diligence",
+        "Pending Close",
+        "Closed",
+        "Terminated",
+      ],
+      disposition_status: [
+        "Draft",
+        "Under Review",
+        "Approved to List",
+        "Archived",
+      ],
+      disposition_type: ["Single Property", "Portfolio"],
+      occupancy_status: ["Occupied", "Vacant", "Notice Given"],
+      sale_price_methodology: [
+        "Cap Rate Based",
+        "Comp Based",
+        "Flat Price Input",
+      ],
+    },
   },
 } as const
