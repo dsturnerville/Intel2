@@ -221,7 +221,8 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
           ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`
           : `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${gainLossColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 2px;"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`;
         const firstImage = dp.property.images?.[0];
-        const imageUrl = firstImage?.url || '/images/property-placeholder.png';
+        const hasImage = !!firstImage?.url;
+        const imageUrl = hasImage ? firstImage.url : '/images/house-placeholder.avif';
         const imageAlt = firstImage?.title || 'Property';
         
         const popupContent = `
