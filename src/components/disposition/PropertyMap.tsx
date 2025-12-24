@@ -143,18 +143,18 @@ export function PropertyMap({ properties, onPropertyClick }: PropertyMapProps) {
         const gainLossColor = gainLossPercent && gainLossPercent >= 0 ? '#16a34a' : '#dc2626';
         const gainLossSign = gainLossPercent && gainLossPercent >= 0 ? '+' : '';
         const firstImage = dp.property.images?.[0];
+        const imageUrl = firstImage?.url || '/images/property-placeholder.png';
+        const imageAlt = firstImage?.title || 'Property';
         
         const popupContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 240px;">
-            ${firstImage ? `
-              <div style="margin: -10px -10px 12px -10px; border-radius: 8px 8px 0 0; overflow: hidden;">
-                <img 
-                  src="${firstImage.url}" 
-                  alt="${firstImage.title}" 
-                  style="width: 100%; height: 140px; object-fit: cover; display: block;"
-                />
-              </div>
-            ` : ''}
+            <div style="margin: -10px -10px 12px -10px; border-radius: 8px 8px 0 0; overflow: hidden;">
+              <img 
+                src="${imageUrl}" 
+                alt="${imageAlt}" 
+                style="width: 100%; height: 140px; object-fit: cover; display: block;"
+              />
+            </div>
             <div style="font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px;">
               ${dp.outputs.projectedSalePrice ? formatCurrency(dp.outputs.projectedSalePrice) : 'TBD'}
             </div>
