@@ -151,10 +151,7 @@ export function AppSidebar() {
                 onValueChange={(value) => setSelectedDepartment(value as Department)}
               >
                 <SelectTrigger className="w-full bg-sidebar-accent/50 border-sidebar-border">
-                  <div className="flex items-center gap-2">
-                    <DepartmentIcon className="h-4 w-4 text-muted-foreground" />
-                    <SelectValue placeholder="Select department" />
-                  </div>
+                  <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50">
                   {departments.map((dept) => {
