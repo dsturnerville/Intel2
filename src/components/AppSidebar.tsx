@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 
 const mainNavItems = [
   { title: 'Dispositions', url: '/dispositions', icon: FileText },
+  { title: 'Properties', url: '/properties', icon: Home },
 ];
 
 export function AppSidebar() {
@@ -38,6 +39,9 @@ export function AppSidebar() {
   const isActive = (path: string) => {
     if (path === '/dispositions') {
       return location.pathname === path || location.pathname.startsWith('/dispositions/');
+    }
+    if (path === '/properties') {
+      return location.pathname === path || location.pathname.startsWith('/properties/');
     }
     return location.pathname === path;
   };

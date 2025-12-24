@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import Dispositions from "./pages/Dispositions";
 import DispositionDetail from "./pages/DispositionDetail";
 import NewDisposition from "./pages/NewDisposition";
+import Properties from "./pages/Properties";
+import PropertyDetail from "./pages/PropertyDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +52,26 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <DispositionDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/properties"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Properties />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/properties/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <PropertyDetail />
                 </AppLayout>
               </ProtectedRoute>
             }
