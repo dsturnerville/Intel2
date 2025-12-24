@@ -18,6 +18,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { formatCurrency } from '@/utils/calculations';
@@ -32,6 +40,7 @@ import {
   Bath,
   Square,
   ChevronRight,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 import { Json } from '@/integrations/supabase/types';
@@ -76,6 +85,7 @@ interface PropertyFilters {
 export default function Properties() {
   const [filters, setFilters] = useState<PropertyFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   const { data: properties = [], isLoading, error } = useQuery({
     queryKey: ['properties'],
@@ -132,6 +142,7 @@ export default function Properties() {
   };
 
   const hasActiveFilters = searchQuery || filters.market || filters.occupancyStatus;
+  const activeFilterCount = (filters.market ? 1 : 0) + (filters.occupancyStatus ? 1 : 0);
 
   const getOccupancyBadgeVariant = (status: string) => {
     switch (status) {
@@ -169,12 +180,12 @@ export default function Properties() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="h-full px-6">
+      <header className="sticky top-0 md:top-0 z-10 h-16 md:h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="h-full px-4 md:px-6">
           <div className="flex h-full items-center">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Properties</h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Properties</h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">
                 View and manage portfolio properties
               </p>
             </div>
@@ -182,21 +193,105 @@ export default function Properties() {
         </div>
       </header>
 
-      <main className="px-6 py-6 space-y-6">
+      <main className="px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by address, city, or market..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-input border-border"
             />
           </div>
 
-          {/* Market Filter */}
+          {/* Mobile Filter Button */}
+          <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden relative">
+                <SlidersHorizontal className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Filter Properties</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Market</Label>
+                  <Select
+                    value={filters.market || 'all'}
+                    onValueChange={(value) =>
+                      setFilters((f) => ({
+                        ...f,
+                        market: value === 'all' ? undefined : value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-full bg-input border-border">
+                      <SelectValue placeholder="All Markets" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Markets</SelectItem>
+                      {markets.map((market) => (
+                        <SelectItem key={market} value={market}>
+                          {market}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Occupancy Status</Label>
+                  <Select
+                    value={filters.occupancyStatus || 'all'}
+                    onValueChange={(value) =>
+                      setFilters((f) => ({
+                        ...f,
+                        occupancyStatus: value === 'all' ? undefined : value as 'Occupied' | 'Vacant' | 'Notice Given',
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-full bg-input border-border">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="Occupied">Occupied</SelectItem>
+                      <SelectItem value="Vacant">Vacant</SelectItem>
+                      <SelectItem value="Notice Given">Notice Given</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setFilters({});
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => setFilterModalOpen(false)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Desktop Filters */}
           <Select
             value={filters.market || 'all'}
             onValueChange={(value) =>
@@ -206,7 +301,7 @@ export default function Properties() {
               }))
             }
           >
-            <SelectTrigger className="w-[180px] bg-input border-border">
+            <SelectTrigger className="w-[180px] bg-input border-border hidden md:flex">
               <SelectValue placeholder="Market" />
             </SelectTrigger>
             <SelectContent>
@@ -219,7 +314,6 @@ export default function Properties() {
             </SelectContent>
           </Select>
 
-          {/* Occupancy Filter */}
           <Select
             value={filters.occupancyStatus || 'all'}
             onValueChange={(value) =>
@@ -229,7 +323,7 @@ export default function Properties() {
               }))
             }
           >
-            <SelectTrigger className="w-[160px] bg-input border-border">
+            <SelectTrigger className="w-[160px] bg-input border-border hidden md:flex">
               <SelectValue placeholder="Occupancy" />
             </SelectTrigger>
             <SelectContent>
@@ -246,7 +340,7 @@ export default function Properties() {
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="gap-2 text-muted-foreground"
+              className="gap-2 text-muted-foreground hidden md:flex"
             >
               <X className="h-3 w-3" />
               Clear filters
@@ -270,22 +364,22 @@ export default function Properties() {
                 <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Property
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">
                   Market
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center hidden md:table-cell">
                   Beds/Baths
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center hidden lg:table-cell">
                   Sqft
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">
                   Status
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right hidden lg:table-cell">
                   Rent
                 </TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right hidden lg:table-cell">
                   Est. Value
                 </TableHead>
                 <TableHead className="w-10"></TableHead>
@@ -314,21 +408,28 @@ export default function Properties() {
                             className="h-full w-full object-cover"
                           />
                         </div>
-                        <div>
-                          <p className="font-medium text-sm group-hover/link:text-primary transition-colors">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm group-hover/link:text-primary transition-colors truncate">
                             {property.address}
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {property.city}, {property.state} {property.zip_code}
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{property.city}, {property.state} {property.zip_code}</span>
                           </p>
+                          {/* Mobile-only badges */}
+                          <div className="flex items-center gap-2 mt-1 md:hidden">
+                            <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any} className="text-xs">
+                              {property.occupancy_status}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{property.market}</span>
+                          </div>
                         </div>
                       </Link>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <span className="text-sm text-muted-foreground">{property.market}</span>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden md:table-cell">
                       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Bed className="h-3 w-3" />
@@ -340,23 +441,23 @@ export default function Properties() {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center hidden lg:table-cell">
                       <span className="font-mono text-sm text-muted-foreground flex items-center justify-center gap-1">
                         <Square className="h-3 w-3" />
                         {property.sqft.toLocaleString()}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any}>
                         {property.occupancy_status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden lg:table-cell">
                       <span className="font-mono text-sm">
                         {property.current_rent ? formatCurrency(property.current_rent) : '—'}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden lg:table-cell">
                       <span className="font-mono text-sm">
                         {property.estimated_market_value 
                           ? formatCurrency(property.estimated_market_value) 
@@ -368,7 +469,7 @@ export default function Properties() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-8 w-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
