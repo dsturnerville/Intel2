@@ -33,6 +33,9 @@ import {
   DispositionStatus,
   DispositionDefaults,
 } from '@/types/disposition';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   ArrowLeft,
   Save,
@@ -421,28 +424,40 @@ export default function DispositionDetail() {
               <div className="grid grid-cols-4 gap-4">
                 <Card className="border-border bg-card">
                   <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Label htmlFor="targetListDate" className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Calendar className="h-3 w-3" />
                       <span className="text-xs">Target List Date</span>
-                    </div>
-                    <p className="font-mono text-sm">
-                      {disposition.targetListDate
-                        ? new Date(disposition.targetListDate).toLocaleDateString()
-                        : 'Not set'}
-                    </p>
+                    </Label>
+                    <Input
+                      id="targetListDate"
+                      type="date"
+                      value={disposition.targetListDate || ''}
+                      onChange={(e) => {
+                        setDisposition({ ...disposition, targetListDate: e.target.value || null });
+                        setHasChanges(true);
+                      }}
+                      disabled={isReadOnly}
+                      className="font-mono text-sm"
+                    />
                   </CardContent>
                 </Card>
                 <Card className="border-border bg-card">
                   <CardContent className="pt-4">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Label htmlFor="targetCloseDate" className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Calendar className="h-3 w-3" />
                       <span className="text-xs">Target Close Date</span>
-                    </div>
-                    <p className="font-mono text-sm">
-                      {disposition.targetCloseDate
-                        ? new Date(disposition.targetCloseDate).toLocaleDateString()
-                        : 'Not set'}
-                    </p>
+                    </Label>
+                    <Input
+                      id="targetCloseDate"
+                      type="date"
+                      value={disposition.targetCloseDate || ''}
+                      onChange={(e) => {
+                        setDisposition({ ...disposition, targetCloseDate: e.target.value || null });
+                        setHasChanges(true);
+                      }}
+                      disabled={isReadOnly}
+                      className="font-mono text-sm"
+                    />
                   </CardContent>
                 </Card>
                 <Card className="border-border bg-card">
@@ -479,9 +494,16 @@ export default function DispositionDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {disposition.investmentThesis || 'No investment thesis provided'}
-                  </p>
+                  <Textarea
+                    value={disposition.investmentThesis || ''}
+                    onChange={(e) => {
+                      setDisposition({ ...disposition, investmentThesis: e.target.value || null });
+                      setHasChanges(true);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter investment thesis..."
+                    className="min-h-[120px] resize-none"
+                  />
                 </CardContent>
               </Card>
               <Card className="border-border bg-card">
@@ -492,9 +514,16 @@ export default function DispositionDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {disposition.exitStrategyNotes || 'No exit strategy notes provided'}
-                  </p>
+                  <Textarea
+                    value={disposition.exitStrategyNotes || ''}
+                    onChange={(e) => {
+                      setDisposition({ ...disposition, exitStrategyNotes: e.target.value || null });
+                      setHasChanges(true);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter exit strategy notes..."
+                    className="min-h-[120px] resize-none"
+                  />
                 </CardContent>
               </Card>
             </div>
