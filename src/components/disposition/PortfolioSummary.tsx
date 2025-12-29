@@ -32,7 +32,7 @@ export function PortfolioSummary({
       </div>
 
       {/* Detailed costs breakdown */}
-      <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+      <div className="mt-4 p-4 bg-muted/40 rounded-lg">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           Selling Costs Breakdown
         </h4>
