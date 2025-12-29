@@ -11,6 +11,11 @@ import { Building2, Loader2, Mail, Lock, User } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
+const signupEmailSchema = z.string()
+  .email('Please enter a valid email address')
+  .refine((email) => email.toLowerCase().endsWith('@ilehomes.com'), {
+    message: 'Only @ilehomes.com email addresses are allowed to sign up',
+  });
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 export default function Auth() {
@@ -25,7 +30,9 @@ export default function Auth() {
   const validateForm = (isSignUp: boolean) => {
     const newErrors: { email?: string; password?: string; fullName?: string } = {};
 
-    const emailResult = emailSchema.safeParse(email);
+    // Use stricter email validation for signups (domain restriction)
+    const emailValidation = isSignUp ? signupEmailSchema : emailSchema;
+    const emailResult = emailValidation.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
@@ -244,7 +251,7 @@ export default function Auth() {
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="you@company.com"
+                        placeholder="you@ilehomes.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
