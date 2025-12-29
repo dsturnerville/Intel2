@@ -36,6 +36,7 @@ import {
   ArrowRightLeft,
   Shield,
   LayoutDashboard,
+  Wrench,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ type Department =
   | 'Asset Management'
   | 'Construction'
   | 'Dispositions'
+  | 'Property Management'
   | 'Transactions'
   | 'Super Admin';
 
@@ -67,6 +69,7 @@ const departments: DepartmentConfig[] = [
   { label: 'Asset Management', icon: Briefcase },
   { label: 'Construction', icon: HardHat },
   { label: 'Dispositions', icon: FileText },
+  { label: 'Property Management', icon: Wrench },
   { label: 'Transactions', icon: ArrowRightLeft },
   { label: 'Super Admin', icon: Shield },
 ];
@@ -83,7 +86,7 @@ const navItems: NavItem[] = [
     title: 'Properties', 
     url: '/properties', 
     icon: Home,
-    departments: ['Asset Management', 'Acquisitions', 'Dispositions', 'Construction', 'Super Admin'],
+    departments: ['Asset Management', 'Acquisitions', 'Dispositions', 'Property Management', 'Construction', 'Super Admin'],
   },
 ];
 
