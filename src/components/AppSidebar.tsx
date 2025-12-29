@@ -30,7 +30,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Calculator,
-  ShoppingCart,
   Briefcase,
   HardHat,
   ArrowRightLeft,
@@ -43,10 +42,8 @@ import { cn } from '@/lib/utils';
 
 type Department = 
   | 'Accounting'
-  | 'Acquisitions'
   | 'Asset Management'
   | 'Construction'
-  | 'Dispositions'
   | 'Property Management'
   | 'Transactions'
   | 'Super Admin';
@@ -65,10 +62,8 @@ interface DepartmentConfig {
 
 const departments: DepartmentConfig[] = [
   { label: 'Accounting', icon: Calculator },
-  { label: 'Acquisitions', icon: ShoppingCart },
   { label: 'Asset Management', icon: Briefcase },
   { label: 'Construction', icon: HardHat },
-  { label: 'Dispositions', icon: FileText },
   { label: 'Property Management', icon: Wrench },
   { label: 'Transactions', icon: ArrowRightLeft },
   { label: 'Super Admin', icon: Shield },
@@ -80,13 +75,13 @@ const navItems: NavItem[] = [
     title: 'Dispositions', 
     url: '/dispositions', 
     icon: FileText,
-    departments: ['Dispositions', 'Asset Management', 'Super Admin'],
+    departments: ['Asset Management', 'Super Admin'],
   },
   { 
     title: 'Properties', 
     url: '/properties', 
     icon: Home,
-    departments: ['Asset Management', 'Acquisitions', 'Dispositions', 'Property Management', 'Construction', 'Super Admin'],
+    departments: ['Asset Management', 'Property Management', 'Construction', 'Super Admin'],
   },
 ];
 
@@ -223,7 +218,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Quick Actions - show based on department */}
-        {(selectedDepartment === 'Dispositions' || selectedDepartment === 'Super Admin') && (
+        {(selectedDepartment === 'Asset Management' || selectedDepartment === 'Super Admin') && (
           <SidebarGroup>
             <SidebarGroupLabel className={cn(collapsed && 'sr-only')}>
               Quick Actions
