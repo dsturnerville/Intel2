@@ -7,13 +7,38 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Loader2, Save, User, Upload, X } from 'lucide-react';
+import { Loader2, Save, User, Upload, X, Calculator, Briefcase, HardHat, Wrench, ArrowRightLeft, Shield } from 'lucide-react';
+
+type Department = 
+  | 'Accounting'
+  | 'Asset Management'
+  | 'Construction'
+  | 'Property Management'
+  | 'Transactions'
+  | 'Super Admin';
+
+const departmentOptions: { label: Department; icon: typeof Calculator }[] = [
+  { label: 'Accounting', icon: Calculator },
+  { label: 'Asset Management', icon: Briefcase },
+  { label: 'Construction', icon: HardHat },
+  { label: 'Property Management', icon: Wrench },
+  { label: 'Transactions', icon: ArrowRightLeft },
+  { label: 'Super Admin', icon: Shield },
+];
 
 interface ProfileData {
   full_name: string;
   email: string;
   avatar_url: string | null;
+  default_department: Department;
 }
 
 export default function Profile() {
@@ -25,6 +50,7 @@ export default function Profile() {
     full_name: '',
     email: '',
     avatar_url: null,
+    default_department: 'Asset Management',
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,7 +66,7 @@ export default function Profile() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, email, avatar_url')
+        .select('full_name, email, avatar_url, default_department')
         .eq('id', user.id)
         .single();
 
@@ -50,6 +76,7 @@ export default function Profile() {
         full_name: data?.full_name || '',
         email: data?.email || user.email || '',
         avatar_url: data?.avatar_url || null,
+        default_department: (data?.default_department as Department) || 'Asset Management',
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -57,6 +84,7 @@ export default function Profile() {
         full_name: user.user_metadata?.full_name || '',
         email: user.email || '',
         avatar_url: null,
+        default_department: 'Asset Management',
       });
     } finally {
       setLoading(false);
@@ -161,6 +189,7 @@ export default function Profile() {
         .from('profiles')
         .update({
           full_name: profile.full_name,
+          default_department: profile.default_department,
         })
         .eq('id', user.id);
 
@@ -292,6 +321,36 @@ export default function Profile() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Email cannot be changed here
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="default_department">Default Department</Label>
+                  <Select
+                    value={profile.default_department}
+                    onValueChange={(value) =>
+                      setProfile({ ...profile, default_department: value as Department })
+                    }
+                  >
+                    <SelectTrigger id="default_department" className="w-full">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departmentOptions.map((dept) => {
+                        const Icon = dept.icon;
+                        return (
+                          <SelectItem key={dept.label} value={dept.label}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4" />
+                              <span>{dept.label}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    This department will be selected when you log in
                   </p>
                 </div>
               </div>

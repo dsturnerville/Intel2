@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import {
   Sidebar,
@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { UserMenu } from '@/components/UserMenu';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Building2,
   FileText,
@@ -88,8 +90,37 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
+  const { user } = useAuth();
   const collapsed = state === 'collapsed';
-  const [selectedDepartment, setSelectedDepartment] = useState<Department>('Super Admin');
+  const [selectedDepartment, setSelectedDepartment] = useState<Department>('Asset Management');
+  const [departmentLoaded, setDepartmentLoaded] = useState(false);
+
+  // Load user's default department on mount
+  useEffect(() => {
+    const loadDefaultDepartment = async () => {
+      if (!user || departmentLoaded) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('default_department')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.default_department) {
+          setSelectedDepartment(data.default_department as Department);
+        }
+      } catch (error) {
+        console.error('Error loading default department:', error);
+      } finally {
+        setDepartmentLoaded(true);
+      }
+    };
+
+    loadDefaultDepartment();
+  }, [user, departmentLoaded]);
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
