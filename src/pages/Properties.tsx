@@ -55,6 +55,7 @@ interface PropertyRow {
   state: string;
   zip_code: string;
   market: string;
+  market_id: string | null;
   year_built: number | null;
   occupancy_status: 'Occupied' | 'Vacant' | 'Notice Given';
   current_rent: number | null;
@@ -63,6 +64,11 @@ interface PropertyRow {
   images: Json;
   created_at: string;
   updated_at: string;
+  markets?: {
+    id: string;
+    market_name: string;
+    market_code: string | null;
+  } | null;
 }
 
 const parseImages = (images: Json): PropertyImage[] => {
@@ -91,7 +97,14 @@ export default function Properties() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          markets (
+            id,
+            market_name,
+            market_code
+          )
+        `)
         .order('updated_at', { ascending: false });
       
       if (error) throw error;
@@ -99,22 +112,25 @@ export default function Properties() {
     },
   });
 
-  // Get unique markets
+  // Get unique markets from the markets relation or fallback to market text field
   const markets = useMemo(() => {
-    const uniqueMarkets = [...new Set(properties.map(p => p.market))];
+    const marketNames = properties.map(p => p.markets?.market_name || p.market).filter(Boolean);
+    const uniqueMarkets = [...new Set(marketNames)];
     return uniqueMarkets.sort();
   }, [properties]);
 
   // Apply filters and search
   const filteredProperties = useMemo(() => {
     return properties.filter((property) => {
+      const marketName = property.markets?.market_name || property.market;
+      
       // Search query
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         if (
           !property.address.toLowerCase().includes(query) &&
           !property.city.toLowerCase().includes(query) &&
-          !property.market.toLowerCase().includes(query) &&
+          !marketName.toLowerCase().includes(query) &&
           !property.zip_code.includes(query)
         ) {
           return false;
@@ -122,7 +138,7 @@ export default function Properties() {
       }
 
       // Market filter (multi-select)
-      if (filters.markets.length > 0 && !filters.markets.includes(property.market)) {
+      if (filters.markets.length > 0 && !filters.markets.includes(marketName)) {
         return false;
       }
 
@@ -475,7 +491,16 @@ export default function Properties() {
                       </Link>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <span className="text-sm text-muted-foreground">{property.market}</span>
+                      {property.markets ? (
+                        <Link 
+                          to="/markets" 
+                          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {property.markets.market_name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{property.market}</span>
+                      )}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any}>
