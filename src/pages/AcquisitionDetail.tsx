@@ -168,6 +168,9 @@ export default function AcquisitionDetail() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{aggregates.includedCount}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {aggregates.excludedCount} excluded
+                  </p>
                 </CardContent>
               </Card>
               <Card>
