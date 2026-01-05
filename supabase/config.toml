@@ -2,3 +2,6 @@ project_id = "hkpmbmsepyjtgooickfp"
 
 [functions.flood-zones]
 verify_jwt = false
+
+[functions.geocode-properties]
+verify_jwt = false

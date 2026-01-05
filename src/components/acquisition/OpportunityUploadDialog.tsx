@@ -86,10 +86,13 @@ export function OpportunityUploadDialog({ open, onOpenChange, acquisitionId }: O
       const result = await uploadOpportunities(acquisitionId, rows);
       
       if (result.success) {
-        toast.success(`Successfully uploaded ${result.count} opportunities`);
+        const geocodeMsg = result.geocoded 
+          ? ` (${result.geocoded} geocoded for map)`
+          : '';
+        toast.success(`Successfully uploaded ${result.count} properties${geocodeMsg}`);
         handleClose();
       } else {
-        toast.error(result.error || 'Failed to upload opportunities');
+        toast.error(result.error || 'Failed to upload properties');
       }
     } catch (error) {
       toast.error('Failed to upload file');
