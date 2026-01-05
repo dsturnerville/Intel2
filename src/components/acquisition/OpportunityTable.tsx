@@ -107,7 +107,7 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
