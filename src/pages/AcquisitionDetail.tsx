@@ -150,46 +150,51 @@ export default function AcquisitionDetail() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/acquisitions')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold">{localAcquisition.name}</h1>
-              <AcquisitionStatusBadge status={localAcquisition.status} />
+      <header className="sticky top-0 md:top-0 z-10 h-16 md:h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="h-full px-4 md:px-6">
+          <div className="flex h-full items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/acquisitions')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl md:text-2xl font-semibold tracking-tight">{localAcquisition.name}</h1>
+                  <AcquisitionStatusBadge status={localAcquisition.status} />
+                </div>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">
+                  {localAcquisition.type} • {localAcquisition.markets.join(', ') || 'No markets'}
+                </p>
+              </div>
             </div>
-            <p className="text-muted-foreground">
-              {localAcquisition.type} • {localAcquisition.markets.join(', ') || 'No markets'}
-            </p>
+            <div className="flex items-center gap-2">
+              <Select value={localAcquisition.status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-[140px] md:w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleSave} disabled={saving || !hasChanges} size="sm">
+                {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                <span className="hidden sm:inline">Save</span>
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Select value={localAcquisition.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUSES.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleSave} disabled={saving || !hasChanges}>
-            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-            Save
-          </Button>
-        </div>
-      </div>
+      </header>
 
-      {/* Tabs */}
-      <Tabs defaultValue="summary" className="space-y-6">
-        <TabsList>
+      <main className="px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
+        {/* Tabs */}
+        <Tabs defaultValue="summary" className="space-y-4 md:space-y-6">
+          <TabsList>
           <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="assumptions">Assumptions</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
@@ -277,15 +282,16 @@ export default function AcquisitionDetail() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
 
-      {/* Add Property Dialog */}
-      <AddAcquisitionPropertyDialog
-        open={addPropertyOpen}
-        onOpenChange={setAddPropertyOpen}
-        existingPropertyIds={localProperties.map((p) => p.propertyId)}
-        onAddProperties={handleAddProperties}
-      />
+        {/* Add Property Dialog */}
+        <AddAcquisitionPropertyDialog
+          open={addPropertyOpen}
+          onOpenChange={setAddPropertyOpen}
+          existingPropertyIds={localProperties.map((p) => p.propertyId)}
+          onAddProperties={handleAddProperties}
+        />
+      </main>
     </div>
   );
 }
