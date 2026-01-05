@@ -155,10 +155,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="border-b border-border h-20 flex items-center justify-center">
-        <div className="flex items-center gap-3 px-2 w-full">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Building2 className="h-4 w-4 text-primary-foreground" />
+      <SidebarHeader className="border-b border-border h-20 flex items-center justify-center px-3">
+        <div className={cn(
+          "flex items-center w-full",
+          collapsed ? "justify-center" : "gap-3"
+        )}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shrink-0">
+            <Building2 className="h-5 w-5 text-primary-foreground" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
@@ -197,14 +200,14 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {collapsed ? (
-              <div className="flex justify-center py-2">
+              <div className="flex justify-center py-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10"
                   title={selectedDepartment}
                 >
-                  <DepartmentIcon className="h-4 w-4" />
+                  <DepartmentIcon className="h-5 w-5" />
                 </Button>
               </div>
             ) : (
@@ -289,18 +292,21 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border">
-        <div className="flex items-center justify-between p-2">
+        <div className={cn(
+          "flex items-center p-2",
+          collapsed ? "justify-center" : "justify-between"
+        )}>
           {!collapsed && <UserMenu />}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-8 w-8"
+            className="h-10 w-10 shrink-0"
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             )}
           </Button>
         </div>
