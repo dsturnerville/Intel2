@@ -23,6 +23,7 @@ export interface Opportunity {
   leaseStart?: string;
   leaseEnd?: string;
   annualHoa?: number;
+  askingPrice?: number;
   propertyTax?: number;
   rentAvm?: number;
   salesAvm?: number;

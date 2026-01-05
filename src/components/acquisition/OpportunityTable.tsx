@@ -13,7 +13,7 @@ interface OpportunityTableProps {
   isLoading: boolean;
 }
 
-type SortField = 'address' | 'city' | 'state' | 'zipCode' | 'msa' | 'type' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'yearBuilt' | 'occupancy' | 'currentRent' | 'leaseStart' | 'leaseEnd' | 'annualHoa' | 'propertyTax' | 'rentAvm' | 'salesAvm' | 'offerPrice' | 'projectedNoi' | 'projectedCapRate' | 'totalAcquisitionCost' | 'projectedAnnualReturn';
+type SortField = 'address' | 'city' | 'state' | 'zipCode' | 'msa' | 'type' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'yearBuilt' | 'occupancy' | 'askingPrice' | 'currentRent' | 'leaseStart' | 'leaseEnd' | 'annualHoa' | 'propertyTax' | 'rentAvm' | 'salesAvm' | 'offerPrice' | 'projectedNoi' | 'projectedCapRate' | 'totalAcquisitionCost' | 'projectedAnnualReturn';
 type SortDirection = 'asc' | 'desc';
 
 export function OpportunityTable({ opportunities, isLoading }: OpportunityTableProps) {
@@ -78,6 +78,10 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
       case 'occupancy':
         aVal = a.occupancy || '';
         bVal = b.occupancy || '';
+        break;
+      case 'askingPrice':
+        aVal = a.askingPrice || 0;
+        bVal = b.askingPrice || 0;
         break;
       case 'currentRent':
         aVal = a.currentRent || 0;
@@ -220,6 +224,7 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
               <SortableHeader field="squareFeet">Sq Ft</SortableHeader>
               <SortableHeader field="yearBuilt">Year Built</SortableHeader>
               <SortableHeader field="occupancy">Occupancy</SortableHeader>
+              <SortableHeader field="askingPrice" className="text-right">Asking Price</SortableHeader>
               <SortableHeader field="currentRent" className="text-right">Current Rent</SortableHeader>
               <SortableHeader field="leaseStart">Lease Start</SortableHeader>
               <SortableHeader field="leaseEnd">Lease End</SortableHeader>
@@ -277,6 +282,7 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
                     </Badge>
                   ) : '-'}
                 </TableCell>
+                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.askingPrice)}</TableCell>
                 <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.currentRent)}</TableCell>
                 <TableCell className="whitespace-nowrap">{formatDate(opportunity.leaseStart)}</TableCell>
                 <TableCell className="whitespace-nowrap">{formatDate(opportunity.leaseEnd)}</TableCell>
