@@ -137,17 +137,17 @@ export function OpportunityUnderwritingEditor({
         {!readOnly && (
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Switch
-                id={`use-defaults-${opportunity.id}`}
-                checked={useDefaults}
-                onCheckedChange={handleToggleDefaults}
-              />
               <Label 
                 htmlFor={`use-defaults-${opportunity.id}`}
                 className="text-xs cursor-pointer"
               >
                 Use Acquisition Defaults
               </Label>
+              <Switch
+                id={`use-defaults-${opportunity.id}`}
+                checked={useDefaults}
+                onCheckedChange={handleToggleDefaults}
+              />
             </div>
             {!useDefaults && (
               <Button
