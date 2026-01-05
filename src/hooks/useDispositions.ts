@@ -286,13 +286,14 @@ export function useMarkets() {
   async function fetchMarkets() {
     try {
       const { data, error } = await supabase
-        .from('properties')
-        .select('market');
+        .from('markets')
+        .select('market_name')
+        .order('market_name');
 
       if (error) throw error;
 
-      const uniqueMarkets = [...new Set((data || []).map(p => p.market))];
-      setMarkets(uniqueMarkets.sort());
+      const marketNames = (data || []).map(m => m.market_name);
+      setMarkets(marketNames);
     } catch (err) {
       console.error('Error fetching markets:', err);
     } finally {
