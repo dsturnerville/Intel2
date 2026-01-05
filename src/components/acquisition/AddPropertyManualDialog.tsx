@@ -81,7 +81,7 @@ export function AddPropertyManualDialog({
 
     setSaving(true);
     try {
-      const { error } = await supabase.from('acquisition_properties').insert({
+      const { data, error } = await supabase.from('acquisition_properties').insert({
         acquisition_id: acquisitionId,
         address1: formData.address1,
         address2: formData.address2 || null,
@@ -98,9 +98,20 @@ export function AddPropertyManualDialog({
         type: formData.type,
         included: true,
         use_acquisition_defaults: true,
-      });
+      }).select('id').single();
 
       if (error) throw error;
+
+      // Geocode the newly added property
+      if (data?.id) {
+        supabase.functions.invoke('geocode-properties', {
+          body: { propertyIds: [data.id] }
+        }).then(({ error: geocodeError }) => {
+          if (geocodeError) {
+            console.error('Geocoding error:', geocodeError);
+          }
+        });
+      }
 
       toast.success('Property added successfully');
       resetForm();
