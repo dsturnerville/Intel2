@@ -17,113 +17,167 @@ export type Database = {
       acquisition_properties: {
         Row: {
           acquisition_id: string
+          address1: string
+          address2: string | null
+          annual_hoa: number | null
+          bathrooms: number | null
+          bedrooms: number | null
           blended_turnover: number | null
+          city: string
           closing_costs_percent: number | null
           cm_fee_percent: number | null
           created_at: string
+          current_rent: number | null
           effective_tax_rate_percent: number | null
           id: string
+          included: boolean
           ins_factor_rate: number | null
           ins_liability_premium: number | null
           ins_premium_rate: number | null
+          lease_end: string | null
+          lease_start: string | null
           leasing_fee_percent: number | null
           lost_rent: number | null
           misc_income_percent: number | null
+          msa: string | null
+          occupancy: Database["public"]["Enums"]["opportunity_occupancy"] | null
           offer_price: number | null
           pm_fee_percent: number | null
           projected_annual_return: number | null
           projected_cap_rate: number | null
           projected_noi: number | null
-          property_id: string
+          property_tax: number | null
+          rent_avm: number | null
           replacement_cost_per_sf: number | null
           rm_percent: number | null
+          sales_avm: number | null
+          square_feet: number | null
+          state: string
           tax_increase_percent: number | null
           total_acquisition_cost: number | null
           turn_cost: number | null
           turnover_cost: number | null
           turnover_rate_percent: number | null
+          type: Database["public"]["Enums"]["opportunity_type"] | null
           updated_at: string
           use_acquisition_defaults: boolean
           utilities: number | null
           vacancy_bad_debt_percent: number | null
+          year_built: number | null
+          zip_code: string
         }
         Insert: {
           acquisition_id: string
+          address1: string
+          address2?: string | null
+          annual_hoa?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blended_turnover?: number | null
+          city: string
           closing_costs_percent?: number | null
           cm_fee_percent?: number | null
           created_at?: string
+          current_rent?: number | null
           effective_tax_rate_percent?: number | null
           id?: string
+          included?: boolean
           ins_factor_rate?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate?: number | null
+          lease_end?: string | null
+          lease_start?: string | null
           leasing_fee_percent?: number | null
           lost_rent?: number | null
           misc_income_percent?: number | null
+          msa?: string | null
+          occupancy?:
+            | Database["public"]["Enums"]["opportunity_occupancy"]
+            | null
           offer_price?: number | null
           pm_fee_percent?: number | null
           projected_annual_return?: number | null
           projected_cap_rate?: number | null
           projected_noi?: number | null
-          property_id: string
+          property_tax?: number | null
+          rent_avm?: number | null
           replacement_cost_per_sf?: number | null
           rm_percent?: number | null
+          sales_avm?: number | null
+          square_feet?: number | null
+          state: string
           tax_increase_percent?: number | null
           total_acquisition_cost?: number | null
           turn_cost?: number | null
           turnover_cost?: number | null
           turnover_rate_percent?: number | null
+          type?: Database["public"]["Enums"]["opportunity_type"] | null
           updated_at?: string
           use_acquisition_defaults?: boolean
           utilities?: number | null
           vacancy_bad_debt_percent?: number | null
+          year_built?: number | null
+          zip_code: string
         }
         Update: {
           acquisition_id?: string
+          address1?: string
+          address2?: string | null
+          annual_hoa?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           blended_turnover?: number | null
+          city?: string
           closing_costs_percent?: number | null
           cm_fee_percent?: number | null
           created_at?: string
+          current_rent?: number | null
           effective_tax_rate_percent?: number | null
           id?: string
+          included?: boolean
           ins_factor_rate?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate?: number | null
+          lease_end?: string | null
+          lease_start?: string | null
           leasing_fee_percent?: number | null
           lost_rent?: number | null
           misc_income_percent?: number | null
+          msa?: string | null
+          occupancy?:
+            | Database["public"]["Enums"]["opportunity_occupancy"]
+            | null
           offer_price?: number | null
           pm_fee_percent?: number | null
           projected_annual_return?: number | null
           projected_cap_rate?: number | null
           projected_noi?: number | null
-          property_id?: string
+          property_tax?: number | null
+          rent_avm?: number | null
           replacement_cost_per_sf?: number | null
           rm_percent?: number | null
+          sales_avm?: number | null
+          square_feet?: number | null
+          state?: string
           tax_increase_percent?: number | null
           total_acquisition_cost?: number | null
           turn_cost?: number | null
           turnover_cost?: number | null
           turnover_rate_percent?: number | null
+          type?: Database["public"]["Enums"]["opportunity_type"] | null
           updated_at?: string
           use_acquisition_defaults?: boolean
           utilities?: number | null
           vacancy_bad_debt_percent?: number | null
+          year_built?: number | null
+          zip_code?: string
         }
         Relationships: [
           {
-            foreignKeyName: "acquisition_properties_acquisition_id_fkey"
+            foreignKeyName: "opportunities_acquisition_id_fkey"
             columns: ["acquisition_id"]
             isOneToOne: false
             referencedRelation: "acquisitions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "acquisition_properties_property_id_fkey"
-            columns: ["property_id"]
-            isOneToOne: false
-            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -440,174 +494,6 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      opportunities: {
-        Row: {
-          acquisition_id: string
-          address1: string
-          address2: string | null
-          annual_hoa: number | null
-          bathrooms: number | null
-          bedrooms: number | null
-          blended_turnover: number | null
-          city: string
-          closing_costs_percent: number | null
-          cm_fee_percent: number | null
-          created_at: string
-          current_rent: number | null
-          effective_tax_rate_percent: number | null
-          id: string
-          included: boolean
-          ins_factor_rate: number | null
-          ins_liability_premium: number | null
-          ins_premium_rate: number | null
-          lease_end: string | null
-          lease_start: string | null
-          leasing_fee_percent: number | null
-          lost_rent: number | null
-          misc_income_percent: number | null
-          msa: string | null
-          occupancy: Database["public"]["Enums"]["opportunity_occupancy"] | null
-          offer_price: number | null
-          pm_fee_percent: number | null
-          projected_annual_return: number | null
-          projected_cap_rate: number | null
-          projected_noi: number | null
-          property_tax: number | null
-          rent_avm: number | null
-          replacement_cost_per_sf: number | null
-          rm_percent: number | null
-          sales_avm: number | null
-          square_feet: number | null
-          state: string
-          tax_increase_percent: number | null
-          total_acquisition_cost: number | null
-          turn_cost: number | null
-          turnover_cost: number | null
-          turnover_rate_percent: number | null
-          type: Database["public"]["Enums"]["opportunity_type"] | null
-          updated_at: string
-          use_acquisition_defaults: boolean
-          utilities: number | null
-          vacancy_bad_debt_percent: number | null
-          year_built: number | null
-          zip_code: string
-        }
-        Insert: {
-          acquisition_id: string
-          address1: string
-          address2?: string | null
-          annual_hoa?: number | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          blended_turnover?: number | null
-          city: string
-          closing_costs_percent?: number | null
-          cm_fee_percent?: number | null
-          created_at?: string
-          current_rent?: number | null
-          effective_tax_rate_percent?: number | null
-          id?: string
-          included?: boolean
-          ins_factor_rate?: number | null
-          ins_liability_premium?: number | null
-          ins_premium_rate?: number | null
-          lease_end?: string | null
-          lease_start?: string | null
-          leasing_fee_percent?: number | null
-          lost_rent?: number | null
-          misc_income_percent?: number | null
-          msa?: string | null
-          occupancy?:
-            | Database["public"]["Enums"]["opportunity_occupancy"]
-            | null
-          offer_price?: number | null
-          pm_fee_percent?: number | null
-          projected_annual_return?: number | null
-          projected_cap_rate?: number | null
-          projected_noi?: number | null
-          property_tax?: number | null
-          rent_avm?: number | null
-          replacement_cost_per_sf?: number | null
-          rm_percent?: number | null
-          sales_avm?: number | null
-          square_feet?: number | null
-          state: string
-          tax_increase_percent?: number | null
-          total_acquisition_cost?: number | null
-          turn_cost?: number | null
-          turnover_cost?: number | null
-          turnover_rate_percent?: number | null
-          type?: Database["public"]["Enums"]["opportunity_type"] | null
-          updated_at?: string
-          use_acquisition_defaults?: boolean
-          utilities?: number | null
-          vacancy_bad_debt_percent?: number | null
-          year_built?: number | null
-          zip_code: string
-        }
-        Update: {
-          acquisition_id?: string
-          address1?: string
-          address2?: string | null
-          annual_hoa?: number | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          blended_turnover?: number | null
-          city?: string
-          closing_costs_percent?: number | null
-          cm_fee_percent?: number | null
-          created_at?: string
-          current_rent?: number | null
-          effective_tax_rate_percent?: number | null
-          id?: string
-          included?: boolean
-          ins_factor_rate?: number | null
-          ins_liability_premium?: number | null
-          ins_premium_rate?: number | null
-          lease_end?: string | null
-          lease_start?: string | null
-          leasing_fee_percent?: number | null
-          lost_rent?: number | null
-          misc_income_percent?: number | null
-          msa?: string | null
-          occupancy?:
-            | Database["public"]["Enums"]["opportunity_occupancy"]
-            | null
-          offer_price?: number | null
-          pm_fee_percent?: number | null
-          projected_annual_return?: number | null
-          projected_cap_rate?: number | null
-          projected_noi?: number | null
-          property_tax?: number | null
-          rent_avm?: number | null
-          replacement_cost_per_sf?: number | null
-          rm_percent?: number | null
-          sales_avm?: number | null
-          square_feet?: number | null
-          state?: string
-          tax_increase_percent?: number | null
-          total_acquisition_cost?: number | null
-          turn_cost?: number | null
-          turnover_cost?: number | null
-          turnover_rate_percent?: number | null
-          type?: Database["public"]["Enums"]["opportunity_type"] | null
-          updated_at?: string
-          use_acquisition_defaults?: boolean
-          utilities?: number | null
-          vacancy_bad_debt_percent?: number | null
-          year_built?: number | null
-          zip_code?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "opportunities_acquisition_id_fkey"
-            columns: ["acquisition_id"]
-            isOneToOne: false
-            referencedRelation: "acquisitions"
             referencedColumns: ["id"]
           },
         ]

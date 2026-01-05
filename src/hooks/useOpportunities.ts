@@ -4,7 +4,7 @@ import { Opportunity, OpportunityCSVRow, OpportunityAggregates } from '@/types/o
 import { Tables } from '@/integrations/supabase/types';
 
 // Transform database row to Opportunity type
-function transformOpportunity(row: Tables<'opportunities'>): Opportunity {
+function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunity {
   return {
     id: row.id,
     acquisitionId: row.acquisition_id,
@@ -58,15 +58,15 @@ function transformOpportunity(row: Tables<'opportunities'>): Opportunity {
   };
 }
 
-// Fetch opportunities for an acquisition
+// Fetch acquisition properties for an acquisition
 export function useOpportunities(acquisitionId: string | undefined) {
   return useQuery({
-    queryKey: ['opportunities', acquisitionId],
+    queryKey: ['acquisition_properties', acquisitionId],
     queryFn: async () => {
       if (!acquisitionId) return [];
       
       const { data, error } = await supabase
-        .from('opportunities')
+        .from('acquisition_properties')
         .select('*')
         .eq('acquisition_id', acquisitionId)
         .order('created_at', { ascending: true });
@@ -94,7 +94,7 @@ export function calculateOpportunityAggregates(opportunities: Opportunity[]): Op
   };
 }
 
-// Mutations for opportunities
+// Mutations for acquisition properties
 export function useOpportunityMutations() {
   const queryClient = useQueryClient();
 
@@ -103,7 +103,7 @@ export function useOpportunityMutations() {
     rows: OpportunityCSVRow[]
   ): Promise<{ success: boolean; count?: number; error?: string }> => {
     try {
-      const opportunitiesToInsert = rows.map(row => ({
+      const propertiesToInsert = rows.map(row => ({
         acquisition_id: acquisitionId,
         address1: row.address1,
         address2: row.address2 || null,
@@ -131,22 +131,22 @@ export function useOpportunityMutations() {
       }));
 
       const { data, error } = await supabase
-        .from('opportunities')
-        .insert(opportunitiesToInsert)
+        .from('acquisition_properties')
+        .insert(propertiesToInsert)
         .select();
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['opportunities', acquisitionId] });
+      queryClient.invalidateQueries({ queryKey: ['acquisition_properties', acquisitionId] });
       return { success: true, count: data?.length || 0 };
     } catch (error: any) {
-      console.error('Error uploading opportunities:', error);
+      console.error('Error uploading properties:', error);
       return { success: false, error: error.message };
     }
   };
 
   const updateOpportunity = async (
-    opportunityId: string,
+    propertyId: string,
     updates: Partial<Opportunity>
   ): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -162,35 +162,35 @@ export function useOpportunityMutations() {
       if (updates.projectedCapRate !== undefined) dbUpdates.projected_cap_rate = updates.projectedCapRate;
 
       const { error } = await supabase
-        .from('opportunities')
+        .from('acquisition_properties')
         .update(dbUpdates)
-        .eq('id', opportunityId);
+        .eq('id', propertyId);
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+      queryClient.invalidateQueries({ queryKey: ['acquisition_properties'] });
       return { success: true };
     } catch (error: any) {
-      console.error('Error updating opportunity:', error);
+      console.error('Error updating property:', error);
       return { success: false, error: error.message };
     }
   };
 
   const deleteOpportunity = async (
-    opportunityId: string
+    propertyId: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await supabase
-        .from('opportunities')
+        .from('acquisition_properties')
         .delete()
-        .eq('id', opportunityId);
+        .eq('id', propertyId);
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+      queryClient.invalidateQueries({ queryKey: ['acquisition_properties'] });
       return { success: true };
     } catch (error: any) {
-      console.error('Error deleting opportunity:', error);
+      console.error('Error deleting property:', error);
       return { success: false, error: error.message };
     }
   };
@@ -200,16 +200,16 @@ export function useOpportunityMutations() {
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await supabase
-        .from('opportunities')
+        .from('acquisition_properties')
         .delete()
         .eq('acquisition_id', acquisitionId);
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['opportunities', acquisitionId] });
+      queryClient.invalidateQueries({ queryKey: ['acquisition_properties', acquisitionId] });
       return { success: true };
     } catch (error: any) {
-      console.error('Error deleting opportunities:', error);
+      console.error('Error deleting properties:', error);
       return { success: false, error: error.message };
     }
   };

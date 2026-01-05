@@ -174,7 +174,8 @@ export function useAcquisition(acquisitionId: string | undefined) {
   return { acquisition, loading, error, refetch: fetchAcquisition };
 }
 
-// Hook to fetch acquisition properties
+// Hook to fetch acquisition properties - DEPRECATED
+// Use useOpportunities from useOpportunities.ts instead
 export function useAcquisitionProperties(acquisitionId: string | undefined) {
   const [properties, setProperties] = useState<AcquisitionProperty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,59 +205,10 @@ export function useAcquisitionProperties(acquisitionId: string | undefined) {
         return;
       }
 
-      const acquisition = transformAcquisition(acquisitionData);
-
-      // Fetch acquisition_properties with related property data
-      const { data: apData, error: apError } = await supabase
-        .from('acquisition_properties')
-        .select(`
-          *,
-          properties (*)
-        `)
-        .eq('acquisition_id', acquisitionId);
-
-      if (apError) throw apError;
-
-      const transformed: AcquisitionProperty[] = (apData || []).map((ap) => {
-        const propertyRow = ap.properties as Tables<'properties'>;
-        const property = transformProperty(propertyRow);
-
-        const inputs: AcquisitionPropertyInputs = {
-          useAcquisitionDefaults: ap.use_acquisition_defaults,
-          miscIncomePercent: ap.misc_income_percent ? Number(ap.misc_income_percent) : undefined,
-          vacancyBadDebtPercent: ap.vacancy_bad_debt_percent ? Number(ap.vacancy_bad_debt_percent) : undefined,
-          pmFeePercent: ap.pm_fee_percent ? Number(ap.pm_fee_percent) : undefined,
-          insPremiumRate: ap.ins_premium_rate ? Number(ap.ins_premium_rate) : undefined,
-          insFactorRate: ap.ins_factor_rate ? Number(ap.ins_factor_rate) : undefined,
-          insLiabilityPremium: ap.ins_liability_premium ? Number(ap.ins_liability_premium) : undefined,
-          replacementCostPerSF: ap.replacement_cost_per_sf ? Number(ap.replacement_cost_per_sf) : undefined,
-          lostRent: ap.lost_rent ? Number(ap.lost_rent) : undefined,
-          leasingFeePercent: ap.leasing_fee_percent ? Number(ap.leasing_fee_percent) : undefined,
-          utilities: ap.utilities ? Number(ap.utilities) : undefined,
-          turnoverCost: ap.turnover_cost ? Number(ap.turnover_cost) : undefined,
-          turnoverRatePercent: ap.turnover_rate_percent ? Number(ap.turnover_rate_percent) : undefined,
-          blendedTurnover: ap.blended_turnover ? Number(ap.blended_turnover) : undefined,
-          effectiveTaxRatePercent: ap.effective_tax_rate_percent ? Number(ap.effective_tax_rate_percent) : undefined,
-          taxIncreasePercent: ap.tax_increase_percent ? Number(ap.tax_increase_percent) : undefined,
-          rmPercent: ap.rm_percent ? Number(ap.rm_percent) : undefined,
-          turnCost: ap.turn_cost ? Number(ap.turn_cost) : undefined,
-          cmFeePercent: ap.cm_fee_percent ? Number(ap.cm_fee_percent) : undefined,
-          closingCostsPercent: ap.closing_costs_percent ? Number(ap.closing_costs_percent) : undefined,
-        };
-
-        const outputs = calculateAcquisitionUnderwriting(property, inputs, acquisition.defaults);
-
-        return {
-          id: ap.id,
-          acquisitionId: ap.acquisition_id,
-          propertyId: ap.property_id,
-          property,
-          inputs,
-          outputs,
-        };
-      });
-
-      setProperties(transformed);
+      // Note: The old acquisition_properties table with property_id references no longer exists
+      // This hook is kept for backwards compatibility but returns empty array
+      // Use useOpportunities hook instead
+      setProperties([]);
     } catch (err) {
       console.error('Error fetching acquisition properties:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch properties');
@@ -294,31 +246,31 @@ export function useAcquisitionsWithAggregates() {
     try {
       setLoading(true);
 
-      // Fetch opportunities for all acquisitions
-      const { data: allOpportunities, error: oppError } = await supabase
-        .from('opportunities')
+      // Fetch acquisition properties for all acquisitions
+      const { data: allProperties, error: propError } = await supabase
+        .from('acquisition_properties')
         .select('*')
         .in('acquisition_id', acquisitions.map(a => a.id));
 
-      if (oppError) throw oppError;
+      if (propError) throw propError;
 
       const result: AcquisitionWithAggregates[] = acquisitions.map(acquisition => {
-        const opportunities = (allOpportunities || []).filter(o => o.acquisition_id === acquisition.id);
-        const includedOpportunities = opportunities.filter(o => o.included);
+        const properties = (allProperties || []).filter(p => p.acquisition_id === acquisition.id);
+        const includedProperties = properties.filter(p => p.included);
 
-        // Calculate aggregates from included opportunities
-        const totalOfferPrice = includedOpportunities.reduce((sum, o) => sum + (Number(o.offer_price) || 0), 0);
-        const totalProjectedNOI = includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_noi) || 0), 0);
-        const totalAcquisitionCost = includedOpportunities.reduce((sum, o) => sum + (Number(o.total_acquisition_cost) || 0), 0);
-        const avgProjectedCapRate = includedOpportunities.length > 0
-          ? includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_cap_rate) || 0), 0) / includedOpportunities.length
+        // Calculate aggregates from included properties
+        const totalOfferPrice = includedProperties.reduce((sum, p) => sum + (Number(p.offer_price) || 0), 0);
+        const totalProjectedNOI = includedProperties.reduce((sum, p) => sum + (Number(p.projected_noi) || 0), 0);
+        const totalAcquisitionCost = includedProperties.reduce((sum, p) => sum + (Number(p.total_acquisition_cost) || 0), 0);
+        const avgProjectedCapRate = includedProperties.length > 0
+          ? includedProperties.reduce((sum, p) => sum + (Number(p.projected_cap_rate) || 0), 0) / includedProperties.length
           : 0;
-        const avgProjectedAnnualReturn = includedOpportunities.length > 0
-          ? includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_annual_return) || 0), 0) / includedOpportunities.length
+        const avgProjectedAnnualReturn = includedProperties.length > 0
+          ? includedProperties.reduce((sum, p) => sum + (Number(p.projected_annual_return) || 0), 0) / includedProperties.length
           : 0;
 
         const aggregates = {
-          propertyCount: includedOpportunities.length,
+          propertyCount: includedProperties.length,
           totalOfferPrice,
           totalProjectedNOI,
           totalAcquisitionCost,
@@ -329,7 +281,7 @@ export function useAcquisitionsWithAggregates() {
         return {
           acquisition,
           aggregates,
-          propertyCount: includedOpportunities.length,
+          propertyCount: includedProperties.length,
         };
       });
 
@@ -435,36 +387,8 @@ export function useAcquisitionMutations() {
     }
   };
 
-  const addPropertiesToAcquisition = async (
-    acquisitionId: string,
-    propertyIds: string[]
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      setSaving(true);
-
-      const inserts = propertyIds.map(propertyId => ({
-        acquisition_id: acquisitionId,
-        property_id: propertyId,
-        use_acquisition_defaults: true,
-      }));
-
-      const { error } = await supabase
-        .from('acquisition_properties')
-        .insert(inserts);
-
-      if (error) throw error;
-
-      return { success: true };
-    } catch (err) {
-      console.error('Error adding properties:', err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : 'Failed to add properties',
-      };
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Note: addPropertiesToAcquisition is no longer used
+  // Properties are now uploaded via CSV through useOpportunityMutations.uploadOpportunities
 
   const removePropertyFromAcquisition = async (
     acquisitionPropertyId: string
@@ -543,7 +467,6 @@ export function useAcquisitionMutations() {
     saving,
     createAcquisition,
     updateAcquisition,
-    addPropertiesToAcquisition,
     removePropertyFromAcquisition,
     updateAcquisitionProperty,
   };
