@@ -7,13 +7,14 @@ import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Opportunity } from '@/types/opportunity';
 import { useOpportunityMutations } from '@/hooks/useOpportunities';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface OpportunityTableProps {
   opportunities: Opportunity[];
   isLoading: boolean;
 }
 
-type SortField = 'address' | 'city' | 'type' | 'currentRent' | 'salesAvm';
+type SortField = 'address' | 'city' | 'state' | 'type' | 'currentRent' | 'salesAvm' | 'rentAvm' | 'offerPrice';
 type SortDirection = 'asc' | 'desc';
 
 export function OpportunityTable({ opportunities, isLoading }: OpportunityTableProps) {
@@ -43,6 +44,10 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
         aVal = a.city;
         bVal = b.city;
         break;
+      case 'state':
+        aVal = a.state;
+        bVal = b.state;
+        break;
       case 'type':
         aVal = a.type || '';
         bVal = b.type || '';
@@ -54,6 +59,14 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
       case 'salesAvm':
         aVal = a.salesAvm || 0;
         bVal = b.salesAvm || 0;
+        break;
+      case 'rentAvm':
+        aVal = a.rentAvm || 0;
+        bVal = b.rentAvm || 0;
+        break;
+      case 'offerPrice':
+        aVal = a.offerPrice || 0;
+        bVal = b.offerPrice || 0;
         break;
     }
 
@@ -68,16 +81,16 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
   const handleToggleIncluded = async (opportunity: Opportunity) => {
     const result = await updateOpportunity(opportunity.id, { included: !opportunity.included });
     if (!result.success) {
-      toast.error('Failed to update opportunity');
+      toast.error('Failed to update property');
     }
   };
 
   const handleDelete = async (opportunityId: string) => {
     const result = await deleteOpportunity(opportunityId);
     if (result.success) {
-      toast.success('Opportunity removed');
+      toast.success('Property removed');
     } else {
-      toast.error('Failed to remove opportunity');
+      toast.error('Failed to remove property');
     }
   };
 
@@ -88,6 +101,20 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
     ) : (
       <ChevronDown className="h-4 w-4 inline ml-1" />
     );
+  };
+
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value == null) return '-';
+    return `$${value.toLocaleString()}`;
+  };
+
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    try {
+      return format(new Date(dateStr), 'MM/dd/yyyy');
+    } catch {
+      return '-';
+    }
   };
 
   if (isLoading) {
@@ -101,51 +128,78 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
   if (opportunities.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No opportunities uploaded yet. Click "Upload Opportunities" to add properties.
+        No properties uploaded yet. Click "Upload Properties" to add properties.
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table>
+    <div className="border rounded-lg overflow-x-auto">
+      <Table className="min-w-[2000px]">
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="w-12">Include</TableHead>
+            <TableHead className="w-12 sticky left-0 bg-muted/50 z-10">Include</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap min-w-[200px]"
               onClick={() => handleSort('address')}
             >
               Address <SortIcon field="address" />
             </TableHead>
+            <TableHead className="whitespace-nowrap min-w-[120px]">Address 2</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap min-w-[120px]"
               onClick={() => handleSort('city')}
             >
               City <SortIcon field="city" />
             </TableHead>
-            <TableHead>State</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('state')}
+            >
+              State <SortIcon field="state" />
+            </TableHead>
+            <TableHead className="whitespace-nowrap">Zip Code</TableHead>
+            <TableHead className="whitespace-nowrap min-w-[120px]">MSA</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Beds</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Baths</TableHead>
+            <TableHead className="whitespace-nowrap text-right">Sq Ft</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Year Built</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('type')}
             >
               Type <SortIcon field="type" />
             </TableHead>
-            <TableHead>Beds/Baths</TableHead>
-            <TableHead>Occupancy</TableHead>
+            <TableHead className="whitespace-nowrap">Occupancy</TableHead>
             <TableHead 
-              className="text-right cursor-pointer hover:bg-muted/80"
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('currentRent')}
             >
               Current Rent <SortIcon field="currentRent" />
             </TableHead>
+            <TableHead className="whitespace-nowrap">Lease Start</TableHead>
+            <TableHead className="whitespace-nowrap">Lease End</TableHead>
+            <TableHead className="text-right whitespace-nowrap">Annual HOA</TableHead>
+            <TableHead className="text-right whitespace-nowrap">Property Tax</TableHead>
             <TableHead 
-              className="text-right cursor-pointer hover:bg-muted/80"
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('rentAvm')}
+            >
+              Rent AVM <SortIcon field="rentAvm" />
+            </TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('salesAvm')}
             >
               Sales AVM <SortIcon field="salesAvm" />
             </TableHead>
-            <TableHead className="w-12"></TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('offerPrice')}
+            >
+              Offer Price <SortIcon field="offerPrice" />
+            </TableHead>
+            <TableHead className="w-12 sticky right-0 bg-muted/50 z-10"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -154,48 +208,67 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
               key={opportunity.id}
               className={!opportunity.included ? 'opacity-50 bg-muted/20' : ''}
             >
-              <TableCell>
+              <TableCell className="sticky left-0 bg-background z-10">
                 <Checkbox
                   checked={opportunity.included}
                   onCheckedChange={() => handleToggleIncluded(opportunity)}
                 />
               </TableCell>
-              <TableCell className="font-medium">
+              <TableCell className="font-medium whitespace-nowrap">
                 {opportunity.address1}
-                {opportunity.address2 && (
-                  <span className="text-muted-foreground"> {opportunity.address2}</span>
-                )}
               </TableCell>
-              <TableCell>{opportunity.city}</TableCell>
-              <TableCell>{opportunity.state}</TableCell>
+              <TableCell className="whitespace-nowrap text-muted-foreground">
+                {opportunity.address2 || '-'}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.city}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.state}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.zipCode}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.msa || '-'}</TableCell>
+              <TableCell className="text-center">{opportunity.bedrooms || '-'}</TableCell>
+              <TableCell className="text-center">{opportunity.bathrooms || '-'}</TableCell>
+              <TableCell className="text-right">
+                {opportunity.squareFeet?.toLocaleString() || '-'}
+              </TableCell>
+              <TableCell className="text-center">{opportunity.yearBuilt || '-'}</TableCell>
               <TableCell>
-                {opportunity.type && (
+                {opportunity.type ? (
                   <Badge variant="outline">{opportunity.type}</Badge>
-                )}
+                ) : '-'}
               </TableCell>
               <TableCell>
-                {opportunity.bedrooms || '-'} / {opportunity.bathrooms || '-'}
+                {opportunity.occupancy ? (
+                  <Badge 
+                    variant={opportunity.occupancy === 'Occupied' ? 'default' : 'secondary'}
+                  >
+                    {opportunity.occupancy}
+                  </Badge>
+                ) : '-'}
               </TableCell>
-              <TableCell>
-                <Badge 
-                  variant={opportunity.occupancy === 'Occupied' ? 'default' : 'secondary'}
-                >
-                  {opportunity.occupancy}
-                </Badge>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.currentRent)}
               </TableCell>
-              <TableCell className="text-right">
-                {opportunity.currentRent 
-                  ? `$${opportunity.currentRent.toLocaleString()}`
-                  : '-'
-                }
+              <TableCell className="whitespace-nowrap">
+                {formatDate(opportunity.leaseStart)}
               </TableCell>
-              <TableCell className="text-right">
-                {opportunity.salesAvm 
-                  ? `$${opportunity.salesAvm.toLocaleString()}`
-                  : '-'
-                }
+              <TableCell className="whitespace-nowrap">
+                {formatDate(opportunity.leaseEnd)}
               </TableCell>
-              <TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.annualHoa)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.propertyTax)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.rentAvm)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.salesAvm)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.offerPrice)}
+              </TableCell>
+              <TableCell className="sticky right-0 bg-background z-10">
                 <Button
                   variant="ghost"
                   size="icon"
