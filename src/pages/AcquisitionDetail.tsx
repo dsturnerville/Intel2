@@ -16,6 +16,7 @@ import {
 import { AcquisitionStatusBadge } from '@/components/acquisition/AcquisitionStatusBadge';
 import { AcquisitionUnderwritingDefaults } from '@/components/acquisition/AcquisitionUnderwritingDefaults';
 import { OpportunityUploadDialog } from '@/components/acquisition/OpportunityUploadDialog';
+import { AddPropertyManualDialog } from '@/components/acquisition/AddPropertyManualDialog';
 import { OpportunityTable } from '@/components/acquisition/OpportunityTable';
 import { AcquisitionPropertyMap } from '@/components/acquisition/AcquisitionPropertyMap';
 import {
@@ -28,7 +29,7 @@ import {
   AcquisitionDefaults,
   AcquisitionStatus,
 } from '@/types/acquisition';
-import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map, MapPin } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map, MapPin, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUSES: AcquisitionStatus[] = ['Draft', 'In Review', 'Approved', 'Under Contract', 'Closed', 'Archived'];
@@ -45,6 +46,7 @@ export default function AcquisitionDetail() {
   const [localAcquisition, setLocalAcquisition] = useState<Acquisition | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [addPropertyDialogOpen, setAddPropertyDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [isGeocoding, setIsGeocoding] = useState(false);
 
@@ -261,6 +263,10 @@ export default function AcquisitionDetail() {
                       Geocode All ({propertiesMissingCoords})
                     </Button>
                   )}
+                  <Button size="sm" variant="outline" onClick={() => setAddPropertyDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Property
+                  </Button>
                   <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Properties
@@ -354,13 +360,20 @@ export default function AcquisitionDetail() {
           </TabsContent>
         </Tabs>
 
-        {/* Upload Dialog */}
         {id && (
-          <OpportunityUploadDialog
-            open={uploadDialogOpen}
-            onOpenChange={setUploadDialogOpen}
-            acquisitionId={id}
-          />
+          <>
+            <OpportunityUploadDialog
+              open={uploadDialogOpen}
+              onOpenChange={setUploadDialogOpen}
+              acquisitionId={id}
+            />
+            <AddPropertyManualDialog
+              open={addPropertyDialogOpen}
+              onOpenChange={setAddPropertyDialogOpen}
+              acquisitionId={id}
+              onSuccess={() => refetchOpportunities()}
+            />
+          </>
         )}
       </main>
     </div>
