@@ -92,23 +92,32 @@ export default function NewAcquisition() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/acquisitions')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold">New Acquisition</h1>
-            <p className="text-muted-foreground">Create a new acquisition scenario</p>
+      <header className="sticky top-0 md:top-0 z-10 h-16 md:h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="h-full px-4 md:px-6">
+          <div className="flex h-full items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/acquisitions')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight">New Acquisition</h1>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">
+                  Create a new acquisition scenario
+                </p>
+              </div>
+            </div>
+            <Button onClick={handleSubmit} disabled={saving} size="sm">
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <span className="hidden sm:inline">Create Acquisition</span>
+              <span className="sm:hidden">Create</span>
+            </Button>
           </div>
         </div>
-        <Button onClick={handleSubmit} disabled={saving}>
-          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Create Acquisition
-        </Button>
-      </div>
+      </header>
+
+      <main className="px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 max-w-4xl">
 
       {/* Basic Info */}
       <Card>
@@ -197,11 +206,12 @@ export default function NewAcquisition() {
         </CardContent>
       </Card>
 
-      {/* Underwriting Defaults */}
-      <AcquisitionUnderwritingDefaults
-        defaults={defaults}
-        onUpdate={setDefaults}
-      />
+        {/* Underwriting Defaults */}
+        <AcquisitionUnderwritingDefaults
+          defaults={defaults}
+          onUpdate={setDefaults}
+        />
+      </main>
     </div>
   );
 }
