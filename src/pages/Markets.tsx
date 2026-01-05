@@ -32,11 +32,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Pencil, Trash2, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, MapPin, Loader2, Navigation } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const DEFAULT_MARKET: MarketInsert = {
   market_name: '',
   market_code: null,
+  latitude: null,
+  longitude: null,
   misc_income_percent: 0.02,
   vacancy_percent: 0.05,
   bad_debt_percent: 0.01,
@@ -67,6 +71,46 @@ export default function Markets() {
   const [formData, setFormData] = useState<MarketInsert>(DEFAULT_MARKET);
   // Track raw input values for percent fields during editing
   const [percentInputs, setPercentInputs] = useState<Record<string, string>>({});
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  const handleGeocode = async () => {
+    if (!formData.market_name.trim()) {
+      toast.error('Please enter a market name first');
+      return;
+    }
+
+    // For new markets, we need to save first then geocode
+    // For existing markets, we can geocode directly
+    if (!editingMarket) {
+      toast.error('Please save the market first, then geocode');
+      return;
+    }
+
+    setIsGeocoding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('geocode-market', {
+        body: { marketId: editingMarket.id, marketName: formData.market_name }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setFormData(prev => ({
+          ...prev,
+          latitude: data.latitude,
+          longitude: data.longitude
+        }));
+        toast.success(`Geocoded to ${data.place_name}`);
+      } else {
+        toast.error(data.error || 'Failed to geocode market');
+      }
+    } catch (err) {
+      console.error('Geocode error:', err);
+      toast.error('Failed to geocode market');
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
 
   const openCreate = () => {
     setEditingMarket(null);
@@ -80,6 +124,8 @@ export default function Markets() {
     setFormData({
       market_name: market.market_name,
       market_code: market.market_code,
+      latitude: market.latitude,
+      longitude: market.longitude,
       misc_income_percent: market.misc_income_percent,
       vacancy_percent: market.vacancy_percent,
       bad_debt_percent: market.bad_debt_percent,
@@ -313,6 +359,66 @@ export default function Markets() {
                     placeholder="e.g., DFW"
                   />
                 </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <Navigation className="h-4 w-4" />
+                  Location
+                </h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={formData.latitude ?? ''}
+                      onChange={(e) => updateField('latitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="e.g., 32.7767"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={formData.longitude ?? ''}
+                      onChange={(e) => updateField('longitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      placeholder="e.g., -96.7970"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>&nbsp;</Label>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={handleGeocode}
+                      disabled={isGeocoding || !editingMarket}
+                      className="w-full"
+                      title={!editingMarket ? 'Save the market first to enable geocoding' : undefined}
+                    >
+                      {isGeocoding ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Geocoding...
+                        </>
+                      ) : (
+                        <>
+                          <MapPin className="h-4 w-4 mr-2" />
+                          Auto-Geocode
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                {!editingMarket && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Save the market first to enable auto-geocoding from market name.
+                  </p>
+                )}
               </div>
 
               {/* Income & Vacancy */}
