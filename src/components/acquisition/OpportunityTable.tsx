@@ -3,23 +3,60 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp, Home } from 'lucide-react';
 import { Opportunity } from '@/types/opportunity';
+import { AcquisitionDefaults } from '@/types/acquisition';
 import { useOpportunityMutations } from '@/hooks/useOpportunities';
+import { OpportunityUnderwritingEditor } from './OpportunityUnderwritingEditor';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface OpportunityTableProps {
   opportunities: Opportunity[];
   isLoading: boolean;
+  defaults?: AcquisitionDefaults;
 }
 
 type SortField = 'address' | 'city' | 'state' | 'zipCode' | 'msa' | 'type' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'yearBuilt' | 'occupancy' | 'askingPrice' | 'currentRent' | 'leaseStart' | 'leaseEnd' | 'annualHoa' | 'propertyTax' | 'rentAvm' | 'salesAvm' | 'offerPrice' | 'projectedNoi' | 'projectedCapRate' | 'totalAcquisitionCost' | 'projectedAnnualReturn';
 type SortDirection = 'asc' | 'desc';
 
-export function OpportunityTable({ opportunities, isLoading }: OpportunityTableProps) {
+const DEFAULT_UNDERWRITING: AcquisitionDefaults = {
+  miscIncomePercent: 0.02,
+  vacancyBadDebtPercent: 0.05,
+  pmFeePercent: 0.08,
+  insPremiumRate: 0.004,
+  insFactorRate: 1.0,
+  insLiabilityPremium: 150,
+  replacementCostPerSF: 150,
+  lostRent: 0,
+  leasingFeePercent: 0.5,
+  utilities: 0,
+  turnoverCost: 2500,
+  turnoverRatePercent: 0.25,
+  blendedTurnover: 625,
+  effectiveTaxRatePercent: 0.012,
+  taxIncreasePercent: 0.03,
+  rmPercent: 0.05,
+  turnCost: 2500,
+  cmFeePercent: 0.02,
+  closingCostsPercent: 0.02,
+};
+
+export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_UNDERWRITING }: OpportunityTableProps) {
   const [sortField, setSortField] = useState<SortField>('address');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const { updateOpportunity, deleteOpportunity } = useOpportunityMutations();
+
+  const toggleRow = (id: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -141,14 +178,16 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
     return sortDirection === 'asc' ? aVal - (bVal as number) : (bVal as number) - aVal;
   });
 
-  const handleToggleIncluded = async (opportunity: Opportunity) => {
+  const handleToggleIncluded = async (opportunity: Opportunity, e: React.MouseEvent) => {
+    e.stopPropagation();
     const result = await updateOpportunity(opportunity.id, { included: !opportunity.included });
     if (!result.success) {
       toast.error('Failed to update property');
     }
   };
 
-  const handleDelete = async (opportunityId: string) => {
+  const handleDelete = async (opportunityId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     const result = await deleteOpportunity(opportunityId);
     if (result.success) {
       toast.success('Property removed');
@@ -212,101 +251,104 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
+              <TableHead className="w-10 whitespace-nowrap"></TableHead>
               <TableHead className="w-12 whitespace-nowrap sticky left-0 bg-muted/50 z-10">Include</TableHead>
               <SortableHeader field="address">Address</SortableHeader>
               <SortableHeader field="city">City</SortableHeader>
               <SortableHeader field="state">State</SortableHeader>
-              <SortableHeader field="zipCode">Zip Code</SortableHeader>
-              <SortableHeader field="msa">MSA</SortableHeader>
-              <SortableHeader field="type">Type</SortableHeader>
-              <SortableHeader field="bedrooms">Beds</SortableHeader>
-              <SortableHeader field="bathrooms">Baths</SortableHeader>
-              <SortableHeader field="squareFeet">Sq Ft</SortableHeader>
-              <SortableHeader field="yearBuilt">Year Built</SortableHeader>
               <SortableHeader field="occupancy">Occupancy</SortableHeader>
               <SortableHeader field="askingPrice" className="text-right">Asking Price</SortableHeader>
               <SortableHeader field="currentRent" className="text-right">Current Rent</SortableHeader>
-              <SortableHeader field="leaseStart">Lease Start</SortableHeader>
-              <SortableHeader field="leaseEnd">Lease End</SortableHeader>
-              <SortableHeader field="annualHoa" className="text-right">Annual HOA</SortableHeader>
-              <SortableHeader field="propertyTax" className="text-right">Property Tax</SortableHeader>
-              <SortableHeader field="rentAvm" className="text-right">Rent AVM</SortableHeader>
-              <SortableHeader field="salesAvm" className="text-right">Sales AVM</SortableHeader>
               <SortableHeader field="offerPrice" className="text-right">Offer Price</SortableHeader>
               <SortableHeader field="projectedNoi" className="text-right">Projected NOI</SortableHeader>
               <SortableHeader field="projectedCapRate" className="text-right">Cap Rate</SortableHeader>
-              <SortableHeader field="totalAcquisitionCost" className="text-right">Total Acq Cost</SortableHeader>
-              <SortableHeader field="projectedAnnualReturn" className="text-right">Annual Return</SortableHeader>
               <TableHead className="w-12 whitespace-nowrap sticky right-0 bg-muted/50 z-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedOpportunities.map((opportunity) => (
-              <TableRow 
-                key={opportunity.id}
-                className={!opportunity.included ? 'opacity-50 bg-muted/20' : ''}
-              >
-                <TableCell className="sticky left-0 bg-background z-10">
-                  <Checkbox
-                    checked={opportunity.included}
-                    onCheckedChange={() => handleToggleIncluded(opportunity)}
-                  />
-                </TableCell>
-                <TableCell className="font-medium whitespace-nowrap">
-                  {opportunity.address1}
-                  {opportunity.address2 && (
-                    <span className="text-muted-foreground"> {opportunity.address2}</span>
-                  )}
-                </TableCell>
-                <TableCell className="whitespace-nowrap">{opportunity.city}</TableCell>
-                <TableCell className="whitespace-nowrap">{opportunity.state}</TableCell>
-                <TableCell className="whitespace-nowrap">{opportunity.zipCode}</TableCell>
-                <TableCell className="whitespace-nowrap">{opportunity.msa || '-'}</TableCell>
-                <TableCell>
-                  {opportunity.type ? (
-                    <Badge variant="outline">{opportunity.type}</Badge>
-                  ) : '-'}
-                </TableCell>
-                <TableCell className="text-center">{opportunity.bedrooms ?? '-'}</TableCell>
-                <TableCell className="text-center">{opportunity.bathrooms ?? '-'}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">
-                  {opportunity.squareFeet ? opportunity.squareFeet.toLocaleString() : '-'}
-                </TableCell>
-                <TableCell className="text-center">{opportunity.yearBuilt ?? '-'}</TableCell>
-                <TableCell>
-                  {opportunity.occupancy ? (
-                    <Badge 
-                      variant={opportunity.occupancy === 'Occupied' ? 'default' : 'secondary'}
-                    >
-                      {opportunity.occupancy}
-                    </Badge>
-                  ) : '-'}
-                </TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.askingPrice)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.currentRent)}</TableCell>
-                <TableCell className="whitespace-nowrap">{formatDate(opportunity.leaseStart)}</TableCell>
-                <TableCell className="whitespace-nowrap">{formatDate(opportunity.leaseEnd)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.annualHoa)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.propertyTax)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.rentAvm)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.salesAvm)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.offerPrice)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.projectedNoi)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatPercent(opportunity.projectedCapRate)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatCurrency(opportunity.totalAcquisitionCost)}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">{formatPercent(opportunity.projectedAnnualReturn)}</TableCell>
-                <TableCell className="sticky right-0 bg-background z-10">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(opportunity.id)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            {sortedOpportunities.map((opportunity) => {
+              const isExpanded = expandedRows.has(opportunity.id);
+              
+              return (
+                <>
+                  <TableRow 
+                    key={opportunity.id}
+                    className={cn(
+                      'group hover:bg-muted/30 transition-colors cursor-pointer',
+                      !opportunity.included && 'opacity-50 bg-muted/20'
+                    )}
+                    onClick={() => toggleRow(opportunity.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+                    <TableCell className="p-2">
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="sticky left-0 bg-background z-10" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={opportunity.included}
+                        onCheckedChange={() => handleToggleIncluded(opportunity, { stopPropagation: () => {} } as React.MouseEvent)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-muted rounded-md">
+                          <Home className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{opportunity.address1}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {opportunity.city}, {opportunity.state} {opportunity.zipCode}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">{opportunity.city}</TableCell>
+                    <TableCell className="whitespace-nowrap">{opportunity.state}</TableCell>
+                    <TableCell>
+                      {opportunity.occupancy ? (
+                        <Badge 
+                          variant={opportunity.occupancy === 'Occupied' ? 'default' : 'secondary'}
+                        >
+                          {opportunity.occupancy}
+                        </Badge>
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-mono">{formatCurrency(opportunity.askingPrice)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-mono">{formatCurrency(opportunity.currentRent)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-mono font-semibold">{formatCurrency(opportunity.offerPrice)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-mono">{formatCurrency(opportunity.projectedNoi)}</TableCell>
+                    <TableCell className="text-right whitespace-nowrap font-mono text-primary font-semibold">{formatPercent(opportunity.projectedCapRate)}</TableCell>
+                    <TableCell className="sticky right-0 bg-background z-10" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleDelete(opportunity.id, e)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Expanded row with details */}
+                  {isExpanded && (
+                    <TableRow key={`${opportunity.id}-expanded`} className="bg-muted/30">
+                      <TableCell colSpan={12} className="p-4">
+                        <OpportunityUnderwritingEditor
+                          opportunity={opportunity}
+                          defaults={defaults}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

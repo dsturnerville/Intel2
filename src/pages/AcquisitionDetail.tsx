@@ -298,6 +298,7 @@ export default function AcquisitionDetail() {
                   <OpportunityTable
                     opportunities={opportunities}
                     isLoading={opportunitiesLoading}
+                    defaults={localAcquisition.defaults}
                   />
                 ) : (
                   <AcquisitionPropertyMap opportunities={opportunities} />
