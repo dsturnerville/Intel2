@@ -45,7 +45,7 @@ export function AddPropertyManualDialog({
     bathrooms: '',
     squareFeet: '',
     yearBuilt: '',
-    offerPrice: '',
+    askingPrice: '',
     currentRent: '',
     occupancy: 'Vacant' as 'Vacant' | 'Occupied',
     type: 'SFR' as 'SFR' | 'BTR' | 'MF',
@@ -66,7 +66,7 @@ export function AddPropertyManualDialog({
       bathrooms: '',
       squareFeet: '',
       yearBuilt: '',
-      offerPrice: '',
+      askingPrice: '',
       currentRent: '',
       occupancy: 'Vacant',
       type: 'SFR',
@@ -92,7 +92,7 @@ export function AddPropertyManualDialog({
         bathrooms: formData.bathrooms ? parseFloat(formData.bathrooms) : null,
         square_feet: formData.squareFeet ? parseInt(formData.squareFeet) : null,
         year_built: formData.yearBuilt ? parseInt(formData.yearBuilt) : null,
-        offer_price: formData.offerPrice ? parseFloat(formData.offerPrice) : null,
+        asking_price: formData.askingPrice ? parseFloat(formData.askingPrice) : null,
         current_rent: formData.currentRent ? parseFloat(formData.currentRent) : null,
         occupancy: formData.occupancy,
         type: formData.type,
@@ -269,13 +269,13 @@ export function AddPropertyManualDialog({
           {/* Financial */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="offerPrice">Offer Price</Label>
+              <Label htmlFor="askingPrice">Asking Price</Label>
               <Input
-                id="offerPrice"
+                id="askingPrice"
                 type="number"
                 placeholder="250000"
-                value={formData.offerPrice}
-                onChange={(e) => handleChange('offerPrice', e.target.value)}
+                value={formData.askingPrice}
+                onChange={(e) => handleChange('askingPrice', e.target.value)}
               />
             </div>
             <div className="space-y-2">
