@@ -38,6 +38,7 @@ import {
   Shield,
   LayoutDashboard,
   Wrench,
+  ShoppingCart,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -73,6 +74,12 @@ const departments: DepartmentConfig[] = [
 
 // Navigation items with their associated departments
 const navItems: NavItem[] = [
+  { 
+    title: 'Acquisitions', 
+    url: '/acquisitions', 
+    icon: ShoppingCart,
+    departments: ['Asset Management', 'Super Admin'],
+  },
   { 
     title: 'Dispositions', 
     url: '/dispositions', 
@@ -125,6 +132,9 @@ export function AppSidebar() {
   const isActive = (path: string) => {
     if (path === '/dashboard') {
       return location.pathname === path;
+    }
+    if (path === '/acquisitions') {
+      return location.pathname === path || location.pathname.startsWith('/acquisitions/');
     }
     if (path === '/dispositions') {
       return location.pathname === path || location.pathname.startsWith('/dispositions/');
@@ -256,6 +266,14 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="New Acquisition">
+                    <Link to="/acquisitions/new">
+                      <Plus className="h-4 w-4" />
+                      <span>New Acquisition</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="New Disposition">
                     <Link to="/dispositions/new">

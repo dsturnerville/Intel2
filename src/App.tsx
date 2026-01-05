@@ -10,6 +10,9 @@ import Auth from "./pages/Auth";
 import Dispositions from "./pages/Dispositions";
 import DispositionDetail from "./pages/DispositionDetail";
 import NewDisposition from "./pages/NewDisposition";
+import Acquisitions from "./pages/Acquisitions";
+import AcquisitionDetail from "./pages/AcquisitionDetail";
+import NewAcquisition from "./pages/NewAcquisition";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import Dashboard from "./pages/Dashboard";
@@ -64,6 +67,36 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <DispositionDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/acquisitions"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Acquisitions />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/acquisitions/new"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <NewAcquisition />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/acquisitions/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <AcquisitionDetail />
                 </AppLayout>
               </ProtectedRoute>
             }
