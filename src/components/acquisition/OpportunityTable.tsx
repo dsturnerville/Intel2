@@ -7,13 +7,14 @@ import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Opportunity } from '@/types/opportunity';
 import { useOpportunityMutations } from '@/hooks/useOpportunities';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 interface OpportunityTableProps {
   opportunities: Opportunity[];
   isLoading: boolean;
 }
 
-type SortField = 'address' | 'city' | 'type' | 'currentRent' | 'salesAvm';
+type SortField = 'address' | 'city' | 'state' | 'type' | 'currentRent' | 'salesAvm' | 'rentAvm' | 'offerPrice';
 type SortDirection = 'asc' | 'desc';
 
 export function OpportunityTable({ opportunities, isLoading }: OpportunityTableProps) {
@@ -43,6 +44,10 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
         aVal = a.city;
         bVal = b.city;
         break;
+      case 'state':
+        aVal = a.state;
+        bVal = b.state;
+        break;
       case 'type':
         aVal = a.type || '';
         bVal = b.type || '';
@@ -54,6 +59,14 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
       case 'salesAvm':
         aVal = a.salesAvm || 0;
         bVal = b.salesAvm || 0;
+        break;
+      case 'rentAvm':
+        aVal = a.rentAvm || 0;
+        bVal = b.rentAvm || 0;
+        break;
+      case 'offerPrice':
+        aVal = a.offerPrice || 0;
+        bVal = b.offerPrice || 0;
         break;
     }
 
@@ -90,6 +103,20 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
     );
   };
 
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value == null) return '-';
+    return `$${value.toLocaleString()}`;
+  };
+
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    try {
+      return format(new Date(dateStr), 'MM/dd/yyyy');
+    } catch {
+      return '-';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -107,45 +134,72 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table>
+    <div className="w-full overflow-x-auto border rounded-lg">
+      <Table className="w-max min-w-full">
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="w-12">Include</TableHead>
+            <TableHead className="w-12 whitespace-nowrap">Include</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('address')}
             >
               Address <SortIcon field="address" />
             </TableHead>
+            <TableHead className="whitespace-nowrap">Address 2</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('city')}
             >
               City <SortIcon field="city" />
             </TableHead>
-            <TableHead>State</TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-muted/80"
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('state')}
+            >
+              State <SortIcon field="state" />
+            </TableHead>
+            <TableHead className="whitespace-nowrap">Zip Code</TableHead>
+            <TableHead className="whitespace-nowrap">MSA</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Beds</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Baths</TableHead>
+            <TableHead className="whitespace-nowrap text-right">Sq Ft</TableHead>
+            <TableHead className="whitespace-nowrap text-center">Year Built</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('type')}
             >
               Type <SortIcon field="type" />
             </TableHead>
-            <TableHead>Beds/Baths</TableHead>
-            <TableHead>Occupancy</TableHead>
+            <TableHead className="whitespace-nowrap">Occupancy</TableHead>
             <TableHead 
-              className="text-right cursor-pointer hover:bg-muted/80"
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('currentRent')}
             >
               Current Rent <SortIcon field="currentRent" />
             </TableHead>
+            <TableHead className="whitespace-nowrap">Lease Start</TableHead>
+            <TableHead className="whitespace-nowrap">Lease End</TableHead>
+            <TableHead className="text-right whitespace-nowrap">Annual HOA</TableHead>
+            <TableHead className="text-right whitespace-nowrap">Property Tax</TableHead>
             <TableHead 
-              className="text-right cursor-pointer hover:bg-muted/80"
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('rentAvm')}
+            >
+              Rent AVM <SortIcon field="rentAvm" />
+            </TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
               onClick={() => handleSort('salesAvm')}
             >
               Sales AVM <SortIcon field="salesAvm" />
             </TableHead>
-            <TableHead className="w-12"></TableHead>
+            <TableHead 
+              className="text-right cursor-pointer hover:bg-muted/80 whitespace-nowrap"
+              onClick={() => handleSort('offerPrice')}
+            >
+              Offer Price <SortIcon field="offerPrice" />
+            </TableHead>
+            <TableHead className="w-12 whitespace-nowrap"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -160,21 +214,26 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
                   onCheckedChange={() => handleToggleIncluded(opportunity)}
                 />
               </TableCell>
-              <TableCell className="font-medium">
+              <TableCell className="font-medium whitespace-nowrap">
                 {opportunity.address1}
-                {opportunity.address2 && (
-                  <span className="text-muted-foreground"> {opportunity.address2}</span>
-                )}
               </TableCell>
-              <TableCell>{opportunity.city}</TableCell>
-              <TableCell>{opportunity.state}</TableCell>
+              <TableCell className="whitespace-nowrap text-muted-foreground">
+                {opportunity.address2 || '-'}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.city}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.state}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.zipCode}</TableCell>
+              <TableCell className="whitespace-nowrap">{opportunity.msa || '-'}</TableCell>
+              <TableCell className="text-center">{opportunity.bedrooms || '-'}</TableCell>
+              <TableCell className="text-center">{opportunity.bathrooms || '-'}</TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {opportunity.squareFeet?.toLocaleString() || '-'}
+              </TableCell>
+              <TableCell className="text-center">{opportunity.yearBuilt || '-'}</TableCell>
               <TableCell>
-                {opportunity.type && (
+                {opportunity.type ? (
                   <Badge variant="outline">{opportunity.type}</Badge>
-                )}
-              </TableCell>
-              <TableCell>
-                {opportunity.bedrooms || '-'} / {opportunity.bathrooms || '-'}
+                ) : '-'}
               </TableCell>
               <TableCell>
                 {opportunity.occupancy ? (
@@ -185,17 +244,29 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
                   </Badge>
                 ) : '-'}
               </TableCell>
-              <TableCell className="text-right">
-                {opportunity.currentRent 
-                  ? `$${opportunity.currentRent.toLocaleString()}`
-                  : '-'
-                }
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.currentRent)}
               </TableCell>
-              <TableCell className="text-right">
-                {opportunity.salesAvm 
-                  ? `$${opportunity.salesAvm.toLocaleString()}`
-                  : '-'
-                }
+              <TableCell className="whitespace-nowrap">
+                {formatDate(opportunity.leaseStart)}
+              </TableCell>
+              <TableCell className="whitespace-nowrap">
+                {formatDate(opportunity.leaseEnd)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.annualHoa)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.propertyTax)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.rentAvm)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.salesAvm)}
+              </TableCell>
+              <TableCell className="text-right whitespace-nowrap">
+                {formatCurrency(opportunity.offerPrice)}
               </TableCell>
               <TableCell>
                 <Button
