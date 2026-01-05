@@ -14,6 +14,7 @@ function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunit
     state: row.state,
     zipCode: row.zip_code,
     msa: row.msa || undefined,
+    marketId: row.market_id || undefined,
     bedrooms: row.bedrooms || undefined,
     bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
     squareFeet: row.square_feet || undefined,
@@ -181,6 +182,7 @@ export function useOpportunityMutations() {
       
       if (updates.included !== undefined) dbUpdates.included = updates.included;
       if (updates.useAcquisitionDefaults !== undefined) dbUpdates.use_acquisition_defaults = updates.useAcquisitionDefaults;
+      if (updates.marketId !== undefined) dbUpdates.market_id = updates.marketId || null;
       if (updates.miscIncomePercent !== undefined) dbUpdates.misc_income_percent = updates.miscIncomePercent;
       if (updates.vacancyBadDebtPercent !== undefined) dbUpdates.vacancy_bad_debt_percent = updates.vacancyBadDebtPercent;
       if (updates.pmFeePercent !== undefined) dbUpdates.pm_fee_percent = updates.pmFeePercent;

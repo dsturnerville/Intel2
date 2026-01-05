@@ -41,6 +41,7 @@ export type Database = {
           leasing_fee_percent: number | null
           longitude: number | null
           lost_rent: number | null
+          market_id: string | null
           misc_income_percent: number | null
           msa: string | null
           occupancy: Database["public"]["Enums"]["opportunity_occupancy"] | null
@@ -95,6 +96,7 @@ export type Database = {
           leasing_fee_percent?: number | null
           longitude?: number | null
           lost_rent?: number | null
+          market_id?: string | null
           misc_income_percent?: number | null
           msa?: string | null
           occupancy?:
@@ -151,6 +153,7 @@ export type Database = {
           leasing_fee_percent?: number | null
           longitude?: number | null
           lost_rent?: number | null
+          market_id?: string | null
           misc_income_percent?: number | null
           msa?: string | null
           occupancy?:
@@ -182,6 +185,13 @@ export type Database = {
           zip_code?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "acquisition_properties_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "opportunities_acquisition_id_fkey"
             columns: ["acquisition_id"]
