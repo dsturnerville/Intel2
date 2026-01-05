@@ -20,6 +20,7 @@ export type Database = {
           address1: string
           address2: string | null
           annual_hoa: number | null
+          asking_price: number | null
           bathrooms: number | null
           bedrooms: number | null
           blended_turnover: number | null
@@ -73,6 +74,7 @@ export type Database = {
           address1: string
           address2?: string | null
           annual_hoa?: number | null
+          asking_price?: number | null
           bathrooms?: number | null
           bedrooms?: number | null
           blended_turnover?: number | null
@@ -128,6 +130,7 @@ export type Database = {
           address1?: string
           address2?: string | null
           annual_hoa?: number | null
+          asking_price?: number | null
           bathrooms?: number | null
           bedrooms?: number | null
           blended_turnover?: number | null
