@@ -270,6 +270,7 @@ export default function Markets() {
                       id="misc_income_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.misc_income_percent ?? 0) * 100}
                       onChange={(e) => updateField('misc_income_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -280,6 +281,7 @@ export default function Markets() {
                       id="vacancy_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.vacancy_percent ?? 0) * 100}
                       onChange={(e) => updateField('vacancy_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -290,6 +292,7 @@ export default function Markets() {
                       id="bad_debt_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.bad_debt_percent ?? 0) * 100}
                       onChange={(e) => updateField('bad_debt_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -307,6 +310,7 @@ export default function Markets() {
                       id="pm_fee_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.pm_fee_percent ?? 0) * 100}
                       onChange={(e) => updateField('pm_fee_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -317,6 +321,7 @@ export default function Markets() {
                       id="leasing_fee_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.leasing_fee_percent ?? 0) * 100}
                       onChange={(e) => updateField('leasing_fee_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -327,6 +332,7 @@ export default function Markets() {
                       id="cm_fee_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.cm_fee_percent ?? 0) * 100}
                       onChange={(e) => updateField('cm_fee_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -337,6 +343,7 @@ export default function Markets() {
                       id="closing_costs_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.closing_costs_percent ?? 0) * 100}
                       onChange={(e) => updateField('closing_costs_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -353,7 +360,8 @@ export default function Markets() {
                     <Input
                       id="ins_premium_rate_percent"
                       type="number"
-                      step="0.001"
+                      step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.ins_premium_rate_percent ?? 0) * 100}
                       onChange={(e) => updateField('ins_premium_rate_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -364,6 +372,7 @@ export default function Markets() {
                       id="ins_factor_rate_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.ins_factor_rate_percent ?? 0) * 100}
                       onChange={(e) => updateField('ins_factor_rate_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -421,6 +430,7 @@ export default function Markets() {
                       id="repairs_maintenance_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.repairs_maintenance_percent ?? 0) * 100}
                       onChange={(e) => updateField('repairs_maintenance_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
@@ -448,6 +458,7 @@ export default function Markets() {
                       id="turnover_rate_percent"
                       type="number"
                       step="0.01"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={(formData.turnover_rate_percent ?? 0) * 100}
                       onChange={(e) => updateField('turnover_rate_percent', parseFloat(e.target.value) / 100 || 0)}
                     />
