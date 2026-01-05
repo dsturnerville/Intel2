@@ -9,9 +9,9 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full overflow-x-hidden">
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 min-w-0">
           {/* Mobile header with menu trigger */}
           <header className="md:hidden sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background px-4">
             <SidebarTrigger className="h-8 w-8" />
