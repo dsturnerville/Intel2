@@ -269,7 +269,7 @@ export function AddPropertyManualDialog({
           {/* Financial */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="offerPrice">Asking Price</Label>
+              <Label htmlFor="offerPrice">Offer Price</Label>
               <Input
                 id="offerPrice"
                 type="number"
