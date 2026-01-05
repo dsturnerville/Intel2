@@ -495,8 +495,9 @@ export default function Properties() {
                         <Link 
                           to="/markets" 
                           className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                          title={property.markets.market_name}
                         >
-                          {property.markets.market_name}
+                          {property.markets.market_code || property.markets.market_name}
                         </Link>
                       ) : (
                         <span className="text-sm text-muted-foreground">{property.market}</span>
