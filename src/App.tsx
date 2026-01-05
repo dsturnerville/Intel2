@@ -11,6 +11,7 @@ import Dispositions from "./pages/Dispositions";
 import DispositionDetail from "./pages/DispositionDetail";
 import NewDisposition from "./pages/NewDisposition";
 import Acquisitions from "./pages/Acquisitions";
+import Markets from "./pages/Markets";
 import AcquisitionDetail from "./pages/AcquisitionDetail";
 import NewAcquisition from "./pages/NewAcquisition";
 import Properties from "./pages/Properties";
@@ -97,6 +98,16 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <AcquisitionDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/markets"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Markets />
                 </AppLayout>
               </ProtectedRoute>
             }

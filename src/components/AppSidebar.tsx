@@ -39,6 +39,7 @@ import {
   LayoutDashboard,
   Wrench,
   ShoppingCart,
+  MapPin,
   LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -92,6 +93,12 @@ const navItems: NavItem[] = [
     icon: Home,
     departments: ['Asset Management', 'Property Management', 'Construction', 'Super Admin'],
   },
+  { 
+    title: 'Markets', 
+    url: '/markets', 
+    icon: MapPin,
+    departments: ['Asset Management', 'Super Admin'],
+  },
 ];
 
 export function AppSidebar() {
@@ -141,6 +148,9 @@ export function AppSidebar() {
     }
     if (path === '/properties') {
       return location.pathname === path || location.pathname.startsWith('/properties/');
+    }
+    if (path === '/markets') {
+      return location.pathname === path || location.pathname.startsWith('/markets/');
     }
     return location.pathname === path;
   };
