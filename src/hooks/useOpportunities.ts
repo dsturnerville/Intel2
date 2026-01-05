@@ -103,7 +103,7 @@ export function useOpportunityMutations() {
   const uploadOpportunities = async (
     acquisitionId: string,
     rows: OpportunityCSVRow[]
-  ): Promise<{ success: boolean; count?: number; error?: string }> => {
+  ): Promise<{ success: boolean; count?: number; geocoded?: number; error?: string }> => {
     try {
       const propertiesToInsert = rows.map(row => ({
         acquisition_id: acquisitionId,
@@ -135,12 +135,35 @@ export function useOpportunityMutations() {
       const { data, error } = await supabase
         .from('acquisition_properties')
         .insert(propertiesToInsert)
-        .select();
+        .select('id');
 
       if (error) throw error;
 
+      const insertedCount = data?.length || 0;
+      const propertyIds = data?.map(p => p.id) || [];
+
+      // Trigger geocoding for the newly inserted properties
+      let geocodedCount = 0;
+      if (propertyIds.length > 0) {
+        try {
+          const { data: geocodeResult, error: geocodeError } = await supabase.functions.invoke('geocode-properties', {
+            body: { propertyIds }
+          });
+
+          if (geocodeError) {
+            console.error('Geocoding error:', geocodeError);
+          } else if (geocodeResult) {
+            geocodedCount = geocodeResult.geocoded || 0;
+            console.log(`Geocoded ${geocodedCount} of ${propertyIds.length} properties`);
+          }
+        } catch (geocodeErr) {
+          console.error('Failed to geocode properties:', geocodeErr);
+          // Don't fail the upload if geocoding fails
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['acquisition_properties', acquisitionId] });
-      return { success: true, count: data?.length || 0 };
+      return { success: true, count: insertedCount, geocoded: geocodedCount };
     } catch (error: any) {
       console.error('Error uploading properties:', error);
       return { success: false, error: error.message };
