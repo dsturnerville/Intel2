@@ -529,7 +529,9 @@ export type Database = {
           ins_factor_rate_percent: number | null
           ins_liability_premium: number | null
           ins_premium_rate_percent: number | null
+          latitude: number | null
           leasing_fee_percent: number | null
+          longitude: number | null
           lost_rent: number | null
           market_code: string | null
           market_name: string
@@ -555,7 +557,9 @@ export type Database = {
           ins_factor_rate_percent?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate_percent?: number | null
+          latitude?: number | null
           leasing_fee_percent?: number | null
+          longitude?: number | null
           lost_rent?: number | null
           market_code?: string | null
           market_name: string
@@ -581,7 +585,9 @@ export type Database = {
           ins_factor_rate_percent?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate_percent?: number | null
+          latitude?: number | null
           leasing_fee_percent?: number | null
+          longitude?: number | null
           lost_rent?: number | null
           market_code?: string | null
           market_name?: string
