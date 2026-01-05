@@ -28,6 +28,8 @@ function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunit
     propertyTax: row.property_tax ? Number(row.property_tax) : undefined,
     rentAvm: row.rent_avm ? Number(row.rent_avm) : undefined,
     salesAvm: row.sales_avm ? Number(row.sales_avm) : undefined,
+    latitude: row.latitude ? Number(row.latitude) : undefined,
+    longitude: row.longitude ? Number(row.longitude) : undefined,
     useAcquisitionDefaults: row.use_acquisition_defaults,
     miscIncomePercent: row.misc_income_percent ? Number(row.misc_income_percent) : undefined,
     vacancyBadDebtPercent: row.vacancy_bad_debt_percent ? Number(row.vacancy_bad_debt_percent) : undefined,

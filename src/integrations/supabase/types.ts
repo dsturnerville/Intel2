@@ -34,9 +34,11 @@ export type Database = {
           ins_factor_rate: number | null
           ins_liability_premium: number | null
           ins_premium_rate: number | null
+          latitude: number | null
           lease_end: string | null
           lease_start: string | null
           leasing_fee_percent: number | null
+          longitude: number | null
           lost_rent: number | null
           misc_income_percent: number | null
           msa: string | null
@@ -85,9 +87,11 @@ export type Database = {
           ins_factor_rate?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate?: number | null
+          latitude?: number | null
           lease_end?: string | null
           lease_start?: string | null
           leasing_fee_percent?: number | null
+          longitude?: number | null
           lost_rent?: number | null
           misc_income_percent?: number | null
           msa?: string | null
@@ -138,9 +142,11 @@ export type Database = {
           ins_factor_rate?: number | null
           ins_liability_premium?: number | null
           ins_premium_rate?: number | null
+          latitude?: number | null
           lease_end?: string | null
           lease_start?: string | null
           leasing_fee_percent?: number | null
+          longitude?: number | null
           lost_rent?: number | null
           misc_income_percent?: number | null
           msa?: string | null
