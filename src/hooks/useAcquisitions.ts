@@ -294,45 +294,42 @@ export function useAcquisitionsWithAggregates() {
     try {
       setLoading(true);
 
-      const { data: allApData, error: apError } = await supabase
-        .from('acquisition_properties')
-        .select(`
-          *,
-          properties (*)
-        `)
+      // Fetch opportunities for all acquisitions
+      const { data: allOpportunities, error: oppError } = await supabase
+        .from('opportunities')
+        .select('*')
         .in('acquisition_id', acquisitions.map(a => a.id));
 
-      if (apError) throw apError;
+      if (oppError) throw oppError;
 
       const result: AcquisitionWithAggregates[] = acquisitions.map(acquisition => {
-        const acqProperties = (allApData || []).filter(ap => ap.acquisition_id === acquisition.id);
+        const opportunities = (allOpportunities || []).filter(o => o.acquisition_id === acquisition.id);
+        const includedOpportunities = opportunities.filter(o => o.included);
 
-        const transformedProperties: AcquisitionProperty[] = acqProperties.map(ap => {
-          const propertyRow = ap.properties as Tables<'properties'>;
-          const property = transformProperty(propertyRow);
+        // Calculate aggregates from included opportunities
+        const totalOfferPrice = includedOpportunities.reduce((sum, o) => sum + (Number(o.offer_price) || 0), 0);
+        const totalProjectedNOI = includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_noi) || 0), 0);
+        const totalAcquisitionCost = includedOpportunities.reduce((sum, o) => sum + (Number(o.total_acquisition_cost) || 0), 0);
+        const avgProjectedCapRate = includedOpportunities.length > 0
+          ? includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_cap_rate) || 0), 0) / includedOpportunities.length
+          : 0;
+        const avgProjectedAnnualReturn = includedOpportunities.length > 0
+          ? includedOpportunities.reduce((sum, o) => sum + (Number(o.projected_annual_return) || 0), 0) / includedOpportunities.length
+          : 0;
 
-          const inputs: AcquisitionPropertyInputs = {
-            useAcquisitionDefaults: ap.use_acquisition_defaults,
-          };
-
-          const outputs = calculateAcquisitionUnderwriting(property, inputs, acquisition.defaults);
-
-          return {
-            id: ap.id,
-            acquisitionId: ap.acquisition_id,
-            propertyId: ap.property_id,
-            property,
-            inputs,
-            outputs,
-          };
-        });
-
-        const aggregates = calculateAcquisitionAggregates(transformedProperties);
+        const aggregates = {
+          propertyCount: includedOpportunities.length,
+          totalOfferPrice,
+          totalProjectedNOI,
+          totalAcquisitionCost,
+          avgProjectedCapRate,
+          avgProjectedAnnualReturn,
+        };
 
         return {
           acquisition,
           aggregates,
-          propertyCount: transformedProperties.length,
+          propertyCount: includedOpportunities.length,
         };
       });
 
