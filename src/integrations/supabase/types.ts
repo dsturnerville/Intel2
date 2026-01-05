@@ -661,6 +661,7 @@ export type Database = {
           longitude: number | null
           lot_size: number | null
           market: string
+          market_id: string | null
           markets_id: number | null
           occupancy_status: Database["public"]["Enums"]["occupancy_status"]
           portfolios_id: number | null
@@ -711,6 +712,7 @@ export type Database = {
           longitude?: number | null
           lot_size?: number | null
           market: string
+          market_id?: string | null
           markets_id?: number | null
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
           portfolios_id?: number | null
@@ -761,6 +763,7 @@ export type Database = {
           longitude?: number | null
           lot_size?: number | null
           market?: string
+          market_id?: string | null
           markets_id?: number | null
           occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
           portfolios_id?: number | null
@@ -785,6 +788,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
             referencedColumns: ["id"]
           },
         ]
