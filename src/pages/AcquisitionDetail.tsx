@@ -22,13 +22,13 @@ import {
   useAcquisition,
   useAcquisitionMutations,
 } from '@/hooks/useAcquisitions';
-import { useOpportunities, calculateOpportunityAggregates } from '@/hooks/useOpportunities';
+import { useOpportunities, useOpportunityMutations, calculateOpportunityAggregates } from '@/hooks/useOpportunities';
 import {
   Acquisition,
   AcquisitionDefaults,
   AcquisitionStatus,
 } from '@/types/acquisition';
-import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUSES: AcquisitionStatus[] = ['Draft', 'In Review', 'Approved', 'Under Contract', 'Closed', 'Archived'];
@@ -38,13 +38,15 @@ export default function AcquisitionDetail() {
   const navigate = useNavigate();
 
   const { acquisition, loading: acquisitionLoading, refetch: refetchAcquisition } = useAcquisition(id);
-  const { data: opportunities = [], isLoading: opportunitiesLoading } = useOpportunities(id);
+  const { data: opportunities = [], isLoading: opportunitiesLoading, refetch: refetchOpportunities } = useOpportunities(id);
   const { saving, updateAcquisition } = useAcquisitionMutations();
+  const { geocodeAllProperties } = useOpportunityMutations();
 
   const [localAcquisition, setLocalAcquisition] = useState<Acquisition | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   // Sync fetched data to local state
   useEffect(() => {
@@ -76,6 +78,35 @@ export default function AcquisitionDetail() {
     // TODO: Apply defaults to all opportunities
     toast.success('Defaults applied to all opportunities');
   };
+
+  const handleGeocodeAll = async () => {
+    if (!id) return;
+    
+    setIsGeocoding(true);
+    try {
+      const result = await geocodeAllProperties(id);
+      
+      if (result.success) {
+        if (result.geocoded === 0 && result.total === 0) {
+          toast.info('All properties already have coordinates');
+        } else {
+          toast.success(`Geocoded ${result.geocoded} of ${result.total} properties`);
+          refetchOpportunities();
+        }
+      } else {
+        toast.error(result.error || 'Failed to geocode properties');
+      }
+    } catch (error) {
+      toast.error('Failed to geocode properties');
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  // Count properties missing coordinates
+  const propertiesMissingCoords = opportunities.filter(
+    o => o.latitude === undefined || o.latitude === null
+  ).length;
 
   const handleSave = async () => {
     if (!localAcquisition || !id) return;
@@ -215,6 +246,21 @@ export default function AcquisitionDetail() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Properties ({aggregates.includedCount})</CardTitle>
                 <div className="flex items-center gap-2">
+                  {propertiesMissingCoords > 0 && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleGeocodeAll}
+                      disabled={isGeocoding}
+                    >
+                      {isGeocoding ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <MapPin className="h-4 w-4 mr-2" />
+                      )}
+                      Geocode All ({propertiesMissingCoords})
+                    </Button>
+                  )}
                   <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Properties
