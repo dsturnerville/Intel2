@@ -17,6 +17,7 @@ import { AcquisitionStatusBadge } from '@/components/acquisition/AcquisitionStat
 import { AcquisitionUnderwritingDefaults } from '@/components/acquisition/AcquisitionUnderwritingDefaults';
 import { OpportunityUploadDialog } from '@/components/acquisition/OpportunityUploadDialog';
 import { OpportunityTable } from '@/components/acquisition/OpportunityTable';
+import { AcquisitionPropertyMap } from '@/components/acquisition/AcquisitionPropertyMap';
 import {
   useAcquisition,
   useAcquisitionMutations,
@@ -27,7 +28,7 @@ import {
   AcquisitionDefaults,
   AcquisitionStatus,
 } from '@/types/acquisition';
-import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUSES: AcquisitionStatus[] = ['Draft', 'In Review', 'Approved', 'Under Contract', 'Closed', 'Archived'];
@@ -43,6 +44,7 @@ export default function AcquisitionDetail() {
   const [localAcquisition, setLocalAcquisition] = useState<Acquisition | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Sync fetched data to local state
   useEffect(() => {
@@ -212,16 +214,40 @@ export default function AcquisitionDetail() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Properties ({aggregates.includedCount})</CardTitle>
-                <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Properties
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Properties
+                  </Button>
+                  <div className="flex border border-border rounded-md">
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-r-none border-r border-border"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'map' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('map')}
+                      className="rounded-l-none"
+                    >
+                      <Map className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <OpportunityTable
-                  opportunities={opportunities}
-                  isLoading={opportunitiesLoading}
-                />
+                {viewMode === 'list' ? (
+                  <OpportunityTable
+                    opportunities={opportunities}
+                    isLoading={opportunitiesLoading}
+                  />
+                ) : (
+                  <AcquisitionPropertyMap opportunities={opportunities} />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
