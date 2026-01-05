@@ -217,7 +217,7 @@ export default function AcquisitionDetail() {
                   Upload Properties
                 </Button>
               </CardHeader>
-              <CardContent className="min-w-0">
+              <CardContent>
                 <OpportunityTable
                   opportunities={opportunities}
                   isLoading={opportunitiesLoading}
