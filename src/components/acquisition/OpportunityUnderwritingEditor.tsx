@@ -4,10 +4,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Opportunity } from '@/types/opportunity';
 import { AcquisitionDefaults } from '@/types/acquisition';
 import { useOpportunityMutations } from '@/hooks/useOpportunities';
-import { Settings, RotateCcw } from 'lucide-react';
+import { useMarkets, Market } from '@/hooks/useMarkets';
+import { Settings, RotateCcw, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OpportunityUnderwritingEditorProps {
@@ -22,7 +30,9 @@ export function OpportunityUnderwritingEditor({
   readOnly = false,
 }: OpportunityUnderwritingEditorProps) {
   const { updateOpportunity } = useOpportunityMutations();
+  const { data: markets = [] } = useMarkets();
   const [useDefaults, setUseDefaults] = useState(opportunity.useAcquisitionDefaults);
+  const [selectedMarketId, setSelectedMarketId] = useState(opportunity.marketId || '');
   const [localInputs, setLocalInputs] = useState({
     miscIncomePercent: opportunity.miscIncomePercent,
     vacancyBadDebtPercent: opportunity.vacancyBadDebtPercent,
@@ -70,6 +80,8 @@ export function OpportunityUnderwritingEditor({
     });
   }, [opportunity]);
 
+  const selectedMarket = markets.find(m => m.id === selectedMarketId);
+
   const formatPercent = (value: number | undefined, decimals: number = 2): string => {
     if (value === undefined || value === null) return '-';
     return `${(value * 100).toFixed(decimals)}%`;
@@ -108,6 +120,53 @@ export function OpportunityUnderwritingEditor({
     }
   };
 
+  const handleMarketChange = async (marketId: string) => {
+    setSelectedMarketId(marketId);
+    const result = await updateOpportunity(opportunity.id, {
+      marketId: marketId || undefined,
+    });
+    if (!result.success) {
+      toast.error('Failed to update market');
+      setSelectedMarketId(opportunity.marketId || '');
+    }
+  };
+
+  const handleApplyMarketDefaults = async () => {
+    if (!selectedMarket) {
+      toast.error('Please select a market first');
+      return;
+    }
+
+    // Map market fields to opportunity fields
+    const marketDefaults: Partial<Opportunity> = {
+      useAcquisitionDefaults: false,
+      miscIncomePercent: selectedMarket.misc_income_percent ?? undefined,
+      vacancyBadDebtPercent: (selectedMarket.vacancy_percent ?? 0) + (selectedMarket.bad_debt_percent ?? 0),
+      pmFeePercent: selectedMarket.pm_fee_percent ?? undefined,
+      leasingFeePercent: selectedMarket.leasing_fee_percent ?? undefined,
+      cmFeePercent: selectedMarket.cm_fee_percent ?? undefined,
+      closingCostsPercent: selectedMarket.closing_costs_percent ?? undefined,
+      insPremiumRate: selectedMarket.ins_premium_rate_percent ?? undefined,
+      insFactorRate: selectedMarket.ins_factor_rate_percent ?? undefined,
+      insLiabilityPremium: selectedMarket.ins_liability_premium ?? undefined,
+      replacementCostPerSF: selectedMarket.replacement_cost_sf ?? undefined,
+      lostRent: selectedMarket.lost_rent ?? undefined,
+      utilities: selectedMarket.utilities ?? undefined,
+      rmPercent: selectedMarket.repairs_maintenance_percent ?? undefined,
+      turnoverCost: selectedMarket.turnover_costs ?? undefined,
+      turnoverRatePercent: selectedMarket.turnover_rate_percent ?? undefined,
+      blendedTurnover: selectedMarket.blended_turnover ?? undefined,
+    };
+
+    const result = await updateOpportunity(opportunity.id, marketDefaults);
+    if (result.success) {
+      setUseDefaults(false);
+      toast.success(`Applied defaults from ${selectedMarket.market_name}`);
+    } else {
+      toast.error('Failed to apply market defaults');
+    }
+  };
+
   const handlePercentChange = async (field: keyof Opportunity, value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue)) return;
@@ -126,6 +185,39 @@ export function OpportunityUnderwritingEditor({
 
   return (
     <div className="space-y-4">
+      {/* Market Selection */}
+      {!readOnly && (
+        <div className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+          <div className="flex items-center gap-2 flex-1">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-xs font-medium whitespace-nowrap">Market:</Label>
+            <Select value={selectedMarketId} onValueChange={handleMarketChange}>
+              <SelectTrigger className="h-8 text-xs max-w-[200px]">
+                <SelectValue placeholder="Select market..." />
+              </SelectTrigger>
+              <SelectContent>
+                {markets.map((market) => (
+                  <SelectItem key={market.id} value={market.id}>
+                    {market.market_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {selectedMarketId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleApplyMarketDefaults}
+              className="gap-1 text-xs h-7"
+            >
+              <MapPin className="h-3 w-3" />
+              Apply Market Defaults
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Header with toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

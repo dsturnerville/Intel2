@@ -20,6 +20,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useMarkets } from '@/hooks/useMarkets';
 
 interface AddPropertyManualDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ export function AddPropertyManualDialog({
   onSuccess,
 }: AddPropertyManualDialogProps) {
   const [saving, setSaving] = useState(false);
+  const { data: markets = [] } = useMarkets();
   const [formData, setFormData] = useState({
     address1: '',
     address2: '',
@@ -49,6 +51,7 @@ export function AddPropertyManualDialog({
     currentRent: '',
     occupancy: 'Vacant' as 'Vacant' | 'Occupied',
     type: 'SFR' as 'SFR' | 'BTR' | 'MF',
+    marketId: '',
   });
 
   const handleChange = (field: string, value: string) => {
@@ -70,6 +73,7 @@ export function AddPropertyManualDialog({
       currentRent: '',
       occupancy: 'Vacant',
       type: 'SFR',
+      marketId: '',
     });
   };
 
@@ -98,6 +102,7 @@ export function AddPropertyManualDialog({
         type: formData.type,
         included: true,
         use_acquisition_defaults: true,
+        market_id: formData.marketId || null,
       }).select('id').single();
 
       if (error) throw error;
@@ -191,6 +196,23 @@ export function AddPropertyManualDialog({
                 onChange={(e) => handleChange('zipCode', e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Market Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="market">Market (MSA)</Label>
+            <Select value={formData.marketId} onValueChange={(v) => handleChange('marketId', v)}>
+              <SelectTrigger id="market">
+                <SelectValue placeholder="Select a market..." />
+              </SelectTrigger>
+              <SelectContent>
+                {markets.map((market) => (
+                  <SelectItem key={market.id} value={market.id}>
+                    {market.market_name} {market.market_code ? `(${market.market_code})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Property Details */}
