@@ -239,10 +239,49 @@ export function useOpportunityMutations() {
     }
   };
 
+  const geocodeAllProperties = async (
+    acquisitionId: string
+  ): Promise<{ success: boolean; geocoded?: number; total?: number; error?: string }> => {
+    try {
+      // Get all property IDs for this acquisition that don't have coordinates
+      const { data: properties, error: fetchError } = await supabase
+        .from('acquisition_properties')
+        .select('id')
+        .eq('acquisition_id', acquisitionId)
+        .is('latitude', null);
+
+      if (fetchError) throw fetchError;
+
+      if (!properties || properties.length === 0) {
+        return { success: true, geocoded: 0, total: 0 };
+      }
+
+      const propertyIds = properties.map(p => p.id);
+
+      const { data: geocodeResult, error: geocodeError } = await supabase.functions.invoke('geocode-properties', {
+        body: { propertyIds }
+      });
+
+      if (geocodeError) throw geocodeError;
+
+      queryClient.invalidateQueries({ queryKey: ['acquisition_properties', acquisitionId] });
+      
+      return { 
+        success: true, 
+        geocoded: geocodeResult?.geocoded || 0, 
+        total: properties.length 
+      };
+    } catch (error: any) {
+      console.error('Error geocoding properties:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     uploadOpportunities,
     updateOpportunity,
     deleteOpportunity,
     deleteAllOpportunities,
+    geocodeAllProperties,
   };
 }
