@@ -14,6 +14,171 @@ export type Database = {
   }
   public: {
     Tables: {
+      acquisition_properties: {
+        Row: {
+          acquisition_id: string
+          blended_turnover: number | null
+          closing_costs_percent: number | null
+          cm_fee_percent: number | null
+          created_at: string
+          effective_tax_rate_percent: number | null
+          id: string
+          ins_factor_rate: number | null
+          ins_liability_premium: number | null
+          ins_premium_rate: number | null
+          leasing_fee_percent: number | null
+          lost_rent: number | null
+          misc_income_percent: number | null
+          offer_price: number | null
+          pm_fee_percent: number | null
+          projected_annual_return: number | null
+          projected_cap_rate: number | null
+          projected_noi: number | null
+          property_id: string
+          replacement_cost_per_sf: number | null
+          rm_percent: number | null
+          tax_increase_percent: number | null
+          total_acquisition_cost: number | null
+          turn_cost: number | null
+          turnover_cost: number | null
+          turnover_rate_percent: number | null
+          updated_at: string
+          use_acquisition_defaults: boolean
+          utilities: number | null
+          vacancy_bad_debt_percent: number | null
+        }
+        Insert: {
+          acquisition_id: string
+          blended_turnover?: number | null
+          closing_costs_percent?: number | null
+          cm_fee_percent?: number | null
+          created_at?: string
+          effective_tax_rate_percent?: number | null
+          id?: string
+          ins_factor_rate?: number | null
+          ins_liability_premium?: number | null
+          ins_premium_rate?: number | null
+          leasing_fee_percent?: number | null
+          lost_rent?: number | null
+          misc_income_percent?: number | null
+          offer_price?: number | null
+          pm_fee_percent?: number | null
+          projected_annual_return?: number | null
+          projected_cap_rate?: number | null
+          projected_noi?: number | null
+          property_id: string
+          replacement_cost_per_sf?: number | null
+          rm_percent?: number | null
+          tax_increase_percent?: number | null
+          total_acquisition_cost?: number | null
+          turn_cost?: number | null
+          turnover_cost?: number | null
+          turnover_rate_percent?: number | null
+          updated_at?: string
+          use_acquisition_defaults?: boolean
+          utilities?: number | null
+          vacancy_bad_debt_percent?: number | null
+        }
+        Update: {
+          acquisition_id?: string
+          blended_turnover?: number | null
+          closing_costs_percent?: number | null
+          cm_fee_percent?: number | null
+          created_at?: string
+          effective_tax_rate_percent?: number | null
+          id?: string
+          ins_factor_rate?: number | null
+          ins_liability_premium?: number | null
+          ins_premium_rate?: number | null
+          leasing_fee_percent?: number | null
+          lost_rent?: number | null
+          misc_income_percent?: number | null
+          offer_price?: number | null
+          pm_fee_percent?: number | null
+          projected_annual_return?: number | null
+          projected_cap_rate?: number | null
+          projected_noi?: number | null
+          property_id?: string
+          replacement_cost_per_sf?: number | null
+          rm_percent?: number | null
+          tax_increase_percent?: number | null
+          total_acquisition_cost?: number | null
+          turn_cost?: number | null
+          turnover_cost?: number | null
+          turnover_rate_percent?: number | null
+          updated_at?: string
+          use_acquisition_defaults?: boolean
+          utilities?: number | null
+          vacancy_bad_debt_percent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acquisition_properties_acquisition_id_fkey"
+            columns: ["acquisition_id"]
+            isOneToOne: false
+            referencedRelation: "acquisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acquisition_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      acquisitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          defaults: Json
+          id: string
+          investment_thesis: string | null
+          markets: string[] | null
+          name: string
+          status: Database["public"]["Enums"]["acquisition_status"]
+          strategy_notes: string | null
+          tags: string[] | null
+          target_close_date: string | null
+          type: Database["public"]["Enums"]["acquisition_type"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          defaults?: Json
+          id?: string
+          investment_thesis?: string | null
+          markets?: string[] | null
+          name: string
+          status?: Database["public"]["Enums"]["acquisition_status"]
+          strategy_notes?: string | null
+          tags?: string[] | null
+          target_close_date?: string | null
+          type?: Database["public"]["Enums"]["acquisition_type"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          defaults?: Json
+          id?: string
+          investment_thesis?: string | null
+          markets?: string[] | null
+          name?: string
+          status?: Database["public"]["Enums"]["acquisition_status"]
+          strategy_notes?: string | null
+          tags?: string[] | null
+          target_close_date?: string | null
+          type?: Database["public"]["Enums"]["acquisition_type"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       deals: {
         Row: {
           actual_close_date: string | null
@@ -529,6 +694,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      acquisition_status:
+        | "Draft"
+        | "In Review"
+        | "Approved"
+        | "Under Contract"
+        | "Closed"
+        | "Archived"
+      acquisition_type: "Single Property" | "Portfolio" | "Bulk Purchase"
       deal_status:
         | "Pre-Listing"
         | "Listed"
@@ -675,6 +848,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      acquisition_status: [
+        "Draft",
+        "In Review",
+        "Approved",
+        "Under Contract",
+        "Closed",
+        "Archived",
+      ],
+      acquisition_type: ["Single Property", "Portfolio", "Bulk Purchase"],
       deal_status: [
         "Pre-Listing",
         "Listed",
