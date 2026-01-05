@@ -159,108 +159,114 @@ export default function Acquisitions() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Acquisitions</h1>
-          <p className="text-muted-foreground">
-            Manage acquisition opportunities and underwriting
-          </p>
+      <header className="sticky top-0 md:top-0 z-10 h-16 md:h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="h-full px-4 md:px-6">
+          <div className="flex h-full items-center justify-between">
+            <div>
+              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Acquisitions</h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">
+                Manage acquisition opportunities and underwriting
+              </p>
+            </div>
+            <Link to="/acquisitions/new">
+              <Button className="gap-2" size="sm">
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Acquisition</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </Link>
+          </div>
         </div>
-        <Button asChild>
-          <Link to="/acquisitions/new">
-            <Plus className="h-4 w-4 mr-2" />
-            New Acquisition
-          </Link>
-        </Button>
-      </div>
+      </header>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search acquisitions..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+      <main className="px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search acquisitions..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-transparent border-border"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="min-w-[120px]">
+                {getStatusFilterLabel()}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2">
+              {STATUSES.map((status) => (
+                <div
+                  key={status}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
+                  onClick={() => toggleStatus(status)}
+                >
+                  <Checkbox checked={filters.status.includes(status)} />
+                  <span className="text-sm">{status}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+
+          {/* Type Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="min-w-[120px]">
+                {getTypeFilterLabel()}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2">
+              {TYPES.map((type) => (
+                <div
+                  key={type}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
+                  onClick={() => toggleType(type)}
+                >
+                  <Checkbox checked={filters.type.includes(type)} />
+                  <span className="text-sm">{type}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+
+          {/* Market Filter */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="min-w-[120px]">
+                {getMarketFilterLabel()}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2 max-h-64 overflow-y-auto">
+              {markets.map((market) => (
+                <div
+                  key={market}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
+                  onClick={() => toggleMarket(market)}
+                >
+                  <Checkbox checked={filters.markets.includes(market)} />
+                  <span className="text-sm">{market}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <X className="h-4 w-4 mr-1" />
+              Clear ({activeFilterCount})
+            </Button>
+          )}
         </div>
-
-        {/* Status Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-[120px]">
-              {getStatusFilterLabel()}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2">
-            {STATUSES.map((status) => (
-              <div
-                key={status}
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
-                onClick={() => toggleStatus(status)}
-              >
-                <Checkbox checked={filters.status.includes(status)} />
-                <span className="text-sm">{status}</span>
-              </div>
-            ))}
-          </PopoverContent>
-        </Popover>
-
-        {/* Type Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-[120px]">
-              {getTypeFilterLabel()}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2">
-            {TYPES.map((type) => (
-              <div
-                key={type}
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
-                onClick={() => toggleType(type)}
-              >
-                <Checkbox checked={filters.type.includes(type)} />
-                <span className="text-sm">{type}</span>
-              </div>
-            ))}
-          </PopoverContent>
-        </Popover>
-
-        {/* Market Filter */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="min-w-[120px]">
-              {getMarketFilterLabel()}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2 max-h-64 overflow-y-auto">
-            {markets.map((market) => (
-              <div
-                key={market}
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
-                onClick={() => toggleMarket(market)}
-              >
-                <Checkbox checked={filters.markets.includes(market)} />
-                <span className="text-sm">{market}</span>
-              </div>
-            ))}
-          </PopoverContent>
-        </Popover>
-
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            <X className="h-4 w-4 mr-1" />
-            Clear ({activeFilterCount})
-          </Button>
-        )}
-      </div>
 
       {/* Table */}
       {filteredAcquisitions.length === 0 ? (
@@ -370,6 +376,7 @@ export default function Acquisitions() {
           </Table>
         </div>
       )}
+      </main>
     </div>
   );
 }
