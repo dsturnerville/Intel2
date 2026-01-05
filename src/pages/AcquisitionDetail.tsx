@@ -28,11 +28,13 @@ import {
   Acquisition,
   AcquisitionDefaults,
   AcquisitionStatus,
+  AcquisitionType,
 } from '@/types/acquisition';
 import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home, List, Map, MapPin, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUSES: AcquisitionStatus[] = ['Draft', 'In Review', 'Approved', 'Under Contract', 'Closed', 'Archived'];
+const TYPES: AcquisitionType[] = ['Single Property', 'Portfolio', 'Bulk Purchase'];
 
 export default function AcquisitionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -318,6 +320,40 @@ export default function AcquisitionDetail() {
                 <CardTitle className="text-lg">Acquisition Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Acquisition Name</Label>
+                    <Input
+                      value={localAcquisition.name}
+                      onChange={(e) => {
+                        setLocalAcquisition({ ...localAcquisition, name: e.target.value });
+                        setHasChanges(true);
+                      }}
+                      placeholder="Enter acquisition name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Acquisition Type</Label>
+                    <Select 
+                      value={localAcquisition.type} 
+                      onValueChange={(value: AcquisitionType) => {
+                        setLocalAcquisition({ ...localAcquisition, type: value });
+                        setHasChanges(true);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Target Close Date</Label>
