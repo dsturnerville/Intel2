@@ -78,6 +78,7 @@ export interface OpportunityCSVRow {
   lease_start?: string;
   lease_end?: string;
   annual_hoa?: string;
+  asking_price?: string;
   property_tax?: string;
   rent_avm?: string;
   sales_avm?: string;

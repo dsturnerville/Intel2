@@ -16,7 +16,7 @@ const REQUIRED_COLUMNS = ['address1', 'city', 'state', 'zip_code'];
 const OPTIONAL_COLUMNS = [
   'address2', 'msa', 'bedrooms', 'bathrooms', 'square_feet', 'year_built',
   'included', 'type', 'occupancy', 'current_rent', 'lease_start', 'lease_end',
-  'annual_hoa', 'property_tax', 'rent_avm', 'sales_avm'
+  'annual_hoa', 'asking_price', 'property_tax', 'rent_avm', 'sales_avm'
 ];
 
 function parseCSV(text: string): OpportunityCSVRow[] {
@@ -110,7 +110,7 @@ export function OpportunityUploadDialog({ open, onOpenChange, acquisitionId }: O
 
   const downloadTemplate = () => {
     const headers = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS].join(',');
-    const sampleRow = '123 Main St,,Austin,TX,78701,Austin-Round Rock,3,2,1500,2010,true,SFR,Occupied,2000,2024-01-01,2025-01-01,500,3500,2100,350000';
+    const sampleRow = '123 Main St,,Austin,TX,78701,Austin-Round Rock,3,2,1500,2010,true,SFR,Occupied,2000,2024-01-01,2025-01-01,500,325000,3500,2100,350000';
     const csv = `${headers}\n${sampleRow}`;
     
     const blob = new Blob([csv], { type: 'text/csv' });
