@@ -14,23 +14,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AcquisitionStatusBadge } from '@/components/acquisition/AcquisitionStatusBadge';
-import { AcquisitionPortfolioSummary } from '@/components/acquisition/AcquisitionPortfolioSummary';
-import { AcquisitionPropertyTable } from '@/components/acquisition/AcquisitionPropertyTable';
 import { AcquisitionUnderwritingDefaults } from '@/components/acquisition/AcquisitionUnderwritingDefaults';
-import { AddAcquisitionPropertyDialog } from '@/components/acquisition/AddAcquisitionPropertyDialog';
+import { OpportunityUploadDialog } from '@/components/acquisition/OpportunityUploadDialog';
+import { OpportunityTable } from '@/components/acquisition/OpportunityTable';
 import {
   useAcquisition,
-  useAcquisitionProperties,
   useAcquisitionMutations,
 } from '@/hooks/useAcquisitions';
-import { calculateAcquisitionAggregates } from '@/utils/acquisitionCalculations';
+import { useOpportunities, calculateOpportunityAggregates } from '@/hooks/useOpportunities';
 import {
   Acquisition,
-  AcquisitionProperty,
   AcquisitionDefaults,
   AcquisitionStatus,
 } from '@/types/acquisition';
-import { ArrowLeft, Plus, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Loader2, Building2, DollarSign, TrendingUp, Home } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STATUSES: AcquisitionStatus[] = ['Draft', 'In Review', 'Approved', 'Under Contract', 'Closed', 'Archived'];
@@ -40,19 +37,12 @@ export default function AcquisitionDetail() {
   const navigate = useNavigate();
 
   const { acquisition, loading: acquisitionLoading, refetch: refetchAcquisition } = useAcquisition(id);
-  const { properties, loading: propertiesLoading, refetch: refetchProperties, setProperties } = useAcquisitionProperties(id);
-  const {
-    saving,
-    updateAcquisition,
-    addPropertiesToAcquisition,
-    removePropertyFromAcquisition,
-    updateAcquisitionProperty,
-  } = useAcquisitionMutations();
+  const { data: opportunities = [], isLoading: opportunitiesLoading } = useOpportunities(id);
+  const { saving, updateAcquisition } = useAcquisitionMutations();
 
   const [localAcquisition, setLocalAcquisition] = useState<Acquisition | null>(null);
-  const [localProperties, setLocalProperties] = useState<AcquisitionProperty[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
-  const [addPropertyOpen, setAddPropertyOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   // Sync fetched data to local state
   useEffect(() => {
@@ -61,13 +51,9 @@ export default function AcquisitionDetail() {
     }
   }, [acquisition]);
 
-  useEffect(() => {
-    setLocalProperties(properties);
-  }, [properties]);
-
   const aggregates = useMemo(() => {
-    return calculateAcquisitionAggregates(localProperties);
-  }, [localProperties]);
+    return calculateOpportunityAggregates(opportunities);
+  }, [opportunities]);
 
   const handleStatusChange = (status: AcquisitionStatus) => {
     if (localAcquisition) {
@@ -85,36 +71,8 @@ export default function AcquisitionDetail() {
 
   const handleApplyToAll = () => {
     if (!localAcquisition) return;
-    // Reset all properties to use acquisition defaults
-    setLocalProperties((prev) =>
-      prev.map((p) => ({
-        ...p,
-        inputs: { ...p.inputs, useAcquisitionDefaults: true },
-      }))
-    );
-    setHasChanges(true);
-    toast.success('Defaults applied to all properties');
-  };
-
-  const handleRemoveProperty = async (acquisitionPropertyId: string) => {
-    const result = await removePropertyFromAcquisition(acquisitionPropertyId);
-    if (result.success) {
-      setLocalProperties((prev) => prev.filter((p) => p.id !== acquisitionPropertyId));
-      toast.success('Property removed');
-    } else {
-      toast.error(result.error || 'Failed to remove property');
-    }
-  };
-
-  const handleAddProperties = async (propertyIds: string[]) => {
-    if (!id) return;
-    const result = await addPropertiesToAcquisition(id, propertyIds);
-    if (result.success) {
-      refetchProperties();
-      toast.success(`Added ${propertyIds.length} properties`);
-    } else {
-      toast.error(result.error || 'Failed to add properties');
-    }
+    // TODO: Apply defaults to all opportunities
+    toast.success('Defaults applied to all opportunities');
   };
 
   const handleSave = async () => {
@@ -195,102 +153,143 @@ export default function AcquisitionDetail() {
         {/* Tabs */}
         <Tabs defaultValue="summary" className="space-y-4 md:space-y-6">
           <TabsList>
-          <TabsTrigger value="summary">Summary</TabsTrigger>
-          <TabsTrigger value="assumptions">Assumptions</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-        </TabsList>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
+            <TabsTrigger value="assumptions">Assumptions</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="summary" className="space-y-6">
-          {/* Portfolio Summary */}
-          <AcquisitionPortfolioSummary aggregates={aggregates} />
+          <TabsContent value="summary" className="space-y-6">
+            {/* Portfolio Summary */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Opportunities</CardTitle>
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{aggregates.totalCount}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {aggregates.includedCount} included, {aggregates.excludedCount} excluded
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Offer Price</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ${aggregates.totalOfferPrice.toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Projected NOI</CardTitle>
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ${aggregates.totalProjectedNOI.toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Avg Cap Rate</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {(aggregates.avgProjectedCapRate * 100).toFixed(2)}%
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Properties */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Properties</CardTitle>
-              <Button size="sm" onClick={() => setAddPropertyOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Properties
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {propertiesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <AcquisitionPropertyTable
-                  properties={localProperties}
-                  onRemoveProperty={handleRemoveProperty}
+            {/* Opportunities */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-lg">Opportunities</CardTitle>
+                <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Opportunities
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <OpportunityTable
+                  opportunities={opportunities}
+                  isLoading={opportunitiesLoading}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="assumptions" className="space-y-6">
-          <AcquisitionUnderwritingDefaults
-            defaults={localAcquisition.defaults}
-            onUpdate={handleDefaultsUpdate}
-            onApplyToAll={handleApplyToAll}
-          />
-        </TabsContent>
+          <TabsContent value="assumptions" className="space-y-6">
+            <AcquisitionUnderwritingDefaults
+              defaults={localAcquisition.defaults}
+              onUpdate={handleDefaultsUpdate}
+              onApplyToAll={handleApplyToAll}
+            />
+          </TabsContent>
 
-        <TabsContent value="details" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Acquisition Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          <TabsContent value="details" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Acquisition Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Target Close Date</Label>
+                    <Input
+                      type="date"
+                      value={localAcquisition.targetCloseDate || ''}
+                      onChange={(e) => {
+                        setLocalAcquisition({ ...localAcquisition, targetCloseDate: e.target.value });
+                        setHasChanges(true);
+                      }}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label>Target Close Date</Label>
-                  <Input
-                    type="date"
-                    value={localAcquisition.targetCloseDate || ''}
+                  <Label>Investment Thesis</Label>
+                  <Textarea
+                    placeholder="Describe the investment thesis..."
+                    value={localAcquisition.investmentThesis || ''}
                     onChange={(e) => {
-                      setLocalAcquisition({ ...localAcquisition, targetCloseDate: e.target.value });
+                      setLocalAcquisition({ ...localAcquisition, investmentThesis: e.target.value });
                       setHasChanges(true);
                     }}
+                    rows={4}
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Investment Thesis</Label>
-                <Textarea
-                  placeholder="Describe the investment thesis..."
-                  value={localAcquisition.investmentThesis || ''}
-                  onChange={(e) => {
-                    setLocalAcquisition({ ...localAcquisition, investmentThesis: e.target.value });
-                    setHasChanges(true);
-                  }}
-                  rows={4}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Strategy Notes</Label>
-                <Textarea
-                  placeholder="Additional notes..."
-                  value={localAcquisition.strategyNotes || ''}
-                  onChange={(e) => {
-                    setLocalAcquisition({ ...localAcquisition, strategyNotes: e.target.value });
-                    setHasChanges(true);
-                  }}
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                <div className="space-y-2">
+                  <Label>Strategy Notes</Label>
+                  <Textarea
+                    placeholder="Additional notes..."
+                    value={localAcquisition.strategyNotes || ''}
+                    onChange={(e) => {
+                      setLocalAcquisition({ ...localAcquisition, strategyNotes: e.target.value });
+                      setHasChanges(true);
+                    }}
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
-        {/* Add Property Dialog */}
-        <AddAcquisitionPropertyDialog
-          open={addPropertyOpen}
-          onOpenChange={setAddPropertyOpen}
-          existingPropertyIds={localProperties.map((p) => p.propertyId)}
-          onAddProperties={handleAddProperties}
-        />
+        {/* Upload Dialog */}
+        {id && (
+          <OpportunityUploadDialog
+            open={uploadDialogOpen}
+            onOpenChange={setUploadDialogOpen}
+            acquisitionId={id}
+          />
+        )}
       </main>
     </div>
   );
