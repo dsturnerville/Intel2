@@ -1,11 +1,21 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/utils/calculations';
+import { useMarkets } from '@/hooks/useMarkets';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   Loader2,
@@ -37,6 +47,7 @@ interface PropertyDetail {
   state: string;
   zip_code: string;
   market: string;
+  market_id: string | null;
   year_built: number | null;
   lot_size: number | null;
   occupancy_status: 'Occupied' | 'Vacant' | 'Notice Given';
@@ -53,17 +64,29 @@ interface PropertyDetail {
   images: Json;
   created_at: string;
   updated_at: string;
+  markets?: {
+    id: string;
+    market_name: string;
+  } | null;
 }
 
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+  const { data: markets = [] } = useMarkets();
 
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          markets (
+            id,
+            market_name
+          )
+        `)
         .eq('id', id)
         .single();
 
@@ -72,6 +95,24 @@ export default function PropertyDetail() {
     },
     enabled: !!id,
   });
+
+  const handleMarketChange = async (marketId: string) => {
+    if (!property) return;
+    
+    const { error } = await supabase
+      .from('properties')
+      .update({ market_id: marketId || null })
+      .eq('id', property.id);
+
+    if (error) {
+      toast.error('Failed to update market');
+      return;
+    }
+
+    toast.success('Market updated');
+    queryClient.invalidateQueries({ queryKey: ['property', id] });
+    queryClient.invalidateQueries({ queryKey: ['properties'] });
+  };
 
   const getOccupancyBadgeVariant = (status: string) => {
     switch (status) {
@@ -172,12 +213,23 @@ export default function PropertyDetail() {
                       <p className="font-medium">{property.year_built || '—'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Home className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Market</p>
-                      <p className="font-medium">{property.market}</p>
-                    </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Market</Label>
+                    <Select 
+                      value={property.market_id || ''} 
+                      onValueChange={handleMarketChange}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={property.market || 'Select market...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {markets.map((market) => (
+                          <SelectItem key={market.id} value={market.id}>
+                            {market.market_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
