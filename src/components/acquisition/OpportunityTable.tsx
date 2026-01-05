@@ -134,9 +134,10 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
   }
 
   return (
-    <div className="border rounded-lg overflow-x-auto">
-      <Table className="min-w-[2000px]">
-        <TableHeader>
+    <div className="border rounded-lg overflow-hidden">
+      <div className="overflow-x-auto max-w-full">
+        <Table className="min-w-[2000px]">
+          <TableHeader>
           <TableRow className="bg-muted/50">
             <TableHead className="w-12 sticky left-0 bg-muted/50 z-10">Include</TableHead>
             <TableHead 
@@ -282,6 +283,7 @@ export function OpportunityTable({ opportunities, isLoading }: OpportunityTableP
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }
