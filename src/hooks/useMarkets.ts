@@ -6,6 +6,8 @@ export interface Market {
   id: string;
   market_name: string;
   market_code: string | null;
+  latitude: number | null;
+  longitude: number | null;
   misc_income_percent: number | null;
   vacancy_percent: number | null;
   bad_debt_percent: number | null;
