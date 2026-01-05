@@ -650,15 +650,6 @@ export function AcquisitionPropertyMap({ opportunities, onPropertyClick }: Acqui
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          onClick={() => setShowTokenInput(true)}
-          className="h-8 w-8 bg-background/90 backdrop-blur"
-          title="Change Mapbox token"
-        >
-          <Key className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Property count indicator */}
