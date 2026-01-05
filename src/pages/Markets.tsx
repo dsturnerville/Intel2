@@ -125,6 +125,39 @@ export default function Markets() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePercentChange = (field: keyof MarketInsert, value: string) => {
+    // Allow empty string for editing, store as null or 0 when empty
+    if (value === '' || value === '-') {
+      setFormData(prev => ({ ...prev, [field]: null }));
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setFormData(prev => ({ ...prev, [field]: numValue / 100 }));
+      }
+    }
+  };
+
+  const handleCurrencyChange = (field: keyof MarketInsert, value: string) => {
+    if (value === '' || value === '-') {
+      setFormData(prev => ({ ...prev, [field]: null }));
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setFormData(prev => ({ ...prev, [field]: numValue }));
+      }
+    }
+  };
+
+  const getPercentDisplayValue = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return '';
+    return String(value * 100);
+  };
+
+  const getCurrencyDisplayValue = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) return '';
+    return String(value);
+  };
+
   const formatPercent = (value: number | null) => {
     if (value === null) return '-';
     return `${(value * 100).toFixed(2)}%`;
@@ -268,33 +301,33 @@ export default function Markets() {
                     <Label htmlFor="misc_income_percent">Misc Income (%)</Label>
                     <Input
                       id="misc_income_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.misc_income_percent ?? 0) * 100}
-                      onChange={(e) => updateField('misc_income_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.misc_income_percent)}
+                      onChange={(e) => handlePercentChange('misc_income_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="vacancy_percent">Vacancy (%)</Label>
                     <Input
                       id="vacancy_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.vacancy_percent ?? 0) * 100}
-                      onChange={(e) => updateField('vacancy_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.vacancy_percent)}
+                      onChange={(e) => handlePercentChange('vacancy_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bad_debt_percent">Bad Debt (%)</Label>
                     <Input
                       id="bad_debt_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.bad_debt_percent ?? 0) * 100}
-                      onChange={(e) => updateField('bad_debt_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.bad_debt_percent)}
+                      onChange={(e) => handlePercentChange('bad_debt_percent', e.target.value)}
                     />
                   </div>
                 </div>
@@ -308,44 +341,44 @@ export default function Markets() {
                     <Label htmlFor="pm_fee_percent">PM Fee (%)</Label>
                     <Input
                       id="pm_fee_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.pm_fee_percent ?? 0) * 100}
-                      onChange={(e) => updateField('pm_fee_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.pm_fee_percent)}
+                      onChange={(e) => handlePercentChange('pm_fee_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="leasing_fee_percent">Leasing Fee (%)</Label>
                     <Input
                       id="leasing_fee_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.leasing_fee_percent ?? 0) * 100}
-                      onChange={(e) => updateField('leasing_fee_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.leasing_fee_percent)}
+                      onChange={(e) => handlePercentChange('leasing_fee_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="cm_fee_percent">CM Fee (%)</Label>
                     <Input
                       id="cm_fee_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.cm_fee_percent ?? 0) * 100}
-                      onChange={(e) => updateField('cm_fee_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.cm_fee_percent)}
+                      onChange={(e) => handlePercentChange('cm_fee_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="closing_costs_percent">Closing Costs (%)</Label>
                     <Input
                       id="closing_costs_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.closing_costs_percent ?? 0) * 100}
-                      onChange={(e) => updateField('closing_costs_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.closing_costs_percent)}
+                      onChange={(e) => handlePercentChange('closing_costs_percent', e.target.value)}
                     />
                   </div>
                 </div>
@@ -359,42 +392,42 @@ export default function Markets() {
                     <Label htmlFor="ins_premium_rate_percent">Premium Rate (%)</Label>
                     <Input
                       id="ins_premium_rate_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.ins_premium_rate_percent ?? 0) * 100}
-                      onChange={(e) => updateField('ins_premium_rate_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.ins_premium_rate_percent)}
+                      onChange={(e) => handlePercentChange('ins_premium_rate_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ins_factor_rate_percent">Factor Rate (%)</Label>
                     <Input
                       id="ins_factor_rate_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.ins_factor_rate_percent ?? 0) * 100}
-                      onChange={(e) => updateField('ins_factor_rate_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.ins_factor_rate_percent)}
+                      onChange={(e) => handlePercentChange('ins_factor_rate_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ins_liability_premium">Liability Premium ($)</Label>
                     <Input
                       id="ins_liability_premium"
-                      type="number"
-                      step="1"
-                      value={formData.ins_liability_premium ?? 0}
-                      onChange={(e) => updateField('ins_liability_premium', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.ins_liability_premium)}
+                      onChange={(e) => handleCurrencyChange('ins_liability_premium', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="replacement_cost_sf">Replacement Cost/SF ($)</Label>
                     <Input
                       id="replacement_cost_sf"
-                      type="number"
-                      step="1"
-                      value={formData.replacement_cost_sf ?? 0}
-                      onChange={(e) => updateField('replacement_cost_sf', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.replacement_cost_sf)}
+                      onChange={(e) => handleCurrencyChange('replacement_cost_sf', e.target.value)}
                     />
                   </div>
                 </div>
@@ -408,31 +441,31 @@ export default function Markets() {
                     <Label htmlFor="lost_rent">Lost Rent ($)</Label>
                     <Input
                       id="lost_rent"
-                      type="number"
-                      step="1"
-                      value={formData.lost_rent ?? 0}
-                      onChange={(e) => updateField('lost_rent', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.lost_rent)}
+                      onChange={(e) => handleCurrencyChange('lost_rent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="utilities">Utilities ($)</Label>
                     <Input
                       id="utilities"
-                      type="number"
-                      step="1"
-                      value={formData.utilities ?? 0}
-                      onChange={(e) => updateField('utilities', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.utilities)}
+                      onChange={(e) => handleCurrencyChange('utilities', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="repairs_maintenance_percent">Repairs & Maintenance (%)</Label>
                     <Input
                       id="repairs_maintenance_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.repairs_maintenance_percent ?? 0) * 100}
-                      onChange={(e) => updateField('repairs_maintenance_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.repairs_maintenance_percent)}
+                      onChange={(e) => handlePercentChange('repairs_maintenance_percent', e.target.value)}
                     />
                   </div>
                 </div>
@@ -446,31 +479,31 @@ export default function Markets() {
                     <Label htmlFor="turnover_costs">Turnover Costs ($)</Label>
                     <Input
                       id="turnover_costs"
-                      type="number"
-                      step="1"
-                      value={formData.turnover_costs ?? 0}
-                      onChange={(e) => updateField('turnover_costs', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.turnover_costs)}
+                      onChange={(e) => handleCurrencyChange('turnover_costs', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="turnover_rate_percent">Turnover Rate (%)</Label>
                     <Input
                       id="turnover_rate_percent"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={(formData.turnover_rate_percent ?? 0) * 100}
-                      onChange={(e) => updateField('turnover_rate_percent', parseFloat(e.target.value) / 100 || 0)}
+                      value={getPercentDisplayValue(formData.turnover_rate_percent)}
+                      onChange={(e) => handlePercentChange('turnover_rate_percent', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="blended_turnover">Blended Turnover ($)</Label>
                     <Input
                       id="blended_turnover"
-                      type="number"
-                      step="1"
-                      value={formData.blended_turnover ?? 0}
-                      onChange={(e) => updateField('blended_turnover', parseFloat(e.target.value) || 0)}
+                      type="text"
+                      inputMode="decimal"
+                      value={getCurrencyDisplayValue(formData.blended_turnover)}
+                      onChange={(e) => handleCurrencyChange('blended_turnover', e.target.value)}
                     />
                   </div>
                 </div>
