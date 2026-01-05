@@ -184,9 +184,27 @@ export function useOpportunityMutations() {
       if (updates.miscIncomePercent !== undefined) dbUpdates.misc_income_percent = updates.miscIncomePercent;
       if (updates.vacancyBadDebtPercent !== undefined) dbUpdates.vacancy_bad_debt_percent = updates.vacancyBadDebtPercent;
       if (updates.pmFeePercent !== undefined) dbUpdates.pm_fee_percent = updates.pmFeePercent;
+      if (updates.insPremiumRate !== undefined) dbUpdates.ins_premium_rate = updates.insPremiumRate;
+      if (updates.insFactorRate !== undefined) dbUpdates.ins_factor_rate = updates.insFactorRate;
+      if (updates.insLiabilityPremium !== undefined) dbUpdates.ins_liability_premium = updates.insLiabilityPremium;
+      if (updates.replacementCostPerSF !== undefined) dbUpdates.replacement_cost_per_sf = updates.replacementCostPerSF;
+      if (updates.lostRent !== undefined) dbUpdates.lost_rent = updates.lostRent;
+      if (updates.leasingFeePercent !== undefined) dbUpdates.leasing_fee_percent = updates.leasingFeePercent;
+      if (updates.utilities !== undefined) dbUpdates.utilities = updates.utilities;
+      if (updates.turnoverCost !== undefined) dbUpdates.turnover_cost = updates.turnoverCost;
+      if (updates.turnoverRatePercent !== undefined) dbUpdates.turnover_rate_percent = updates.turnoverRatePercent;
+      if (updates.blendedTurnover !== undefined) dbUpdates.blended_turnover = updates.blendedTurnover;
+      if (updates.effectiveTaxRatePercent !== undefined) dbUpdates.effective_tax_rate_percent = updates.effectiveTaxRatePercent;
+      if (updates.taxIncreasePercent !== undefined) dbUpdates.tax_increase_percent = updates.taxIncreasePercent;
+      if (updates.rmPercent !== undefined) dbUpdates.rm_percent = updates.rmPercent;
+      if (updates.turnCost !== undefined) dbUpdates.turn_cost = updates.turnCost;
+      if (updates.cmFeePercent !== undefined) dbUpdates.cm_fee_percent = updates.cmFeePercent;
+      if (updates.closingCostsPercent !== undefined) dbUpdates.closing_costs_percent = updates.closingCostsPercent;
       if (updates.offerPrice !== undefined) dbUpdates.offer_price = updates.offerPrice;
       if (updates.projectedNoi !== undefined) dbUpdates.projected_noi = updates.projectedNoi;
       if (updates.projectedCapRate !== undefined) dbUpdates.projected_cap_rate = updates.projectedCapRate;
+      if (updates.totalAcquisitionCost !== undefined) dbUpdates.total_acquisition_cost = updates.totalAcquisitionCost;
+      if (updates.projectedAnnualReturn !== undefined) dbUpdates.projected_annual_return = updates.projectedAnnualReturn;
 
       const { error } = await supabase
         .from('acquisition_properties')
