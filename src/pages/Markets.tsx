@@ -150,7 +150,7 @@ export default function Markets() {
 
   const getPercentDisplayValue = (value: number | null | undefined): string => {
     if (value === null || value === undefined) return '';
-    return String(value * 100);
+    return (value * 100).toFixed(2);
   };
 
   const getCurrencyDisplayValue = (value: number | null | undefined): string => {
