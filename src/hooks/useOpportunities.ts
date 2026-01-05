@@ -127,6 +127,7 @@ export function useOpportunityMutations() {
         lease_start: row.lease_start || null,
         lease_end: row.lease_end || null,
         annual_hoa: row.annual_hoa ? parseFloat(row.annual_hoa.replace(/[^0-9.-]/g, '')) : null,
+        asking_price: row.asking_price ? parseFloat(row.asking_price.replace(/[^0-9.-]/g, '')) : null,
         property_tax: row.property_tax ? parseFloat(row.property_tax.replace(/[^0-9.-]/g, '')) : null,
         rent_avm: row.rent_avm ? parseFloat(row.rent_avm.replace(/[^0-9.-]/g, '')) : null,
         sales_avm: row.sales_avm ? parseFloat(row.sales_avm.replace(/[^0-9.-]/g, '')) : null,
