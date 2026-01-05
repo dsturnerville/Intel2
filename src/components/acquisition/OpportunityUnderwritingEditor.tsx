@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Opportunity } from '@/types/opportunity';
+import { Opportunity, OpportunityOccupancy } from '@/types/opportunity';
 import { AcquisitionDefaults } from '@/types/acquisition';
 import { useOpportunityMutations } from '@/hooks/useOpportunities';
 import { useMarkets, Market } from '@/hooks/useMarkets';
@@ -176,6 +176,16 @@ export function OpportunityUnderwritingEditor({
     const result = await updateOpportunity(opportunity.id, {
       useAcquisitionDefaults: false,
       [field]: decimalValue,
+    });
+    
+    if (!result.success) {
+      toast.error('Failed to update property');
+    }
+  };
+
+  const handleFieldChange = async (field: keyof Opportunity, value: string | number | undefined) => {
+    const result = await updateOpportunity(opportunity.id, {
+      [field]: value,
     });
     
     if (!result.success) {
@@ -442,29 +452,89 @@ export function OpportunityUnderwritingEditor({
 
       <Separator />
 
-      {/* Calculated Outputs */}
+      {/* Editable Property Details */}
       <div className="grid grid-cols-4 gap-6">
         <div className="space-y-2">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Property Details
           </h4>
-          <div className="space-y-1 text-sm">
-            <p>
-              <span className="text-muted-foreground">Year Built:</span>{' '}
-              <span className="font-mono">{opportunity.yearBuilt ?? '-'}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Sq Ft:</span>{' '}
-              <span className="font-mono">{opportunity.squareFeet?.toLocaleString() ?? '-'}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Beds/Baths:</span>{' '}
-              <span className="font-mono">{opportunity.bedrooms ?? '-'} / {opportunity.bathrooms ?? '-'}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Property Tax:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.propertyTax)}</span>
-            </p>
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Year Built</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{opportunity.yearBuilt ?? '-'}</p>
+              ) : (
+                <Input
+                  type="number"
+                  defaultValue={opportunity.yearBuilt ?? ''}
+                  onBlur={(e) => handleFieldChange('yearBuilt', e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="h-8 text-xs"
+                  placeholder="e.g., 2005"
+                />
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Sq Ft</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{opportunity.squareFeet?.toLocaleString() ?? '-'}</p>
+              ) : (
+                <Input
+                  type="number"
+                  defaultValue={opportunity.squareFeet ?? ''}
+                  onBlur={(e) => handleFieldChange('squareFeet', e.target.value ? parseInt(e.target.value) : undefined)}
+                  className="h-8 text-xs"
+                  placeholder="e.g., 1500"
+                />
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Beds</Label>
+                {readOnly ? (
+                  <p className="text-sm font-mono">{opportunity.bedrooms ?? '-'}</p>
+                ) : (
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.bedrooms ?? ''}
+                    onBlur={(e) => handleFieldChange('bedrooms', e.target.value ? parseInt(e.target.value) : undefined)}
+                    className="h-8 text-xs"
+                    placeholder="3"
+                  />
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Baths</Label>
+                {readOnly ? (
+                  <p className="text-sm font-mono">{opportunity.bathrooms ?? '-'}</p>
+                ) : (
+                  <Input
+                    type="number"
+                    step="0.5"
+                    defaultValue={opportunity.bathrooms ?? ''}
+                    onBlur={(e) => handleFieldChange('bathrooms', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs"
+                    placeholder="2"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Property Tax</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.propertyTax)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.propertyTax ?? ''}
+                    onBlur={(e) => handleFieldChange('propertyTax', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="3000"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -472,23 +542,77 @@ export function OpportunityUnderwritingEditor({
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Rent & Income
           </h4>
-          <div className="space-y-1 text-sm">
-            <p>
-              <span className="text-muted-foreground">Current Rent:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.currentRent)}/mo</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Rent AVM:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.rentAvm)}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Occupancy:</span>{' '}
-              <span className="font-mono">{opportunity.occupancy}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Annual HOA:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.annualHoa)}</span>
-            </p>
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Current Rent</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.currentRent)}/mo</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.currentRent ?? ''}
+                    onBlur={(e) => handleFieldChange('currentRent', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="1500"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Rent AVM</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.rentAvm)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.rentAvm ?? ''}
+                    onBlur={(e) => handleFieldChange('rentAvm', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="1600"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Occupancy</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{opportunity.occupancy}</p>
+              ) : (
+                <Select 
+                  defaultValue={opportunity.occupancy} 
+                  onValueChange={(val) => handleFieldChange('occupancy', val as OpportunityOccupancy)}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Occupied">Occupied</SelectItem>
+                    <SelectItem value="Vacant">Vacant</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Annual HOA</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.annualHoa)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.annualHoa ?? ''}
+                    onBlur={(e) => handleFieldChange('annualHoa', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="500"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -496,23 +620,62 @@ export function OpportunityUnderwritingEditor({
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Pricing
           </h4>
-          <div className="space-y-1 text-sm">
-            <p>
-              <span className="text-muted-foreground">Asking Price:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.askingPrice)}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Sales AVM:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.salesAvm)}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Offer Price:</span>{' '}
-              <span className="font-mono font-semibold">{formatCurrency(opportunity.offerPrice)}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">Total Acq Cost:</span>{' '}
-              <span className="font-mono">{formatCurrency(opportunity.totalAcquisitionCost)}</span>
-            </p>
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Asking Price</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.askingPrice)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.askingPrice ?? ''}
+                    onBlur={(e) => handleFieldChange('askingPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="250000"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Sales AVM</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono">{formatCurrency(opportunity.salesAvm)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.salesAvm ?? ''}
+                    onBlur={(e) => handleFieldChange('salesAvm', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5"
+                    placeholder="260000"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Offer Price</Label>
+              {readOnly ? (
+                <p className="text-sm font-mono font-semibold">{formatCurrency(opportunity.offerPrice)}</p>
+              ) : (
+                <div className="relative">
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    defaultValue={opportunity.offerPrice ?? ''}
+                    onBlur={(e) => handleFieldChange('offerPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                    className="h-8 text-xs pl-5 font-semibold"
+                    placeholder="240000"
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Total Acq Cost</Label>
+              <p className="text-sm font-mono">{formatCurrency(opportunity.totalAcquisitionCost)}</p>
+            </div>
           </div>
         </div>
 
