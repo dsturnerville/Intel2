@@ -65,10 +65,13 @@ export default function Markets() {
   const [editingMarket, setEditingMarket] = useState<Market | null>(null);
   const [deletingMarket, setDeletingMarket] = useState<Market | null>(null);
   const [formData, setFormData] = useState<MarketInsert>(DEFAULT_MARKET);
+  // Track raw input values for percent fields during editing
+  const [percentInputs, setPercentInputs] = useState<Record<string, string>>({});
 
   const openCreate = () => {
     setEditingMarket(null);
     setFormData(DEFAULT_MARKET);
+    setPercentInputs({});
     setIsFormOpen(true);
   };
 
@@ -95,6 +98,7 @@ export default function Markets() {
       turnover_rate_percent: market.turnover_rate_percent,
       blended_turnover: market.blended_turnover,
     });
+    setPercentInputs({});
     setIsFormOpen(true);
   };
 
@@ -126,7 +130,10 @@ export default function Markets() {
   };
 
   const handlePercentChange = (field: keyof MarketInsert, value: string) => {
-    // Allow empty string for editing, store as null or 0 when empty
+    // Store raw input value for display
+    setPercentInputs(prev => ({ ...prev, [field]: value }));
+    
+    // Update formData with parsed value
     if (value === '' || value === '-') {
       setFormData(prev => ({ ...prev, [field]: null }));
     } else {
@@ -135,6 +142,15 @@ export default function Markets() {
         setFormData(prev => ({ ...prev, [field]: numValue / 100 }));
       }
     }
+  };
+
+  const handlePercentBlur = (field: keyof MarketInsert) => {
+    // On blur, clear the raw input so it shows the formatted value
+    setPercentInputs(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const handleCurrencyChange = (field: keyof MarketInsert, value: string) => {
@@ -148,7 +164,13 @@ export default function Markets() {
     }
   };
 
-  const getPercentDisplayValue = (value: number | null | undefined): string => {
+  const getPercentDisplayValue = (field: keyof MarketInsert): string => {
+    // If we have a raw input value (user is typing), show that
+    if (field in percentInputs) {
+      return percentInputs[field];
+    }
+    // Otherwise show formatted value
+    const value = formData[field] as number | null | undefined;
     if (value === null || value === undefined) return '';
     return (value * 100).toFixed(2);
   };
@@ -304,8 +326,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.misc_income_percent)}
+                      value={getPercentDisplayValue('misc_income_percent')}
                       onChange={(e) => handlePercentChange('misc_income_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('misc_income_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -315,8 +338,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.vacancy_percent)}
+                      value={getPercentDisplayValue('vacancy_percent')}
                       onChange={(e) => handlePercentChange('vacancy_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('vacancy_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -326,8 +350,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.bad_debt_percent)}
+                      value={getPercentDisplayValue('bad_debt_percent')}
                       onChange={(e) => handlePercentChange('bad_debt_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('bad_debt_percent')}
                     />
                   </div>
                 </div>
@@ -344,8 +369,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.pm_fee_percent)}
+                      value={getPercentDisplayValue('pm_fee_percent')}
                       onChange={(e) => handlePercentChange('pm_fee_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('pm_fee_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -355,8 +381,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.leasing_fee_percent)}
+                      value={getPercentDisplayValue('leasing_fee_percent')}
                       onChange={(e) => handlePercentChange('leasing_fee_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('leasing_fee_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -366,8 +393,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.cm_fee_percent)}
+                      value={getPercentDisplayValue('cm_fee_percent')}
                       onChange={(e) => handlePercentChange('cm_fee_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('cm_fee_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -377,8 +405,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.closing_costs_percent)}
+                      value={getPercentDisplayValue('closing_costs_percent')}
                       onChange={(e) => handlePercentChange('closing_costs_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('closing_costs_percent')}
                     />
                   </div>
                 </div>
@@ -395,8 +424,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.ins_premium_rate_percent)}
+                      value={getPercentDisplayValue('ins_premium_rate_percent')}
                       onChange={(e) => handlePercentChange('ins_premium_rate_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('ins_premium_rate_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -406,8 +436,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.ins_factor_rate_percent)}
+                      value={getPercentDisplayValue('ins_factor_rate_percent')}
                       onChange={(e) => handlePercentChange('ins_factor_rate_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('ins_factor_rate_percent')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -464,8 +495,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.repairs_maintenance_percent)}
+                      value={getPercentDisplayValue('repairs_maintenance_percent')}
                       onChange={(e) => handlePercentChange('repairs_maintenance_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('repairs_maintenance_percent')}
                     />
                   </div>
                 </div>
@@ -492,8 +524,9 @@ export default function Markets() {
                       type="text"
                       inputMode="decimal"
                       className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      value={getPercentDisplayValue(formData.turnover_rate_percent)}
+                      value={getPercentDisplayValue('turnover_rate_percent')}
                       onChange={(e) => handlePercentChange('turnover_rate_percent', e.target.value)}
+                      onBlur={() => handlePercentBlur('turnover_rate_percent')}
                     />
                   </div>
                   <div className="space-y-2">
