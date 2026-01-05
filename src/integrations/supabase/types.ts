@@ -507,6 +507,87 @@ export type Database = {
           },
         ]
       }
+      markets: {
+        Row: {
+          bad_debt_percent: number | null
+          blended_turnover: number | null
+          closing_costs_percent: number | null
+          cm_fee_percent: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          ins_factor_rate_percent: number | null
+          ins_liability_premium: number | null
+          ins_premium_rate_percent: number | null
+          leasing_fee_percent: number | null
+          lost_rent: number | null
+          market_code: string | null
+          market_name: string
+          misc_income_percent: number | null
+          pm_fee_percent: number | null
+          repairs_maintenance_percent: number | null
+          replacement_cost_sf: number | null
+          turnover_costs: number | null
+          turnover_rate_percent: number | null
+          updated_at: string
+          updated_by: string | null
+          utilities: number | null
+          vacancy_percent: number | null
+        }
+        Insert: {
+          bad_debt_percent?: number | null
+          blended_turnover?: number | null
+          closing_costs_percent?: number | null
+          cm_fee_percent?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ins_factor_rate_percent?: number | null
+          ins_liability_premium?: number | null
+          ins_premium_rate_percent?: number | null
+          leasing_fee_percent?: number | null
+          lost_rent?: number | null
+          market_code?: string | null
+          market_name: string
+          misc_income_percent?: number | null
+          pm_fee_percent?: number | null
+          repairs_maintenance_percent?: number | null
+          replacement_cost_sf?: number | null
+          turnover_costs?: number | null
+          turnover_rate_percent?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          utilities?: number | null
+          vacancy_percent?: number | null
+        }
+        Update: {
+          bad_debt_percent?: number | null
+          blended_turnover?: number | null
+          closing_costs_percent?: number | null
+          cm_fee_percent?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ins_factor_rate_percent?: number | null
+          ins_liability_premium?: number | null
+          ins_premium_rate_percent?: number | null
+          leasing_fee_percent?: number | null
+          lost_rent?: number | null
+          market_code?: string | null
+          market_name?: string
+          misc_income_percent?: number | null
+          pm_fee_percent?: number | null
+          repairs_maintenance_percent?: number | null
+          replacement_cost_sf?: number | null
+          turnover_costs?: number | null
+          turnover_rate_percent?: number | null
+          updated_at?: string
+          updated_by?: string | null
+          utilities?: number | null
+          vacancy_percent?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
