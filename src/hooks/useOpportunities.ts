@@ -25,6 +25,7 @@ function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunit
     leaseStart: row.lease_start || undefined,
     leaseEnd: row.lease_end || undefined,
     annualHoa: row.annual_hoa ? Number(row.annual_hoa) : undefined,
+    askingPrice: row.asking_price ? Number(row.asking_price) : undefined,
     propertyTax: row.property_tax ? Number(row.property_tax) : undefined,
     rentAvm: row.rent_avm ? Number(row.rent_avm) : undefined,
     salesAvm: row.sales_avm ? Number(row.sales_avm) : undefined,
