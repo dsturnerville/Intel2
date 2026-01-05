@@ -211,10 +211,10 @@ export default function AcquisitionDetail() {
             {/* Opportunities */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Opportunities</CardTitle>
+                <CardTitle className="text-lg">Properties</CardTitle>
                 <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
-                  Upload Opportunities
+                  Upload Properties
                 </Button>
               </CardHeader>
               <CardContent>
