@@ -26,6 +26,8 @@ export interface Opportunity {
   propertyTax?: number;
   rentAvm?: number;
   salesAvm?: number;
+  latitude?: number;
+  longitude?: number;
   // Underwriting inputs
   useAcquisitionDefaults: boolean;
   miscIncomePercent?: number;

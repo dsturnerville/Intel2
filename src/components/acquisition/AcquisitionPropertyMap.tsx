@@ -71,12 +71,13 @@ export function AcquisitionPropertyMap({ opportunities, onPropertyClick }: Acqui
     markersRef.current = [];
   }, []);
 
-  // Filter opportunities with valid coordinates (geocoded)
-  const propertiesWithCoords = opportunities.filter(opp => {
-    // Since opportunities don't have lat/lng yet, we'll need to geocode them
-    // For now, we'll show a message that geocoding is needed
-    return false; // No properties have coordinates yet
-  });
+  // Filter opportunities with valid coordinates
+  const propertiesWithCoords = opportunities.filter(opp => 
+    opp.latitude !== undefined && 
+    opp.longitude !== undefined &&
+    opp.latitude !== null &&
+    opp.longitude !== null
+  );
 
   // Initialize map
   useEffect(() => {
@@ -84,14 +85,28 @@ export function AcquisitionPropertyMap({ opportunities, onPropertyClick }: Acqui
 
     mapboxgl.accessToken = mapboxToken;
 
+    // Calculate center from properties or use US center
+    let center: [number, number] = [-98.5795, 39.8283];
+    let zoom = 3.5;
+    
+    if (propertiesWithCoords.length > 0) {
+      const lngs = propertiesWithCoords.map(p => p.longitude!);
+      const lats = propertiesWithCoords.map(p => p.latitude!);
+      center = [
+        (Math.min(...lngs) + Math.max(...lngs)) / 2,
+        (Math.min(...lats) + Math.max(...lats)) / 2
+      ];
+      zoom = 10;
+    }
+
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: isSatellite 
           ? 'mapbox://styles/mapbox/satellite-streets-v12' 
           : 'mapbox://styles/mapbox/light-v11',
-        center: [-98.5795, 39.8283], // Center of US
-        zoom: 3.5,
+        center,
+        zoom,
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -115,19 +130,51 @@ export function AcquisitionPropertyMap({ opportunities, onPropertyClick }: Acqui
         map.current = null;
       }
     };
-  }, [mapboxToken, isSatellite, handleClearToken]);
+  }, [mapboxToken, isSatellite, handleClearToken, propertiesWithCoords]);
 
   // Add markers for properties
   useEffect(() => {
-    if (!map.current || propertiesWithCoords.length === 0) return;
+    if (!map.current) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // This would add markers if we had coordinates
-    // For now, properties don't have lat/lng fields
-    
+    if (propertiesWithCoords.length === 0) return;
+
+    // Wait for map to load
+    const addMarkers = () => {
+      propertiesWithCoords.forEach(opp => {
+        const el = document.createElement('div');
+        el.className = 'w-6 h-6 bg-primary rounded-full border-2 border-background shadow-lg cursor-pointer hover:scale-110 transition-transform flex items-center justify-center';
+        el.innerHTML = '<div class="w-2 h-2 bg-background rounded-full"></div>';
+
+        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+          <div class="p-2">
+            <div class="font-medium text-sm">${opp.address1}</div>
+            <div class="text-xs text-muted-foreground">${opp.city}, ${opp.state} ${opp.zipCode}</div>
+            ${opp.offerPrice ? `<div class="text-sm font-medium mt-1">$${opp.offerPrice.toLocaleString()}</div>` : ''}
+          </div>
+        `);
+
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([opp.longitude!, opp.latitude!])
+          .setPopup(popup)
+          .addTo(map.current!);
+
+        if (onPropertyClick) {
+          el.addEventListener('click', () => onPropertyClick(opp.id));
+        }
+
+        markersRef.current.push(marker);
+      });
+    };
+
+    if (map.current.loaded()) {
+      addMarkers();
+    } else {
+      map.current.on('load', addMarkers);
+    }
   }, [propertiesWithCoords, onPropertyClick]);
 
   const toggleFullscreen = useCallback(() => {
@@ -248,9 +295,15 @@ export function AcquisitionPropertyMap({ opportunities, onPropertyClick }: Acqui
       {/* Property count indicator */}
       <div className="absolute bottom-3 left-3 z-10">
         <div className="bg-background/90 backdrop-blur rounded-md px-3 py-1.5 text-sm">
-          <span className="font-medium">{opportunities.length}</span>
-          <span className="text-muted-foreground ml-1">properties</span>
-          <span className="text-muted-foreground ml-2">(geocoding not yet available)</span>
+          <span className="font-medium">{propertiesWithCoords.length}</span>
+          <span className="text-muted-foreground ml-1">
+            of {opportunities.length} properties mapped
+          </span>
+          {propertiesWithCoords.length < opportunities.length && (
+            <span className="text-muted-foreground ml-2">
+              ({opportunities.length - propertiesWithCoords.length} missing coordinates)
+            </span>
+          )}
         </div>
       </div>
 
