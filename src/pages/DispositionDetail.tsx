@@ -410,7 +410,6 @@ export default function DispositionDetail() {
             <UnderwritingDefaults
               defaults={disposition.defaults}
               onUpdate={handleDefaultsUpdate}
-              onApplyToAll={handleApplyDefaultsToAll}
               readOnly={isReadOnly}
             />
           </TabsContent>
