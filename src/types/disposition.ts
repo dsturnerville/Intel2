@@ -224,47 +224,20 @@ export interface DispositionAggregates {
 }
 
 // ============================================================================
-// DEAL TYPES (for linking dispositions to actual listings)
+// DEAL TYPES (Re-exported from unified deal.ts for backward compatibility)
 // ============================================================================
 
-/**
- * DealStatus - Status of an actual listing/offer
- */
-export type DealStatus = 
-  | 'Pre-Listing'
-  | 'Listed'
-  | 'Under Contract'
-  | 'Due Diligence'
-  | 'Pending Close'
-  | 'Closed'
-  | 'Terminated';
-
-/**
- * Deal - Represents an actual listing and/or accepted offer
- */
-export interface Deal {
-  id: string;
-  dispositionId?: string; // Link back to the underwriting disposition
-  name: string;
-  status: DealStatus;
-  
-  // Listing details
-  listPrice?: number;
-  listDate?: string;
-  
-  // Offer details
-  offerPrice?: number;
-  offerDate?: string;
-  closeProbability?: number; // 0-100%
-  expectedCloseDate?: string;
-  
-  // Actual close details
-  actualClosePrice?: number;
-  actualCloseDate?: string;
-  
-  // Property references
-  propertyIds: string[];
-}
+// Import unified deal types
+export { 
+  type DealType,
+  type DealStatus,
+  type Deal,
+  type DealProperty,
+  ACQUISITION_STATUSES,
+  DISPOSITION_STATUSES,
+  ALL_DEAL_STATUSES,
+  getStatusesForDealType,
+} from './deal';
 
 // ============================================================================
 // UI STATE TYPES

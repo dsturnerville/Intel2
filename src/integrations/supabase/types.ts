@@ -252,65 +252,139 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_properties: {
+        Row: {
+          acquisition_property_id: string | null
+          created_at: string
+          deal_id: string
+          id: string
+          property_id: string | null
+        }
+        Insert: {
+          acquisition_property_id?: string | null
+          created_at?: string
+          deal_id: string
+          id?: string
+          property_id?: string | null
+        }
+        Update: {
+          acquisition_property_id?: string | null
+          created_at?: string
+          deal_id?: string
+          id?: string
+          property_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_properties_acquisition_property_id_fkey"
+            columns: ["acquisition_property_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_properties_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
+          acquisition_id: string | null
           actual_close_date: string | null
           actual_close_price: number | null
+          asking_price: number | null
           close_probability: number | null
           created_at: string
           created_by: string | null
+          deal_type: Database["public"]["Enums"]["deal_type"]
           disposition_id: string | null
+          earnest_money: number | null
+          earnest_money_date: string | null
           expected_close_date: string | null
+          financing_contingency_date: string | null
           id: string
+          inspection_end_date: string | null
+          inspection_period_days: number | null
           list_date: string | null
-          list_price: number | null
           name: string
+          notes: string | null
           offer_date: string | null
-          offer_price: number | null
-          property_ids: string[] | null
+          purchase_price: number | null
           status: Database["public"]["Enums"]["deal_status"]
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          acquisition_id?: string | null
           actual_close_date?: string | null
           actual_close_price?: number | null
+          asking_price?: number | null
           close_probability?: number | null
           created_at?: string
           created_by?: string | null
+          deal_type?: Database["public"]["Enums"]["deal_type"]
           disposition_id?: string | null
+          earnest_money?: number | null
+          earnest_money_date?: string | null
           expected_close_date?: string | null
+          financing_contingency_date?: string | null
           id?: string
+          inspection_end_date?: string | null
+          inspection_period_days?: number | null
           list_date?: string | null
-          list_price?: number | null
           name: string
+          notes?: string | null
           offer_date?: string | null
-          offer_price?: number | null
-          property_ids?: string[] | null
+          purchase_price?: number | null
           status?: Database["public"]["Enums"]["deal_status"]
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          acquisition_id?: string | null
           actual_close_date?: string | null
           actual_close_price?: number | null
+          asking_price?: number | null
           close_probability?: number | null
           created_at?: string
           created_by?: string | null
+          deal_type?: Database["public"]["Enums"]["deal_type"]
           disposition_id?: string | null
+          earnest_money?: number | null
+          earnest_money_date?: string | null
           expected_close_date?: string | null
+          financing_contingency_date?: string | null
           id?: string
+          inspection_end_date?: string | null
+          inspection_period_days?: number | null
           list_date?: string | null
-          list_price?: number | null
           name?: string
+          notes?: string | null
           offer_date?: string | null
-          offer_price?: number | null
-          property_ids?: string[] | null
+          purchase_price?: number | null
           status?: Database["public"]["Enums"]["deal_status"]
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "deals_acquisition_id_fkey"
+            columns: ["acquisition_id"]
+            isOneToOne: false
+            referencedRelation: "acquisitions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "deals_created_by_fkey"
             columns: ["created_by"]
@@ -875,11 +949,15 @@ export type Database = {
       deal_status:
         | "Pre-Listing"
         | "Listed"
+        | "LOI Submitted"
+        | "LOI Accepted"
         | "Under Contract"
+        | "PSA Executed"
         | "Due Diligence"
         | "Pending Close"
         | "Closed"
         | "Terminated"
+      deal_type: "Acquisition" | "Disposition"
       disposition_status:
         | "Draft"
         | "Under Review"
@@ -1032,12 +1110,16 @@ export const Constants = {
       deal_status: [
         "Pre-Listing",
         "Listed",
+        "LOI Submitted",
+        "LOI Accepted",
         "Under Contract",
+        "PSA Executed",
         "Due Diligence",
         "Pending Close",
         "Closed",
         "Terminated",
       ],
+      deal_type: ["Acquisition", "Disposition"],
       disposition_status: [
         "Draft",
         "Under Review",
