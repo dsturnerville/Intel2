@@ -60,13 +60,10 @@ export function PropertyTable({
               Occupancy
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-              Rent
+              Sale Price
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
               Basis
-            </TableHead>
-            <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-              Sale Price
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
               Selling Costs
@@ -130,13 +127,10 @@ export function PropertyTable({
                     </span>
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm">
-                    {formatCurrency(dp.property.currentRent)}/mo
+                    {formatCurrency(dp.outputs.projectedSalePrice)}
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm text-muted-foreground">
                     {formatCurrency(dp.property.acquisitionBasis)}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-sm">
-                    {formatCurrency(dp.outputs.projectedSalePrice)}
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm text-muted-foreground">
                     {formatCurrency(dp.outputs.totalSellingCosts)}
@@ -179,7 +173,7 @@ export function PropertyTable({
                 {/* Expanded row with details */}
                 {isExpanded && (
                   <TableRow className="bg-muted/30">
-                    <TableCell colSpan={readOnly ? 9 : 10} className="p-4">
+                    <TableCell colSpan={readOnly ? 8 : 9} className="p-4">
                       <div className="grid grid-cols-4 gap-6">
                         {/* Property Details */}
                         <div className="space-y-2">
