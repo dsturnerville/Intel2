@@ -8,19 +8,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { DispositionProperty, DispositionDefaults } from '@/types/disposition';
-import { formatCurrency, formatPercent, calculatePropertyUnderwriting } from '@/utils/calculations';
-import { PropertyUnderwritingEditor } from './PropertyUnderwritingEditor';
+import { formatCurrency, formatPercent } from '@/utils/calculations';
 import { 
   Trash2, 
   ChevronDown, 
   ChevronUp, 
-  Edit2, 
-  Check, 
-  X,
   Home,
   TrendingUp,
   TrendingDown,
@@ -38,12 +33,9 @@ export function PropertyTable({
   properties,
   defaults,
   onRemoveProperty,
-  onUpdateProperty,
   readOnly = false,
 }: PropertyTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
-  const [editValue, setEditValue] = useState<string>('');
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
@@ -53,43 +45,6 @@ export function PropertyTable({
       newExpanded.add(id);
     }
     setExpandedRows(newExpanded);
-  };
-
-  const startEditing = (id: string, field: string, currentValue: number) => {
-    setEditingCell({ id, field });
-    setEditValue(currentValue.toString());
-  };
-
-  const saveEdit = (dp: DispositionProperty) => {
-    if (!editingCell) return;
-
-    const numValue = parseFloat(editValue);
-    if (isNaN(numValue)) {
-      setEditingCell(null);
-      return;
-    }
-
-    // Update the flat sale price and recalculate
-    const newInputs = {
-      ...dp.inputs,
-      useDispositionDefaults: false,
-      flatSalePrice: numValue,
-      salePriceMethodology: 'Flat Price Input' as const,
-    };
-
-    const newOutputs = calculatePropertyUnderwriting(dp.property, newInputs, defaults);
-
-    onUpdateProperty(dp.propertyId, {
-      inputs: newInputs,
-      outputs: newOutputs,
-    });
-
-    setEditingCell(null);
-  };
-
-  const cancelEdit = () => {
-    setEditingCell(null);
-    setEditValue('');
   };
 
   return (
@@ -111,10 +66,7 @@ export function PropertyTable({
               Basis
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
-              <span className="flex items-center justify-end gap-1">
-                Sale Price
-                <Edit2 className="h-3 w-3 text-primary/50" />
-              </span>
+              Sale Price
             </TableHead>
             <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">
               Selling Costs
@@ -131,7 +83,6 @@ export function PropertyTable({
         <TableBody>
           {properties.map((dp) => {
             const isExpanded = expandedRows.has(dp.id);
-            const isEditing = editingCell?.id === dp.id && editingCell?.field === 'salePrice';
             const gainLoss = dp.outputs.gainLossVsBasis;
             const isGain = gainLoss >= 0;
 
@@ -184,54 +135,8 @@ export function PropertyTable({
                   <TableCell className="text-right font-mono text-sm text-muted-foreground">
                     {formatCurrency(dp.property.acquisitionBasis)}
                   </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    {isEditing ? (
-                      <div className="flex items-center justify-end gap-1">
-                        <Input
-                          type="number"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          className="w-28 h-7 text-right font-mono text-sm"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') saveEdit(dp);
-                            if (e.key === 'Escape') cancelEdit();
-                          }}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => saveEdit(dp)}
-                        >
-                          <Check className="h-3 w-3 text-emerald-400" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={cancelEdit}
-                        >
-                          <X className="h-3 w-3 text-rose-400" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <button
-                        className={cn(
-                          'font-mono text-sm px-2 py-1 rounded border transition-all',
-                          !readOnly
-                            ? 'border-primary/30 bg-primary/5 hover:border-primary hover:bg-primary/10 cursor-pointer'
-                            : 'border-transparent'
-                        )}
-                        onClick={() =>
-                          !readOnly &&
-                          startEditing(dp.id, 'salePrice', dp.outputs.projectedSalePrice)
-                        }
-                        disabled={readOnly}
-                      >
-                        {formatCurrency(dp.outputs.projectedSalePrice)}
-                      </button>
-                    )}
+                  <TableCell className="text-right font-mono text-sm">
+                    {formatCurrency(dp.outputs.projectedSalePrice)}
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm text-muted-foreground">
                     {formatCurrency(dp.outputs.totalSellingCosts)}
@@ -274,28 +179,18 @@ export function PropertyTable({
                 {/* Expanded row with details */}
                 {isExpanded && (
                   <TableRow className="bg-muted/30">
-                    <TableCell colSpan={readOnly ? 9 : 10} className="p-4 space-y-4">
-                      {/* Underwriting Editor */}
-                      <PropertyUnderwritingEditor
-                        property={dp}
-                        defaults={defaults}
-                        onUpdate={(updates) => onUpdateProperty(dp.propertyId, updates)}
-                        readOnly={readOnly}
-                      />
-                      
-                      <Separator />
-                      
+                    <TableCell colSpan={readOnly ? 9 : 10} className="p-4">
                       <div className="grid grid-cols-4 gap-6">
                         {/* Property Details */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Property Details
-                        </h4>
-                        <div className="space-y-1 text-sm">
-                          <p>
-                            <span className="text-muted-foreground">Year Built:</span>{' '}
-                            <span className="font-mono">{dp.property.yearBuilt}</span>
-                          </p>
+                            Property Details
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p>
+                              <span className="text-muted-foreground">Year Built:</span>{' '}
+                              <span className="font-mono">{dp.property.yearBuilt}</span>
+                            </p>
                             <p>
                               <span className="text-muted-foreground">Acquired:</span>{' '}
                               <span className="font-mono">
@@ -387,25 +282,23 @@ export function PropertyTable({
                           </div>
                         </div>
 
-                        {/* Status Indicator */}
+                        {/* Underwriting Assumptions (read-only display) */}
                         <div className="space-y-2">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            Override Status
+                            Assumptions
                           </h4>
                           <div className="space-y-1 text-sm">
                             <p>
-                              <span className="text-muted-foreground">Using Defaults:</span>{' '}
-                              <span className={dp.inputs.useDispositionDefaults ? 'text-emerald-400' : 'text-amber-400'}>
-                                {dp.inputs.useDispositionDefaults ? 'Yes' : 'Custom'}
-                              </span>
+                              <span className="text-muted-foreground">Methodology:</span>{' '}
+                              <span className="font-mono">{defaults.salePriceMethodology}</span>
                             </p>
                             <p>
-                              <span className="text-muted-foreground">Methodology:</span>{' '}
-                              <span className="font-mono text-xs">
-                                {dp.inputs.useDispositionDefaults
-                                  ? defaults.salePriceMethodology
-                                  : dp.inputs.salePriceMethodology || defaults.salePriceMethodology}
-                              </span>
+                              <span className="text-muted-foreground">Broker Fee:</span>{' '}
+                              <span className="font-mono">{formatPercent(defaults.brokerFeePercent)}</span>
+                            </p>
+                            <p>
+                              <span className="text-muted-foreground">Closing:</span>{' '}
+                              <span className="font-mono">{formatPercent(defaults.closingCostPercent)}</span>
                             </p>
                           </div>
                         </div>
