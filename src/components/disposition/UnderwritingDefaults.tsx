@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,207 +9,206 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { DispositionDefaults, SalePriceMethodology } from '@/types/disposition';
-import { formatPercent } from '@/utils/calculations';
-import { Settings, RefreshCw } from 'lucide-react';
+
+interface UnderwritingDefaultValues {
+  salePriceMethodology: 'Cap Rate Based' | 'Comp Based' | 'Flat Price Input';
+  capRate: number;
+  discountToMarket: number;
+  brokerFeePercent: number;
+  closingCostPercent: number;
+  sellerConcessionsPercent: number;
+  makeReadyCapexPercent: number;
+  holdPeriodYears: number;
+}
 
 interface UnderwritingDefaultsProps {
-  defaults: DispositionDefaults;
-  onUpdate: (defaults: DispositionDefaults) => void;
-  onApplyToAll: () => void;
+  defaults: UnderwritingDefaultValues;
+  onUpdate: (defaults: UnderwritingDefaultValues) => void;
   readOnly?: boolean;
 }
 
 export function UnderwritingDefaults({
   defaults,
   onUpdate,
-  onApplyToAll,
   readOnly = false,
 }: UnderwritingDefaultsProps) {
   const [localDefaults, setLocalDefaults] = useState(defaults);
 
-  const handleChange = (field: keyof DispositionDefaults, value: string | number) => {
-    const newDefaults = { ...localDefaults, [field]: value };
-    setLocalDefaults(newDefaults);
-    onUpdate(newDefaults);
+  useEffect(() => {
+    setLocalDefaults(defaults);
+  }, [defaults]);
+
+  const handleChange = <K extends keyof UnderwritingDefaultValues>(
+    key: K,
+    value: UnderwritingDefaultValues[K]
+  ) => {
+    const updated = { ...localDefaults, [key]: value };
+    setLocalDefaults(updated);
+    onUpdate(updated);
   };
 
-  const handlePercentChange = (field: keyof DispositionDefaults, value: string) => {
+  const handlePercentChange = (key: keyof UnderwritingDefaultValues, value: string) => {
     const numValue = parseFloat(value) / 100;
     if (!isNaN(numValue)) {
-      handleChange(field, numValue);
+      handleChange(key, numValue);
     }
   };
 
+  const totalSellingCosts =
+    (localDefaults.brokerFeePercent || 0) +
+    (localDefaults.closingCostPercent || 0) +
+    (localDefaults.sellerConcessionsPercent || 0) +
+    (localDefaults.makeReadyCapexPercent || 0);
+
+  const effectiveProceeds = 1 - totalSellingCosts;
+
   return (
-    <Card className="border-border bg-card">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">
-              Underwriting Assumptions
-            </CardTitle>
-          </div>
-          {!readOnly && (
-            <Button
-              variant="subtle"
-              size="sm"
-              onClick={onApplyToAll}
-              className="gap-2"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Apply to All Properties
-            </Button>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          These assumptions apply to all properties unless overridden individually
-        </p>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Underwriting Assumptions</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Sale Price Methodology */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Sale Price Methodology</Label>
-            <Select
-              value={localDefaults.salePriceMethodology}
-              onValueChange={(value) =>
-                handleChange('salePriceMethodology', value as SalePriceMethodology)
-              }
-              disabled={readOnly}
-            >
-              <SelectTrigger className="bg-input border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Cap Rate Based">Cap Rate Based</SelectItem>
-                <SelectItem value="Comp Based">Comp Based</SelectItem>
-                <SelectItem value="Flat Price Input">Flat Price Input</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Cap Rate (%)</Label>
-            <Input
-              type="number"
-              step="0.1"
-              value={(localDefaults.capRate * 100).toFixed(1)}
-              onChange={(e) => handlePercentChange('capRate', e.target.value)}
-              className="bg-input border-border font-mono"
-              disabled={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Discount to Market (%)</Label>
-            <Input
-              type="number"
-              step="0.1"
-              value={(localDefaults.discountToMarketValue * 100).toFixed(1)}
-              onChange={(e) => handlePercentChange('discountToMarketValue', e.target.value)}
-              className="bg-input border-border font-mono"
-              disabled={readOnly}
-            />
+        <div className="space-y-4">
+          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+            Sale Price Methodology
+          </h4>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Methodology</Label>
+              <Select
+                value={localDefaults.salePriceMethodology}
+                onValueChange={(value) =>
+                  handleChange('salePriceMethodology', value as UnderwritingDefaultValues['salePriceMethodology'])
+                }
+                disabled={readOnly}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cap Rate Based">Cap Rate Based</SelectItem>
+                  <SelectItem value="Comp Based">Comp Based</SelectItem>
+                  <SelectItem value="Flat Price Input">Flat Price Input</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Cap Rate</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.capRate || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('capRate', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Discount to Market</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.discountToMarket || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('discountToMarket', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Selling Costs */}
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-            Selling Costs
-          </h4>
+        <div className="space-y-4">
+          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Selling Costs</h4>
           <div className="grid grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Broker Fee (%)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={(localDefaults.brokerFeePercent * 100).toFixed(1)}
-                onChange={(e) => handlePercentChange('brokerFeePercent', e.target.value)}
-                className="bg-input border-border font-mono"
-                disabled={readOnly}
-              />
+              <Label>Broker Fee</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.brokerFeePercent || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('brokerFeePercent', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
             </div>
-
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Closing Costs (%)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={(localDefaults.closingCostPercent * 100).toFixed(1)}
-                onChange={(e) => handlePercentChange('closingCostPercent', e.target.value)}
-                className="bg-input border-border font-mono"
-                disabled={readOnly}
-              />
+              <Label>Closing Costs</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.closingCostPercent || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('closingCostPercent', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
             </div>
-
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Seller Concessions (%)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={(localDefaults.sellerConcessionsPercent * 100).toFixed(1)}
-                onChange={(e) => handlePercentChange('sellerConcessionsPercent', e.target.value)}
-                className="bg-input border-border font-mono"
-                disabled={readOnly}
-              />
+              <Label>Seller Concessions</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.sellerConcessionsPercent || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('sellerConcessionsPercent', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
             </div>
-
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Make Ready / CapEx (%)</Label>
+              <Label>Make Ready/CapEx</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={((localDefaults.makeReadyCapexPercent || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('makeReadyCapexPercent', e.target.value)}
+                  disabled={readOnly}
+                  className="pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Hold Period</h4>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Hold Period (Years)</Label>
               <Input
                 type="number"
-                step="0.1"
-                value={(localDefaults.makeReadyCapexPercent * 100).toFixed(1)}
-                onChange={(e) => handlePercentChange('makeReadyCapexPercent', e.target.value)}
-                className="bg-input border-border font-mono"
+                step="0.5"
+                value={localDefaults.holdPeriodYears || 0}
+                onChange={(e) => handleChange('holdPeriodYears', parseFloat(e.target.value) || 0)}
                 disabled={readOnly}
               />
             </div>
           </div>
         </div>
 
-        {/* Holding Period */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Holding Period (months)</Label>
-            <Input
-              type="number"
-              value={localDefaults.holdingPeriodMonths}
-              onChange={(e) => handleChange('holdingPeriodMonths', parseInt(e.target.value) || 0)}
-              className="bg-input border-border font-mono"
-              disabled={readOnly}
-            />
+        <div className="pt-4 border-t space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Total Selling Costs</span>
+            <span className="font-medium">{(totalSellingCosts * 100).toFixed(2)}%</span>
           </div>
-        </div>
-
-        {/* Summary */}
-        <div className="pt-4 border-t border-border">
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <span>
-              <strong className="text-foreground">Total Selling Costs:</strong>{' '}
-              {formatPercent(
-                localDefaults.brokerFeePercent +
-                  localDefaults.closingCostPercent +
-                  localDefaults.sellerConcessionsPercent +
-                  localDefaults.makeReadyCapexPercent
-              )}
-            </span>
-            <span>
-              <strong className="text-foreground">Effective Proceeds:</strong>{' '}
-              {formatPercent(
-                1 -
-                  (localDefaults.brokerFeePercent +
-                    localDefaults.closingCostPercent +
-                    localDefaults.sellerConcessionsPercent +
-                    localDefaults.makeReadyCapexPercent +
-                    localDefaults.discountToMarketValue)
-              )}{' '}
-              of market value
-            </span>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Effective Proceeds</span>
+            <span className="font-medium">{(effectiveProceeds * 100).toFixed(2)}%</span>
           </div>
         </div>
       </CardContent>
