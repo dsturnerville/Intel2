@@ -128,22 +128,12 @@ export interface Disposition {
 // ============================================================================
 
 /**
- * PropertyUnderwritingInputs - Per-property underwriting assumptions
- * Can use disposition defaults or custom values
+ * PropertyUnderwritingInputs - Per-property underwriting state
+ * All properties use disposition defaults (no per-property overrides)
  */
 export interface PropertyUnderwritingInputs {
-  useDispositionDefaults: boolean;
-  
-  // Custom overrides (only used if useDispositionDefaults is false)
-  salePriceMethodology?: SalePriceMethodology;
-  capRate?: number;
-  discountToMarketValue?: number;
-  flatSalePrice?: number; // Used when methodology is 'Flat Price Input'
-  brokerFeePercent?: number;
-  closingCostPercent?: number;
-  sellerConcessionsPercent?: number;
-  makeReadyCapexPercent?: number;
-  holdingPeriodMonths?: number;
+  // Properties always use disposition defaults
+  // This interface is kept for compatibility but fields are no longer stored per-property
 }
 
 /**
