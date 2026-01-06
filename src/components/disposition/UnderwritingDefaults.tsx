@@ -9,21 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface UnderwritingDefaultValues {
-  salePriceMethodology: 'Cap Rate Based' | 'Comp Based' | 'Flat Price Input';
-  capRate: number;
-  discountToMarket: number;
-  brokerFeePercent: number;
-  closingCostPercent: number;
-  sellerConcessionsPercent: number;
-  makeReadyCapexPercent: number;
-  holdPeriodYears: number;
-}
+import { DispositionDefaults } from '@/types/disposition';
 
 interface UnderwritingDefaultsProps {
-  defaults: UnderwritingDefaultValues;
-  onUpdate: (defaults: UnderwritingDefaultValues) => void;
+  defaults: DispositionDefaults;
+  onUpdate: (defaults: DispositionDefaults) => void;
   readOnly?: boolean;
 }
 
@@ -38,16 +28,16 @@ export function UnderwritingDefaults({
     setLocalDefaults(defaults);
   }, [defaults]);
 
-  const handleChange = <K extends keyof UnderwritingDefaultValues>(
+  const handleChange = <K extends keyof DispositionDefaults>(
     key: K,
-    value: UnderwritingDefaultValues[K]
+    value: DispositionDefaults[K]
   ) => {
     const updated = { ...localDefaults, [key]: value };
     setLocalDefaults(updated);
     onUpdate(updated);
   };
 
-  const handlePercentChange = (key: keyof UnderwritingDefaultValues, value: string) => {
+  const handlePercentChange = (key: keyof DispositionDefaults, value: string) => {
     const numValue = parseFloat(value) / 100;
     if (!isNaN(numValue)) {
       handleChange(key, numValue);
@@ -78,7 +68,7 @@ export function UnderwritingDefaults({
               <Select
                 value={localDefaults.salePriceMethodology}
                 onValueChange={(value) =>
-                  handleChange('salePriceMethodology', value as UnderwritingDefaultValues['salePriceMethodology'])
+                  handleChange('salePriceMethodology', value as DispositionDefaults['salePriceMethodology'])
                 }
                 disabled={readOnly}
               >
@@ -112,8 +102,8 @@ export function UnderwritingDefaults({
                 <Input
                   type="number"
                   step="0.1"
-                  value={((localDefaults.discountToMarket || 0) * 100).toFixed(2)}
-                  onChange={(e) => handlePercentChange('discountToMarket', e.target.value)}
+                  value={((localDefaults.discountToMarketValue || 0) * 100).toFixed(2)}
+                  onChange={(e) => handlePercentChange('discountToMarketValue', e.target.value)}
                   disabled={readOnly}
                   className="pr-8"
                 />
@@ -189,12 +179,12 @@ export function UnderwritingDefaults({
           <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Hold Period</h4>
           <div className="grid grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Hold Period (Years)</Label>
+              <Label>Hold Period (Months)</Label>
               <Input
                 type="number"
-                step="0.5"
-                value={localDefaults.holdPeriodYears || 0}
-                onChange={(e) => handleChange('holdPeriodYears', parseFloat(e.target.value) || 0)}
+                step="1"
+                value={localDefaults.holdingPeriodMonths || 0}
+                onChange={(e) => handleChange('holdingPeriodMonths', parseInt(e.target.value) || 0)}
                 disabled={readOnly}
               />
             </div>
