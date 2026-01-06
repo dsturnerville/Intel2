@@ -323,12 +323,14 @@ export const mockDeals: Deal[] = [
     id: 'deal-001',
     dispositionId: 'disp-003',
     name: 'Atlanta Legacy Portfolio - Listing',
+    dealType: 'Disposition',
     status: 'Listed',
-    listPrice: 595000,
+    askingPrice: 595000,
     listDate: '2025-01-15',
     closeProbability: 75,
     expectedCloseDate: '2025-03-31',
-    propertyIds: ['prop-007', 'prop-008'],
+    createdAt: '2025-01-10T00:00:00Z',
+    updatedAt: '2025-01-15T00:00:00Z',
   },
 ];
 

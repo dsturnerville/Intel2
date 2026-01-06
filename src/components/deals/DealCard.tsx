@@ -1,29 +1,39 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DealStatusBadge } from '@/components/deals/DealStatusBadge';
+import { DealStatusBadge } from './DealStatusBadge';
 import { Deal } from '@/types/deal';
 import { formatCurrency } from '@/utils/calculations';
 import { ExternalLink, FileText, Plus } from 'lucide-react';
 
-interface LinkedDealProps {
+interface DealCardProps {
   deal?: Deal;
-  onCreateDeal: () => void;
+  onCreateDeal?: () => void;
   onViewDeal?: (deal: Deal) => void;
+  emptyMessage?: string;
+  emptyButtonLabel?: string;
 }
 
-export function LinkedDeal({ deal, onCreateDeal, onViewDeal }: LinkedDealProps) {
+export function DealCard({ 
+  deal, 
+  onCreateDeal, 
+  onViewDeal,
+  emptyMessage = 'No deal linked',
+  emptyButtonLabel = 'Add New Deal',
+}: DealCardProps) {
   if (!deal) {
     return (
       <Card className="border-border border-dashed bg-muted/20">
         <CardContent className="flex flex-col items-center justify-center py-8">
           <FileText className="h-10 w-10 text-muted-foreground/50 mb-4" />
           <p className="text-sm text-muted-foreground mb-4">
-            No deal linked to this disposition
+            {emptyMessage}
           </p>
-          <Button onClick={onCreateDeal} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add New Deal
-          </Button>
+          {onCreateDeal && (
+            <Button onClick={onCreateDeal} className="gap-2">
+              <Plus className="h-4 w-4" />
+              {emptyButtonLabel}
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -35,7 +45,7 @@ export function LinkedDeal({ deal, onCreateDeal, onViewDeal }: LinkedDealProps) 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">Linked Deal</CardTitle>
+            <CardTitle className="text-base font-semibold">{deal.name}</CardTitle>
           </div>
           {onViewDeal && (
             <Button 
@@ -53,7 +63,9 @@ export function LinkedDeal({ deal, onCreateDeal, onViewDeal }: LinkedDealProps) 
       <CardContent className="space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="font-medium">{deal.name}</p>
+            <p className="text-xs text-muted-foreground capitalize">
+              {deal.dealType} Deal
+            </p>
           </div>
           <DealStatusBadge status={deal.status} />
         </div>
