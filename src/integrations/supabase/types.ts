@@ -412,98 +412,62 @@ export type Database = {
         Row: {
           annualized_return: number | null
           broker_commission: number | null
-          broker_fee_percent: number | null
-          cap_rate: number | null
-          closing_cost_percent: number | null
           closing_costs: number | null
           created_at: string
-          discount_to_market_value: number | null
           disposition_id: string
-          flat_sale_price: number | null
           gain_loss_percent: number | null
           gain_loss_vs_basis: number | null
           gross_sale_proceeds: number | null
           hold_period_years: number | null
-          holding_period_months: number | null
           id: string
           make_ready_capex: number | null
-          make_ready_capex_percent: number | null
           net_sale_proceeds: number | null
           projected_sale_price: number | null
           property_id: string
-          sale_price_methodology:
-            | Database["public"]["Enums"]["sale_price_methodology"]
-            | null
           seller_concessions: number | null
-          seller_concessions_percent: number | null
           simple_return: number | null
           total_selling_costs: number | null
           updated_at: string
-          use_disposition_defaults: boolean
         }
         Insert: {
           annualized_return?: number | null
           broker_commission?: number | null
-          broker_fee_percent?: number | null
-          cap_rate?: number | null
-          closing_cost_percent?: number | null
           closing_costs?: number | null
           created_at?: string
-          discount_to_market_value?: number | null
           disposition_id: string
-          flat_sale_price?: number | null
           gain_loss_percent?: number | null
           gain_loss_vs_basis?: number | null
           gross_sale_proceeds?: number | null
           hold_period_years?: number | null
-          holding_period_months?: number | null
           id?: string
           make_ready_capex?: number | null
-          make_ready_capex_percent?: number | null
           net_sale_proceeds?: number | null
           projected_sale_price?: number | null
           property_id: string
-          sale_price_methodology?:
-            | Database["public"]["Enums"]["sale_price_methodology"]
-            | null
           seller_concessions?: number | null
-          seller_concessions_percent?: number | null
           simple_return?: number | null
           total_selling_costs?: number | null
           updated_at?: string
-          use_disposition_defaults?: boolean
         }
         Update: {
           annualized_return?: number | null
           broker_commission?: number | null
-          broker_fee_percent?: number | null
-          cap_rate?: number | null
-          closing_cost_percent?: number | null
           closing_costs?: number | null
           created_at?: string
-          discount_to_market_value?: number | null
           disposition_id?: string
-          flat_sale_price?: number | null
           gain_loss_percent?: number | null
           gain_loss_vs_basis?: number | null
           gross_sale_proceeds?: number | null
           hold_period_years?: number | null
-          holding_period_months?: number | null
           id?: string
           make_ready_capex?: number | null
-          make_ready_capex_percent?: number | null
           net_sale_proceeds?: number | null
           projected_sale_price?: number | null
           property_id?: string
-          sale_price_methodology?:
-            | Database["public"]["Enums"]["sale_price_methodology"]
-            | null
           seller_concessions?: number | null
-          seller_concessions_percent?: number | null
           simple_return?: number | null
           total_selling_costs?: number | null
           updated_at?: string
-          use_disposition_defaults?: boolean
         }
         Relationships: [
           {

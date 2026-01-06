@@ -32,36 +32,32 @@ export function calculateNOI(property: Property): number {
 }
 
 /**
- * Get effective inputs for a property, resolving defaults vs custom
+ * Get effective inputs for a property
+ * Since all properties use disposition defaults, this simply returns the defaults
  */
 export function getEffectiveInputs(
-  inputs: PropertyUnderwritingInputs,
+  _inputs: PropertyUnderwritingInputs,
   defaults: DispositionDefaults
-): Required<Omit<PropertyUnderwritingInputs, 'useDispositionDefaults' | 'flatSalePrice'>> & { flatSalePrice?: number } {
-  if (inputs.useDispositionDefaults) {
-    return {
-      salePriceMethodology: defaults.salePriceMethodology,
-      capRate: defaults.capRate,
-      discountToMarketValue: defaults.discountToMarketValue,
-      brokerFeePercent: defaults.brokerFeePercent,
-      closingCostPercent: defaults.closingCostPercent,
-      sellerConcessionsPercent: defaults.sellerConcessionsPercent,
-      makeReadyCapexPercent: defaults.makeReadyCapexPercent,
-      holdingPeriodMonths: defaults.holdingPeriodMonths,
-      flatSalePrice: inputs.flatSalePrice,
-    };
-  }
-  
+): {
+  salePriceMethodology: SalePriceMethodology;
+  capRate: number;
+  discountToMarketValue: number;
+  brokerFeePercent: number;
+  closingCostPercent: number;
+  sellerConcessionsPercent: number;
+  makeReadyCapexPercent: number;
+  holdingPeriodMonths: number;
+} {
+  // All properties use disposition defaults
   return {
-    salePriceMethodology: inputs.salePriceMethodology ?? defaults.salePriceMethodology,
-    capRate: inputs.capRate ?? defaults.capRate,
-    discountToMarketValue: inputs.discountToMarketValue ?? defaults.discountToMarketValue,
-    brokerFeePercent: inputs.brokerFeePercent ?? defaults.brokerFeePercent,
-    closingCostPercent: inputs.closingCostPercent ?? defaults.closingCostPercent,
-    sellerConcessionsPercent: inputs.sellerConcessionsPercent ?? defaults.sellerConcessionsPercent,
-    makeReadyCapexPercent: inputs.makeReadyCapexPercent ?? defaults.makeReadyCapexPercent,
-    holdingPeriodMonths: inputs.holdingPeriodMonths ?? defaults.holdingPeriodMonths,
-    flatSalePrice: inputs.flatSalePrice,
+    salePriceMethodology: defaults.salePriceMethodology,
+    capRate: defaults.capRate,
+    discountToMarketValue: defaults.discountToMarketValue,
+    brokerFeePercent: defaults.brokerFeePercent,
+    closingCostPercent: defaults.closingCostPercent,
+    sellerConcessionsPercent: defaults.sellerConcessionsPercent,
+    makeReadyCapexPercent: defaults.makeReadyCapexPercent,
+    holdingPeriodMonths: defaults.holdingPeriodMonths,
   };
 }
 
@@ -197,13 +193,13 @@ export function calculatePropertyUnderwriting(
 ): PropertyUnderwritingOutputs {
   const effective = getEffectiveInputs(inputs, defaults);
   
-  // Calculate projected sale price
+  // Calculate projected sale price using disposition defaults
   const projectedSalePrice = calculateProjectedSalePrice(
     property,
     effective.salePriceMethodology,
     effective.capRate,
     effective.discountToMarketValue,
-    effective.flatSalePrice
+    undefined // flatSalePrice no longer supported per-property
   );
   
   // Gross proceeds equal sale price for these purposes

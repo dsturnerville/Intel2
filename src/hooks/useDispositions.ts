@@ -199,18 +199,7 @@ export function useDispositionProperties(dispositionId: string | undefined) {
         const propertyRow = dp.properties as Tables<'properties'>;
         const property = transformProperty(propertyRow);
         
-        const inputs: PropertyUnderwritingInputs = {
-          useDispositionDefaults: dp.use_disposition_defaults,
-          salePriceMethodology: dp.sale_price_methodology || undefined,
-          capRate: dp.cap_rate ? Number(dp.cap_rate) : undefined,
-          discountToMarketValue: dp.discount_to_market_value ? Number(dp.discount_to_market_value) : undefined,
-          flatSalePrice: dp.flat_sale_price ? Number(dp.flat_sale_price) : undefined,
-          brokerFeePercent: dp.broker_fee_percent ? Number(dp.broker_fee_percent) : undefined,
-          closingCostPercent: dp.closing_cost_percent ? Number(dp.closing_cost_percent) : undefined,
-          sellerConcessionsPercent: dp.seller_concessions_percent ? Number(dp.seller_concessions_percent) : undefined,
-          makeReadyCapexPercent: dp.make_ready_capex_percent ? Number(dp.make_ready_capex_percent) : undefined,
-          holdingPeriodMonths: dp.holding_period_months || undefined,
-        };
+        const inputs: PropertyUnderwritingInputs = {};
 
         const outputs = calculatePropertyUnderwriting(property, inputs, disposition.defaults);
 
@@ -343,10 +332,7 @@ export function useDispositionsWithAggregates() {
           const propertyRow = dp.properties as Tables<'properties'>;
           const property = transformProperty(propertyRow);
           
-          const inputs: PropertyUnderwritingInputs = {
-            useDispositionDefaults: dp.use_disposition_defaults,
-            flatSalePrice: dp.flat_sale_price ? Number(dp.flat_sale_price) : undefined,
-          };
+          const inputs: PropertyUnderwritingInputs = {};
 
           const outputs = calculatePropertyUnderwriting(property, inputs, disposition.defaults);
 
@@ -495,7 +481,6 @@ export function useDispositionMutations() {
       const inserts = propertyIds.map(propertyId => ({
         disposition_id: dispositionId,
         property_id: propertyId,
-        use_disposition_defaults: true,
       }));
 
       const { error } = await supabase
@@ -543,27 +528,17 @@ export function useDispositionMutations() {
 
   const updateDispositionProperty = async (
     dispositionPropertyId: string,
-    inputs: PropertyUnderwritingInputs,
+    _inputs: PropertyUnderwritingInputs,
     outputs?: PropertyUnderwritingOutputs
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       setSaving(true);
 
       const dbUpdates: TablesUpdate<'disposition_properties'> = {
-        use_disposition_defaults: inputs.useDispositionDefaults,
-        sale_price_methodology: inputs.salePriceMethodology || null,
-        cap_rate: inputs.capRate ?? null,
-        discount_to_market_value: inputs.discountToMarketValue ?? null,
-        flat_sale_price: inputs.flatSalePrice ?? null,
-        broker_fee_percent: inputs.brokerFeePercent ?? null,
-        closing_cost_percent: inputs.closingCostPercent ?? null,
-        seller_concessions_percent: inputs.sellerConcessionsPercent ?? null,
-        make_ready_capex_percent: inputs.makeReadyCapexPercent ?? null,
-        holding_period_months: inputs.holdingPeriodMonths ?? null,
         updated_at: new Date().toISOString(),
       };
 
-      // Also save calculated outputs if provided
+      // Save calculated outputs if provided
       if (outputs) {
         dbUpdates.projected_sale_price = outputs.projectedSalePrice;
         dbUpdates.gross_sale_proceeds = outputs.grossSaleProceeds;
@@ -608,7 +583,6 @@ export function useDispositionMutations() {
       const { error } = await supabase
         .from('disposition_properties')
         .update({ 
-          use_disposition_defaults: true,
           updated_at: new Date().toISOString()
         })
         .eq('disposition_id', dispositionId);
