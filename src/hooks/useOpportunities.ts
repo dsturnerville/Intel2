@@ -4,7 +4,9 @@ import { Opportunity, OpportunityCSVRow, OpportunityAggregates } from '@/types/o
 import { Tables } from '@/integrations/supabase/types';
 
 // Transform database row to Opportunity type
-function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunity {
+function transformOpportunity(
+  row: Tables<'acquisition_properties'> & { markets?: { market_name: string } | null }
+): Opportunity {
   return {
     id: row.id,
     acquisitionId: row.acquisition_id,
@@ -15,6 +17,7 @@ function transformOpportunity(row: Tables<'acquisition_properties'>): Opportunit
     zipCode: row.zip_code,
     msa: row.msa || undefined,
     marketId: row.market_id || undefined,
+    marketName: row.markets?.market_name || undefined,
     bedrooms: row.bedrooms || undefined,
     bathrooms: row.bathrooms ? Number(row.bathrooms) : undefined,
     squareFeet: row.square_feet || undefined,
@@ -71,7 +74,7 @@ export function useOpportunities(acquisitionId: string | undefined) {
       
       const { data, error } = await supabase
         .from('acquisition_properties')
-        .select('*')
+        .select('*, markets(market_name)')
         .eq('acquisition_id', acquisitionId)
         .order('created_at', { ascending: true });
 
