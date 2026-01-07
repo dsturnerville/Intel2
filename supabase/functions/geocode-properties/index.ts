@@ -8,6 +8,7 @@ const corsHeaders = {
 
 interface GeocodeRequest {
   propertyIds: string[];
+  forceReassignMarkets?: boolean;
 }
 
 interface MapboxFeature {
@@ -78,7 +79,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { propertyIds } = await req.json() as GeocodeRequest;
+    const { propertyIds, forceReassignMarkets } = await req.json() as GeocodeRequest;
     
     if (!propertyIds || propertyIds.length === 0) {
       return new Response(
@@ -87,7 +88,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Geocoding ${propertyIds.length} properties`);
+    console.log(`Processing ${propertyIds.length} properties, forceReassignMarkets: ${forceReassignMarkets}`);
 
     // Fetch all markets with coordinates for nearest market assignment
     const { data: markets, error: marketsError } = await supabase
@@ -100,6 +101,53 @@ serve(async (req) => {
 
     const availableMarkets: Market[] = markets || [];
     console.log(`Found ${availableMarkets.length} markets for assignment`);
+
+    // If only reassigning markets (not geocoding), fetch all properties with coordinates
+    if (forceReassignMarkets) {
+      const { data: allProperties, error: fetchAllError } = await supabase
+        .from('acquisition_properties')
+        .select('id, address1, latitude, longitude')
+        .in('id', propertyIds)
+        .not('latitude', 'is', null);
+
+      if (fetchAllError) {
+        console.error('Error fetching properties for market reassignment:', fetchAllError);
+        throw fetchAllError;
+      }
+
+      let marketAssignedCount = 0;
+      const errors: string[] = [];
+
+      for (const property of allProperties || []) {
+        if (property.latitude && property.longitude && availableMarkets.length > 0) {
+          const nearestMarket = findNearestMarket(property.latitude, property.longitude, availableMarkets);
+          if (nearestMarket) {
+            const { error: updateError } = await supabase
+              .from('acquisition_properties')
+              .update({ market_id: nearestMarket.id })
+              .eq('id', property.id);
+
+            if (updateError) {
+              errors.push(`Failed to update ${property.address1}: ${updateError.message}`);
+            } else {
+              console.log(`Reassigned market "${nearestMarket.market_name}" to ${property.address1}`);
+              marketAssignedCount++;
+            }
+          }
+        }
+      }
+
+      console.log(`Market reassignment complete: ${marketAssignedCount} markets assigned`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          marketsAssigned: marketAssignedCount,
+          total: allProperties?.length || 0,
+          errors: errors.length > 0 ? errors : undefined
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch properties that need geocoding
     const { data: properties, error: fetchError } = await supabase
