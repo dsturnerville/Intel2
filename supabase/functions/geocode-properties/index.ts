@@ -19,6 +19,45 @@ interface MapboxResponse {
   features: MapboxFeature[];
 }
 
+interface Market {
+  id: string;
+  market_name: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+// Calculate distance between two points using Haversine formula (returns km)
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Find the nearest market to a given lat/lon
+function findNearestMarket(lat: number, lon: number, markets: Market[]): Market | null {
+  const marketsWithCoords = markets.filter(m => m.latitude != null && m.longitude != null);
+  if (marketsWithCoords.length === 0) return null;
+
+  let nearestMarket: Market | null = null;
+  let minDistance = Infinity;
+
+  for (const market of marketsWithCoords) {
+    const distance = haversineDistance(lat, lon, market.latitude!, market.longitude!);
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearestMarket = market;
+    }
+  }
+
+  return nearestMarket;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -50,10 +89,22 @@ serve(async (req) => {
 
     console.log(`Geocoding ${propertyIds.length} properties`);
 
+    // Fetch all markets with coordinates for nearest market assignment
+    const { data: markets, error: marketsError } = await supabase
+      .from('markets')
+      .select('id, market_name, latitude, longitude');
+
+    if (marketsError) {
+      console.error('Error fetching markets:', marketsError);
+    }
+
+    const availableMarkets: Market[] = markets || [];
+    console.log(`Found ${availableMarkets.length} markets for assignment`);
+
     // Fetch properties that need geocoding
     const { data: properties, error: fetchError } = await supabase
       .from('acquisition_properties')
-      .select('id, address1, address2, city, state, zip_code')
+      .select('id, address1, address2, city, state, zip_code, market_id')
       .in('id', propertyIds)
       .is('latitude', null);
 
@@ -73,6 +124,7 @@ serve(async (req) => {
     console.log(`Found ${properties.length} properties to geocode`);
 
     let geocodedCount = 0;
+    let marketAssignedCount = 0;
     const errors: string[] = [];
 
     // Process each property
@@ -109,10 +161,26 @@ serve(async (req) => {
         if (geocodeData.features && geocodeData.features.length > 0) {
           const [longitude, latitude] = geocodeData.features[0].center;
 
-          // Update property with coordinates
+          // Prepare update data
+          const updateData: { latitude: number; longitude: number; market_id?: string } = {
+            latitude,
+            longitude
+          };
+
+          // Assign nearest market if property doesn't already have one
+          if (!property.market_id && availableMarkets.length > 0) {
+            const nearestMarket = findNearestMarket(latitude, longitude, availableMarkets);
+            if (nearestMarket) {
+              updateData.market_id = nearestMarket.id;
+              console.log(`Assigned market "${nearestMarket.market_name}" to ${property.address1}`);
+              marketAssignedCount++;
+            }
+          }
+
+          // Update property with coordinates and optionally market
           const { error: updateError } = await supabase
             .from('acquisition_properties')
-            .update({ latitude, longitude })
+            .update(updateData)
             .eq('id', property.id);
 
           if (updateError) {
@@ -137,13 +205,14 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Geocoding complete: ${geocodedCount}/${properties.length} successful`);
+    console.log(`Geocoding complete: ${geocodedCount}/${properties.length} successful, ${marketAssignedCount} markets assigned`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         geocoded: geocodedCount, 
         total: properties.length,
+        marketsAssigned: marketAssignedCount,
         errors: errors.length > 0 ? errors : undefined
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
