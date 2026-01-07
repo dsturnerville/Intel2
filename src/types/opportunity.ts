@@ -13,6 +13,7 @@ export interface Opportunity {
   zipCode: string;
   msa?: string;
   marketId?: string;
+  marketName?: string;
   bedrooms?: number;
   bathrooms?: number;
   squareFeet?: number;

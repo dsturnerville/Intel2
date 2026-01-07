@@ -17,7 +17,7 @@ interface OpportunityTableProps {
   defaults?: AcquisitionDefaults;
 }
 
-type SortField = 'address' | 'city' | 'state' | 'zipCode' | 'msa' | 'type' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'yearBuilt' | 'occupancy' | 'askingPrice' | 'currentRent' | 'leaseStart' | 'leaseEnd' | 'annualHoa' | 'propertyTax' | 'rentAvm' | 'salesAvm' | 'offerPrice' | 'projectedNoi' | 'projectedCapRate' | 'totalAcquisitionCost' | 'projectedAnnualReturn';
+type SortField = 'address' | 'city' | 'state' | 'zipCode' | 'msa' | 'market' | 'type' | 'bedrooms' | 'bathrooms' | 'squareFeet' | 'yearBuilt' | 'occupancy' | 'askingPrice' | 'currentRent' | 'leaseStart' | 'leaseEnd' | 'annualHoa' | 'propertyTax' | 'rentAvm' | 'salesAvm' | 'offerPrice' | 'projectedNoi' | 'projectedCapRate' | 'totalAcquisitionCost' | 'projectedAnnualReturn';
 type SortDirection = 'asc' | 'desc';
 
 const DEFAULT_UNDERWRITING: AcquisitionDefaults = {
@@ -91,6 +91,10 @@ export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_
       case 'msa':
         aVal = a.msa || '';
         bVal = b.msa || '';
+        break;
+      case 'market':
+        aVal = a.marketName || '';
+        bVal = b.marketName || '';
         break;
       case 'type':
         aVal = a.type || '';
@@ -256,6 +260,7 @@ export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_
               <SortableHeader field="address">Address</SortableHeader>
               <SortableHeader field="city">City</SortableHeader>
               <SortableHeader field="state">State</SortableHeader>
+              <SortableHeader field="market">Market</SortableHeader>
               <SortableHeader field="occupancy">Occupancy</SortableHeader>
               <SortableHeader field="askingPrice" className="text-right">Asking Price</SortableHeader>
               <SortableHeader field="currentRent" className="text-right">Current Rent</SortableHeader>
@@ -309,6 +314,7 @@ export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_
                     </TableCell>
                     <TableCell className="whitespace-nowrap">{opportunity.city}</TableCell>
                     <TableCell className="whitespace-nowrap">{opportunity.state}</TableCell>
+                    <TableCell className="whitespace-nowrap text-muted-foreground">{opportunity.marketName || '-'}</TableCell>
                     <TableCell>
                       {opportunity.occupancy ? (
                         <Badge 
@@ -338,7 +344,7 @@ export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_
                   {/* Expanded row with details */}
                   {isExpanded && (
                     <TableRow key={`${opportunity.id}-expanded`} className="bg-muted/30">
-                      <TableCell colSpan={12} className="p-4">
+                      <TableCell colSpan={13} className="p-4">
                         <OpportunityUnderwritingEditor
                           opportunity={opportunity}
                           defaults={defaults}
