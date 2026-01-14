@@ -149,7 +149,7 @@ export function useDealProperties(dealId: string | undefined) {
       return (data || []).map((row): DealProperty => ({
         id: row.id,
         dealId: row.deal_id,
-        propertyId: row.property_id,
+        propertyId: row.unit_id,
         acquisitionPropertyId: row.acquisition_property_id,
         createdAt: row.created_at,
       }));
@@ -249,11 +249,11 @@ export function useDealMutations() {
       propertyIds?: string[]; 
       acquisitionPropertyIds?: string[];
     }) => {
-      const rows: { deal_id: string; property_id?: string; acquisition_property_id?: string }[] = [];
+      const rows: { deal_id: string; unit_id?: string; acquisition_property_id?: string }[] = [];
       
       if (propertyIds) {
         propertyIds.forEach(propertyId => {
-          rows.push({ deal_id: dealId, property_id: propertyId });
+          rows.push({ deal_id: dealId, unit_id: propertyId });
         });
       }
       

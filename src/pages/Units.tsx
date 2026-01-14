@@ -87,16 +87,16 @@ interface PropertyFilters {
 
 const OCCUPANCY_STATUSES: OccupancyStatus[] = ['Occupied', 'Vacant', 'Notice Given'];
 
-export default function Properties() {
+export default function Units() {
   const [filters, setFilters] = useState<PropertyFilters>({ markets: [], occupancyStatuses: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   const { data: properties = [], isLoading, error } = useQuery({
-    queryKey: ['properties'],
+    queryKey: ['units'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('properties')
+        .from('units')
         .select(`
           *,
           markets (
@@ -205,7 +205,7 @@ export default function Properties() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading properties...</p>
+          <p className="text-muted-foreground">Loading units...</p>
         </div>
       </div>
     );
@@ -215,7 +215,7 @@ export default function Properties() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-destructive mb-2">Error loading properties</p>
+          <p className="text-destructive mb-2">Error loading units</p>
           <p className="text-sm text-muted-foreground">{(error as Error).message}</p>
         </div>
       </div>
@@ -229,9 +229,9 @@ export default function Properties() {
         <div className="h-full px-4 md:px-6">
           <div className="flex h-full items-center">
             <div>
-              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Properties</h1>
+              <h1 className="text-xl md:text-2xl font-semibold tracking-tight">Units</h1>
               <p className="text-xs md:text-sm text-muted-foreground mt-0.5 md:mt-1">
-                View and manage portfolio properties
+                View and manage portfolio units
               </p>
             </div>
           </div>
@@ -266,7 +266,7 @@ export default function Properties() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Filter Properties</DialogTitle>
+                <DialogTitle>Filter Units</DialogTitle>
               </DialogHeader>
               <div className="space-y-6 py-4">
                 <div className="space-y-3">
@@ -423,7 +423,7 @@ export default function Properties() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Filter className="h-4 w-4" />
           <span>
-            {filteredProperties.length} of {properties.length} properties
+            {filteredProperties.length} of {properties.length} units
           </span>
         </div>
 
@@ -463,7 +463,7 @@ export default function Properties() {
                   >
                     <TableCell>
                       <Link
-                        to={`/properties/${property.id}`}
+                        to={`/units/${property.id}`}
                         className="flex items-center gap-3 group/link"
                       >
                         <div className="h-12 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
@@ -521,7 +521,7 @@ export default function Properties() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Link to={`/properties/${property.id}`}>
+                      <Link to={`/units/${property.id}`}>
                         <Button
                           variant="ghost"
                           size="icon"

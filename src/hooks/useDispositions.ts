@@ -37,7 +37,7 @@ function transformDisposition(row: Tables<'dispositions'>): Disposition {
 }
 
 // Transform database row to Property type
-function transformProperty(row: Tables<'properties'> & { images?: unknown }): Property {
+function transformProperty(row: Tables<'units'> & { images?: unknown }): Property {
   // Parse images from JSONB
   let images: { title: string; url: string }[] | undefined;
   if (row.images && Array.isArray(row.images)) {
@@ -184,19 +184,19 @@ export function useDispositionProperties(dispositionId: string | undefined) {
 
       const disposition = transformDisposition(dispositionData);
 
-      // Fetch disposition_properties with related property data
+      // Fetch disposition_properties with related unit data
       const { data: dpData, error: dpError } = await supabase
         .from('disposition_properties')
         .select(`
           *,
-          properties (*)
+          units (*)
         `)
         .eq('disposition_id', dispositionId);
 
       if (dpError) throw dpError;
 
       const transformed: DispositionProperty[] = (dpData || []).map((dp) => {
-        const propertyRow = dp.properties as Tables<'properties'>;
+        const propertyRow = dp.units as Tables<'units'>;
         const property = transformProperty(propertyRow);
         
         const inputs: PropertyUnderwritingInputs = {};
@@ -206,7 +206,7 @@ export function useDispositionProperties(dispositionId: string | undefined) {
         return {
           id: dp.id,
           dispositionId: dp.disposition_id,
-          propertyId: dp.property_id,
+          propertyId: dp.unit_id,
           property,
           inputs,
           outputs,
@@ -242,7 +242,7 @@ export function useAvailableProperties(existingPropertyIds: string[]) {
     try {
       setLoading(true);
 
-      let query = supabase.from('properties').select('*');
+      let query = supabase.from('units').select('*');
       
       if (existingPropertyIds.length > 0) {
         query = query.not('id', 'in', `(${existingPropertyIds.join(',')})`);
@@ -314,12 +314,12 @@ export function useDispositionsWithAggregates() {
     try {
       setLoading(true);
 
-      // Fetch all disposition_properties with property data for aggregates
+      // Fetch all disposition_properties with unit data for aggregates
       const { data: allDpData, error: dpError } = await supabase
         .from('disposition_properties')
         .select(`
           *,
-          properties (*)
+          units (*)
         `)
         .in('disposition_id', dispositions.map(d => d.id));
 
@@ -329,7 +329,7 @@ export function useDispositionsWithAggregates() {
         const dispProperties = (allDpData || []).filter(dp => dp.disposition_id === disposition.id);
         
         const transformedProperties: DispositionProperty[] = dispProperties.map(dp => {
-          const propertyRow = dp.properties as Tables<'properties'>;
+          const propertyRow = dp.units as Tables<'units'>;
           const property = transformProperty(propertyRow);
           
           const inputs: PropertyUnderwritingInputs = {};
@@ -339,7 +339,7 @@ export function useDispositionsWithAggregates() {
           return {
             id: dp.id,
             dispositionId: dp.disposition_id,
-            propertyId: dp.property_id,
+            propertyId: dp.unit_id,
             property,
             inputs,
             outputs,
@@ -480,7 +480,7 @@ export function useDispositionMutations() {
 
       const inserts = propertyIds.map(propertyId => ({
         disposition_id: dispositionId,
-        property_id: propertyId,
+        unit_id: propertyId,
       }));
 
       const { error } = await supabase

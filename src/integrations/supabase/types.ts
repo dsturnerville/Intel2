@@ -258,21 +258,21 @@ export type Database = {
           created_at: string
           deal_id: string
           id: string
-          property_id: string | null
+          unit_id: string | null
         }
         Insert: {
           acquisition_property_id?: string | null
           created_at?: string
           deal_id: string
           id?: string
-          property_id?: string | null
+          unit_id?: string | null
         }
         Update: {
           acquisition_property_id?: string | null
           created_at?: string
           deal_id?: string
           id?: string
-          property_id?: string | null
+          unit_id?: string | null
         }
         Relationships: [
           {
@@ -291,9 +291,9 @@ export type Database = {
           },
           {
             foreignKeyName: "deal_properties_property_id_fkey"
-            columns: ["property_id"]
+            columns: ["unit_id"]
             isOneToOne: false
-            referencedRelation: "properties"
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -423,10 +423,10 @@ export type Database = {
           make_ready_capex: number | null
           net_sale_proceeds: number | null
           projected_sale_price: number | null
-          property_id: string
           seller_concessions: number | null
           simple_return: number | null
           total_selling_costs: number | null
+          unit_id: string
           updated_at: string
         }
         Insert: {
@@ -443,10 +443,10 @@ export type Database = {
           make_ready_capex?: number | null
           net_sale_proceeds?: number | null
           projected_sale_price?: number | null
-          property_id: string
           seller_concessions?: number | null
           simple_return?: number | null
           total_selling_costs?: number | null
+          unit_id: string
           updated_at?: string
         }
         Update: {
@@ -463,10 +463,10 @@ export type Database = {
           make_ready_capex?: number | null
           net_sale_proceeds?: number | null
           projected_sale_price?: number | null
-          property_id?: string
           seller_concessions?: number | null
           simple_return?: number | null
           total_selling_costs?: number | null
+          unit_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -479,9 +479,9 @@ export type Database = {
           },
           {
             foreignKeyName: "disposition_properties_property_id_fkey"
-            columns: ["property_id"]
+            columns: ["unit_id"]
             isOneToOne: false
-            referencedRelation: "properties"
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -672,7 +672,7 @@ export type Database = {
         }
         Relationships: []
       }
-      properties: {
+      units: {
         Row: {
           acquisition_basis: number | null
           acquisition_date: string | null
@@ -842,57 +842,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      units: {
-        Row: {
-          access_code: string | null
-          bathrooms: number | null
-          bedrooms: number | null
-          building: string | null
-          created_at: string
-          created_by: string | null
-          garage_spaces: number | null
-          id: string
-          square_feet: number | null
-          stories: number | null
-          unit: string | null
-          updated_at: string
-          updated_by_type: string | null
-          updated_by_user_id: string | null
-        }
-        Insert: {
-          access_code?: string | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          building?: string | null
-          created_at?: string
-          created_by?: string | null
-          garage_spaces?: number | null
-          id?: string
-          square_feet?: number | null
-          stories?: number | null
-          unit?: string | null
-          updated_at?: string
-          updated_by_type?: string | null
-          updated_by_user_id?: string | null
-        }
-        Update: {
-          access_code?: string | null
-          bathrooms?: number | null
-          bedrooms?: number | null
-          building?: string | null
-          created_at?: string
-          created_by?: string | null
-          garage_spaces?: number | null
-          id?: string
-          square_feet?: number | null
-          stories?: number | null
-          unit?: string | null
-          updated_at?: string
-          updated_by_type?: string | null
-          updated_by_user_id?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {

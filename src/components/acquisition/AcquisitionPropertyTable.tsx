@@ -33,8 +33,8 @@ export function AcquisitionPropertyTable({
   if (properties.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p>No properties added yet.</p>
-        <p className="text-sm">Add properties to start underwriting.</p>
+        <p>No units added yet.</p>
+        <p className="text-sm">Add units to start underwriting.</p>
       </div>
     );
   }
@@ -98,9 +98,9 @@ export function AcquisitionPropertyTable({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link to={`/properties/${ap.propertyId}`}>
+                      <Link to={`/units/${ap.propertyId}`}>
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        View Property
+                        View Unit
                       </Link>
                     </DropdownMenuItem>
                     {onRemoveProperty && (
