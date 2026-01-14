@@ -88,8 +88,8 @@ const navItems: NavItem[] = [
     departments: ['Asset Management', 'Super Admin'],
   },
   { 
-    title: 'Properties', 
-    url: '/properties', 
+    title: 'Units', 
+    url: '/units', 
     icon: Home,
     departments: ['Asset Management', 'Property Management', 'Construction', 'Super Admin'],
   },
@@ -146,8 +146,8 @@ export function AppSidebar() {
     if (path === '/dispositions') {
       return location.pathname === path || location.pathname.startsWith('/dispositions/');
     }
-    if (path === '/properties') {
-      return location.pathname === path || location.pathname.startsWith('/properties/');
+    if (path === '/units') {
+      return location.pathname === path || location.pathname.startsWith('/units/');
     }
     if (path === '/markets') {
       return location.pathname === path || location.pathname.startsWith('/markets/');

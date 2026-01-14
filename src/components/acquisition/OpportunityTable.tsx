@@ -244,7 +244,7 @@ export function OpportunityTable({ opportunities, isLoading, defaults = DEFAULT_
   if (opportunities.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No properties uploaded yet. Click "Upload Properties" to add properties.
+        No units uploaded yet. Click "Upload Properties" to add units.
       </div>
     );
   }

@@ -14,8 +14,8 @@ import Acquisitions from "./pages/Acquisitions";
 import Markets from "./pages/Markets";
 import AcquisitionDetail from "./pages/AcquisitionDetail";
 import NewAcquisition from "./pages/NewAcquisition";
-import Properties from "./pages/Properties";
-import PropertyDetail from "./pages/PropertyDetail";
+import Units from "./pages/Units";
+import UnitDetail from "./pages/UnitDetail";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -113,21 +113,21 @@ const App = () => (
             }
           />
           <Route
-            path="/properties"
+            path="/units"
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <Properties />
+                  <Units />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/properties/:id"
+            path="/units/:id"
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <PropertyDetail />
+                  <UnitDetail />
                 </AppLayout>
               </ProtectedRoute>
             }

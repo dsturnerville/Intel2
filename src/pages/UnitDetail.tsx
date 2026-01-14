@@ -70,16 +70,16 @@ interface PropertyDetail {
   } | null;
 }
 
-export default function PropertyDetail() {
+export default function UnitDetail() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { data: markets = [] } = useMarkets();
 
   const { data: property, isLoading, error } = useQuery({
-    queryKey: ['property', id],
+    queryKey: ['unit', id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('properties')
+        .from('units')
         .select(`
           *,
           markets (
@@ -100,7 +100,7 @@ export default function PropertyDetail() {
     if (!property) return;
     
     const { error } = await supabase
-      .from('properties')
+      .from('units')
       .update({ market_id: marketId || null })
       .eq('id', property.id);
 
@@ -110,8 +110,8 @@ export default function PropertyDetail() {
     }
 
     toast.success('Market updated');
-    queryClient.invalidateQueries({ queryKey: ['property', id] });
-    queryClient.invalidateQueries({ queryKey: ['properties'] });
+    queryClient.invalidateQueries({ queryKey: ['unit', id] });
+    queryClient.invalidateQueries({ queryKey: ['units'] });
   };
 
   const getOccupancyBadgeVariant = (status: string) => {
@@ -130,7 +130,7 @@ export default function PropertyDetail() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading property...</p>
+          <p className="text-muted-foreground">Loading unit...</p>
         </div>
       </div>
     );
@@ -140,9 +140,9 @@ export default function PropertyDetail() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-destructive mb-2">Property not found</p>
-          <Link to="/properties">
-            <Button variant="link">Back to Properties</Button>
+          <p className="text-destructive mb-2">Unit not found</p>
+          <Link to="/units">
+            <Button variant="link">Back to Units</Button>
           </Link>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function PropertyDetail() {
       <header className="sticky top-0 z-10 h-20 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="h-full px-6">
           <div className="flex h-full items-center gap-4">
-            <Link to="/properties">
+            <Link to="/units">
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
@@ -196,12 +196,12 @@ export default function PropertyDetail() {
               </div>
             </Card>
 
-            {/* Property Details */}
+            {/* Unit Details */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Home className="h-5 w-5" />
-                  Property Details
+                  Unit Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

@@ -10,7 +10,7 @@ interface AcquisitionPortfolioSummaryProps {
 export function AcquisitionPortfolioSummary({ aggregates }: AcquisitionPortfolioSummaryProps) {
   const metrics = [
     {
-      label: 'Properties',
+      label: 'Units',
       value: aggregates.propertyCount.toString(),
       icon: Building2,
     },

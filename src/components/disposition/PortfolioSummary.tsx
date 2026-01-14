@@ -13,7 +13,7 @@ export function PortfolioSummary({
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">SUMMARY</h3>
         <span className="text-xs text-muted-foreground">
-          ({aggregates.propertyCount} {aggregates.propertyCount === 1 ? 'property' : 'properties'})
+          ({aggregates.propertyCount} {aggregates.propertyCount === 1 ? 'unit' : 'units'})
         </span>
       </div>
 

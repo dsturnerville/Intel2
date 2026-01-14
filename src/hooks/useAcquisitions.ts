@@ -58,7 +58,7 @@ function transformAcquisition(row: Tables<'acquisitions'>): Acquisition {
 }
 
 // Transform database row to Property type
-function transformProperty(row: Tables<'properties'>): Property {
+function transformProperty(row: Tables<'units'>): Property {
   let images: { title: string; url: string }[] | undefined;
   if (row.images && Array.isArray(row.images)) {
     images = row.images as { title: string; url: string }[];
