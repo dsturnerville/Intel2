@@ -64,7 +64,7 @@ export function RentalCompsMap({
       projection: 'mercator',
     });
 
-    map.current.on('style.load', () => {
+    map.current.on('load', () => {
       setLoaded(true);
     });
 
