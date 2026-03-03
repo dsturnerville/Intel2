@@ -16,6 +16,7 @@ import AcquisitionDetail from "./pages/AcquisitionDetail";
 import NewAcquisition from "./pages/NewAcquisition";
 import Units from "./pages/Units";
 import UnitDetail from "./pages/UnitDetail";
+import RentalComps from "./pages/RentalComps";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -128,6 +129,16 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <UnitDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/units/:id/rental-comps"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <RentalComps />
                 </AppLayout>
               </ProtectedRoute>
             }
