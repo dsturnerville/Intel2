@@ -159,10 +159,11 @@ export function RentalCompsMap({
         onCompHover(comp.id);
 
         popupRef.current?.remove();
-        popupRef.current = new mapboxgl.Popup({ offset: 10, closeButton: false })
+        popupRef.current = new mapboxgl.Popup({ offset: 10, closeButton: false, maxWidth: '220px' })
           .setLngLat([comp.longitude, comp.latitude])
           .setHTML(`
             <div style="font-family:system-ui;font-size:12px;">
+              ${comp.photos.length > 0 ? `<img src="${comp.photos[0]}" alt="${comp.address}" style="width:100%;height:100px;object-fit:cover;border-radius:4px;margin-bottom:6px;" />` : ''}
               <div style="font-weight:600;color:#1a1a2e;">${formatCurrency(comp.rent)}/mo</div>
               <div style="color:#666;">${comp.bedrooms}bd/${comp.bathrooms}ba · ${comp.sqft.toLocaleString()} sqft</div>
               <div style="color:#999;font-size:11px;">${comp.address}</div>
