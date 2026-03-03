@@ -77,6 +77,14 @@ export function RentalCompsList({
                 className="mt-1"
                 onClick={(e) => e.stopPropagation()}
               />
+              {comp.photos.length > 0 && (
+                <img
+                  src={comp.photos[0]}
+                  alt={comp.address}
+                  className="w-14 h-14 rounded object-cover shrink-0"
+                  loading="lazy"
+                />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium truncate">{comp.address}</p>

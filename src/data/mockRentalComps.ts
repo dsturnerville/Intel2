@@ -16,6 +16,7 @@ export interface RentalComp {
   distance: number; // miles from subject
   source: string;
   listDate: string;
+  photos: string[];
 }
 
 // Haversine distance in miles
@@ -52,6 +53,17 @@ const STREET_NAMES = [
 const STREET_TYPES = ['St', 'Ave', 'Dr', 'Ln', 'Ct', 'Blvd', 'Way', 'Pl'];
 
 const SOURCES = ['Zillow', 'Realtor.com', 'Redfin', 'MLS', 'RentRange'];
+
+// Deterministic placeholder photos using picsum with seeded IDs
+function generateMockPhotos(rand: () => number): string[] {
+  const count = 1 + Math.floor(rand() * 4); // 1-4 photos
+  const photos: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const picId = 10 + Math.floor(rand() * 200);
+    photos.push(`https://picsum.photos/id/${picId}/640/480`);
+  }
+  return photos;
+}
 
 export function generateMockComps(
   subjectLat: number,
@@ -102,7 +114,7 @@ export function generateMockComps(
       zipCode: subjectZip,
       latitude: subjectLat + latOffset,
       longitude: subjectLng + lngOffset,
-      rent: Math.round(rentVariation / 25) * 25, // round to $25
+      rent: Math.round(rentVariation / 25) * 25,
       bedrooms: beds,
       bathrooms: baths,
       sqft,
@@ -112,6 +124,7 @@ export function generateMockComps(
       distance: Math.round(distance * 100) / 100,
       source: SOURCES[Math.floor(rand() * SOURCES.length)],
       listDate: listDate.toISOString().split('T')[0],
+      photos: generateMockPhotos(rand),
     });
   }
 
