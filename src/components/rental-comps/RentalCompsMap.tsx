@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { RentalComp } from '@/data/mockRentalComps';
 import { formatCurrency } from '@/utils/calculations';
+import { CompPhotoViewer } from './CompPhotoViewer';
 
 const MAPBOX_TOKEN_KEY = 'mapbox_access_token';
 const DEFAULT_MAPBOX_TOKEN = 'pk.eyJ1IjoiZHR1cm5lci1pbGVob21lcyIsImEiOiJjbG9odHNpNzAwMnV1MmxvN3hnNzhibW9zIn0.nRT3aVvfGU5kJlsSzHXivg';
@@ -48,6 +49,7 @@ export function RentalCompsMap({
   const subjectMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [viewerCompId, setViewerCompId] = useState<string | null>(null);
 
   const accessToken = localStorage.getItem(MAPBOX_TOKEN_KEY) || DEFAULT_MAPBOX_TOKEN;
 
@@ -177,7 +179,10 @@ export function RentalCompsMap({
         popupRef.current?.remove();
       });
 
-      el.addEventListener('click', () => onCompClick(comp.id));
+      el.addEventListener('click', () => {
+        onCompClick(comp.id);
+        setViewerCompId(comp.id);
+      });
 
       const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([comp.longitude, comp.latitude])
@@ -207,5 +212,14 @@ export function RentalCompsMap({
     });
   }, [highlightedId, loaded, comps]);
 
-  return <div ref={mapContainer} className="w-full h-full rounded-md" />;
+  const viewerComp = useMemo(() => comps.find(c => c.id === viewerCompId) || null, [comps, viewerCompId]);
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mapContainer} className="w-full h-full rounded-md" />
+      {viewerComp && viewerComp.photos.length > 0 && (
+        <CompPhotoViewer comp={viewerComp} onClose={() => setViewerCompId(null)} />
+      )}
+    </div>
+  );
 }
