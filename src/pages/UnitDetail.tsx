@@ -174,6 +174,11 @@ export default function UnitDetail() {
                 {property.city}, {property.state} {property.zip_code}
               </p>
             </div>
+            <Link to={`/units/${id}/rental-comps`}>
+              <Button variant="outline" size="sm" className="text-xs">
+                Rental Comps
+              </Button>
+            </Link>
             <Badge variant={getOccupancyBadgeVariant(property.occupancy_status) as any}>
               {property.occupancy_status}
             </Badge>
