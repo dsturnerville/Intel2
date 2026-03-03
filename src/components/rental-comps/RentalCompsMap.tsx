@@ -156,7 +156,6 @@ export function RentalCompsMap({
       `;
 
       el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.5)';
         onCompHover(comp.id);
 
         popupRef.current?.remove();
@@ -173,7 +172,6 @@ export function RentalCompsMap({
       });
 
       el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)';
         onCompHover(null);
         popupRef.current?.remove();
       });
