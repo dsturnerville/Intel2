@@ -17,6 +17,9 @@ import NewAcquisition from "./pages/NewAcquisition";
 import Units from "./pages/Units";
 import UnitDetail from "./pages/UnitDetail";
 import RentalComps from "./pages/RentalComps";
+import RentalCompsV2 from "./pages/RentalCompsV2";
+import RentalCompsV3 from "./pages/RentalCompsV3";
+import RentalCompsV4 from "./pages/RentalCompsV4";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -143,6 +146,9 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route path="/units/:id/rental-comps-v2" element={<ProtectedRoute><AppLayout><RentalCompsV2 /></AppLayout></ProtectedRoute>} />
+          <Route path="/units/:id/rental-comps-v3" element={<ProtectedRoute><AppLayout><RentalCompsV3 /></AppLayout></ProtectedRoute>} />
+          <Route path="/units/:id/rental-comps-v4" element={<ProtectedRoute><AppLayout><RentalCompsV4 /></AppLayout></ProtectedRoute>} />
           <Route
             path="/profile"
             element={
