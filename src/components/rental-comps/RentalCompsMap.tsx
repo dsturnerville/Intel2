@@ -195,13 +195,15 @@ export function RentalCompsMap({
     comps.forEach((comp, i) => {
       const marker = markersRef.current[i];
       if (!marker) return;
-      const el = marker.getElement();
+      const container = marker.getElement();
+      const inner = container.firstElementChild as HTMLElement | null;
+      if (!inner) return;
       if (comp.id === highlightedId) {
-        el.style.transform = 'scale(1.5)';
-        el.style.zIndex = '10';
+        inner.style.transform = 'scale(1.5)';
+        container.style.zIndex = '10';
       } else {
-        el.style.transform = 'scale(1)';
-        el.style.zIndex = '1';
+        inner.style.transform = 'scale(1)';
+        container.style.zIndex = '1';
       }
     });
   }, [highlightedId, loaded, comps]);
